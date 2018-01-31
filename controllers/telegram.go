@@ -25,13 +25,16 @@ func (c *TelegramController) SendMessage(w http.ResponseWriter, r *http.Request)
 		return
 	}
 
-	log.Printf("sending message to telegram: %+v\n", m)
-
+	if m.ChatID == nil {
+		http.Error(w, "ChatID not set", http.StatusInternalServerError)
+		return
+	}
 	if m.Message == "" {
 		http.Error(w, "Message should not be empty", http.StatusInternalServerError)
 		return
 	}
 
+	log.Printf("sending message to telegram: %+v\n", m)
 	resp, err := sendTelegram(m.Message, m.ChatID, m.Silent, c.Config.TelegramBoToken, c.HTTPClient)
 	if err != nil {
 		http.Error(w, fmt.Sprintf("Cannot send message to telegram: %s", err.Error()), http.StatusInternalServerError)

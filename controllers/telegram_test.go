@@ -19,16 +19,18 @@ import (
 
 func TestTelegramControllerSendMessage(t *testing.T) {
 	testsData := []struct {
-		description     string
-		requestBody     string
-		defaultChatID   *string
-		outboundMessage models.OutboundTelegramMessage
-		responseCode    int
+		description             string
+		requestBody             string
+		defaultChatID           *string
+		telegramShouldBeCalled  bool
+		expectedOutboundMessage *models.OutboundTelegramMessage
+		responseCode            int
 	}{
 		{
-			description: "happy path",
-			requestBody: `{"message":"opossum","chat_id":1234}`,
-			outboundMessage: models.OutboundTelegramMessage{
+			description:            "happy path",
+			requestBody:            `{"message":"opossum","chat_id":1234}`,
+			telegramShouldBeCalled: true,
+			expectedOutboundMessage: &models.OutboundTelegramMessage{
 				ChatID:              intPtr(1234),
 				DisablePreview:      true,
 				DisableNotification: true,
@@ -37,22 +39,25 @@ func TestTelegramControllerSendMessage(t *testing.T) {
 			responseCode: http.StatusOK,
 		},
 		{
-			description:     "no message",
-			requestBody:     `{"text":"opossum","chat_id":1234}`,
-			outboundMessage: models.NewOutboundTelegramMessage(intPtr(1234)),
-			responseCode:    http.StatusInternalServerError,
+			description:             "no message",
+			requestBody:             `{"text":"opossum","chat_id":1234}`,
+			telegramShouldBeCalled:  false,
+			expectedOutboundMessage: nil,
+			responseCode:            http.StatusInternalServerError,
 		},
 		{
-			description:     "empty message",
-			requestBody:     `{"message":"","chat_id":1234}`,
-			outboundMessage: models.NewOutboundTelegramMessage(intPtr(1234)),
-			responseCode:    http.StatusInternalServerError,
+			description:             "empty message",
+			requestBody:             `{"message":"","chat_id":1234}`,
+			telegramShouldBeCalled:  false,
+			expectedOutboundMessage: nil,
+			responseCode:            http.StatusInternalServerError,
 		},
 		{
 			// everything is fine, but HTTP client will return error
-			description: "telegram server error",
-			requestBody: `{"message":"opossum","chat_id":1234}`,
-			outboundMessage: models.OutboundTelegramMessage{
+			description:            "telegram server error",
+			requestBody:            `{"message":"opossum","chat_id":1234}`,
+			telegramShouldBeCalled: true,
+			expectedOutboundMessage: &models.OutboundTelegramMessage{
 				ChatID:              intPtr(1234),
 				DisablePreview:      true,
 				DisableNotification: true,
@@ -61,21 +66,18 @@ func TestTelegramControllerSendMessage(t *testing.T) {
 			responseCode: http.StatusInternalServerError,
 		},
 		{
-			description: "no telegram chat ID",
-			requestBody: `{"message":"opossum"}`,
-			outboundMessage: models.OutboundTelegramMessage{
-				ChatID:              nil,
-				DisablePreview:      true,
-				DisableNotification: true,
-				Text:                "opossum",
-			},
-			responseCode: http.StatusInternalServerError,
+			description:             "no telegram chat ID",
+			requestBody:             `{"message":"opossum"}`,
+			telegramShouldBeCalled:  false,
+			expectedOutboundMessage: nil,
+			responseCode:            http.StatusInternalServerError,
 		},
 		{
-			description:   "only default chat ID",
-			requestBody:   `{"message":"opossum"}`,
-			defaultChatID: strPtr("1111"),
-			outboundMessage: models.OutboundTelegramMessage{
+			description:            "only default chat ID",
+			requestBody:            `{"message":"opossum"}`,
+			defaultChatID:          strPtr("1111"),
+			telegramShouldBeCalled: true,
+			expectedOutboundMessage: &models.OutboundTelegramMessage{
 				ChatID:              intPtr(1111),
 				DisablePreview:      true,
 				DisableNotification: true,
@@ -84,9 +86,10 @@ func TestTelegramControllerSendMessage(t *testing.T) {
 			responseCode: http.StatusOK,
 		},
 		{
-			description: "default chat_id override",
-			requestBody: `{"message":"opossum","chat_id":1111,"silent":true}`,
-			outboundMessage: models.OutboundTelegramMessage{
+			description:            "default chat_id override",
+			requestBody:            `{"message":"opossum","chat_id":1111,"silent":true}`,
+			telegramShouldBeCalled: true,
+			expectedOutboundMessage: &models.OutboundTelegramMessage{
 				ChatID:              intPtr(1111),
 				DisablePreview:      true,
 				DisableNotification: true,
@@ -96,9 +99,10 @@ func TestTelegramControllerSendMessage(t *testing.T) {
 			responseCode:  http.StatusOK,
 		},
 		{
-			description: "silent message",
-			requestBody: `{"message":"opossum","chat_id":1234,"silent":true}`,
-			outboundMessage: models.OutboundTelegramMessage{
+			description:            "silent message",
+			requestBody:            `{"message":"opossum","chat_id":1234,"silent":true}`,
+			telegramShouldBeCalled: true,
+			expectedOutboundMessage: &models.OutboundTelegramMessage{
 				ChatID:              intPtr(1234),
 				DisablePreview:      true,
 				DisableNotification: true,
@@ -107,9 +111,10 @@ func TestTelegramControllerSendMessage(t *testing.T) {
 			responseCode: http.StatusOK,
 		},
 		{
-			description: "non-silent message",
-			requestBody: `{"message":"opossum","chat_id":1234,"silent":false}`,
-			outboundMessage: models.OutboundTelegramMessage{
+			description:            "non-silent message",
+			requestBody:            `{"message":"opossum","chat_id":1234,"silent":false}`,
+			telegramShouldBeCalled: true,
+			expectedOutboundMessage: &models.OutboundTelegramMessage{
 				ChatID:              intPtr(1234),
 				DisablePreview:      true,
 				DisableNotification: false,
@@ -128,13 +133,17 @@ func TestTelegramControllerSendMessage(t *testing.T) {
 			Config: NewConfigSafe(strPtr("8080"), strPtr("1"), testData.defaultChatID, nil),
 			HTTPClient: &MockHTTPClient{
 				do: func(req *http.Request) (*http.Response, error) {
-					m := models.NewOutboundTelegramMessage(nil)
-					err := json.NewDecoder(req.Body).Decode(&m)
-					if err != nil {
-						panic(fmt.Sprintf("Cannot decode outbound telegram message: %s", err))
-					}
+					if !testData.telegramShouldBeCalled {
+						assert.Fail("do function should not be called")
+					} else {
+						m := models.NewOutboundTelegramMessage(nil)
+						err := json.NewDecoder(req.Body).Decode(&m)
+						if err != nil {
+							panic(fmt.Sprintf("Cannot decode outbound telegram message: %s", err))
+						}
 
-					assert.Equal(testData.outboundMessage, m, "Outbound message is not as expected")
+						assert.Equal(*testData.expectedOutboundMessage, m, "Outbound message is not as expected")
+					}
 
 					var respErr error
 					if testData.responseCode != http.StatusOK {
