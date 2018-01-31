@@ -1,0 +1,12 @@
+version: '3'
+
+services:
+  api:
+    build: .
+    container_name: api
+    restart: always
+    working_dir: /app
+    command: ./api
+    ports:
+      - 8081:8080
+    env_file: api.env
