@@ -34,7 +34,6 @@ func (c *TelegramController) SendMessage(w http.ResponseWriter, r *http.Request)
 		return
 	}
 
-	log.Printf("sending message to telegram: %+v\n", m)
 	resp, err := sendTelegram(m.Message, m.ChatID, m.Silent, c.Config.TelegramBoToken, c.HTTPClient)
 	if err != nil {
 		http.Error(w, fmt.Sprintf("Cannot send message to telegram: %s", err.Error()), http.StatusInternalServerError)
@@ -64,12 +63,13 @@ func sendTelegram(text string, chatID *int, silent bool, botToken *string, httpC
 		return nil, err
 	}
 
-	url := fmt.Sprintf("https://api.telegram.org/bot/%s/sendMessage", *botToken)
+	url := fmt.Sprintf("https://api.telegram.org/bot%s/sendMessage", *botToken)
 	req, err := http.NewRequest(http.MethodPost, url, bytes.NewBuffer(jsonStr))
 	if err != nil {
 		return nil, err
 	}
 	req.Header.Set("Content-Type", "application/json")
 
+	log.Printf("sending message to telegram: %s", jsonStr)
 	return httpClient.Do(req)
 }
