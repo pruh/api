@@ -69,7 +69,7 @@ func isLocalNetworkRequest(r *http.Request, c *utils.Configuration) bool {
 
 func getRemoteAddr(r *http.Request) (net.IP, error) {
 	host, _, err := net.SplitHostPort(r.RemoteAddr)
-	if err == nil {
+	if err != nil {
 		log.Printf("Cannot split remote address %s", r.RemoteAddr)
 		return nil, fmt.Errorf("Cannot split remote address %s", r.RemoteAddr)
 	}
