@@ -68,10 +68,16 @@ func isLocalNetworkRequest(r *http.Request, c *utils.Configuration) bool {
 }
 
 func getRemoteAddr(r *http.Request) (net.IP, error) {
-	ip := net.ParseIP(r.RemoteAddr)
+	host, _, err := net.SplitHostPort(r.RemoteAddr)
+	if err == nil {
+		log.Printf("Cannot split remote address %s", r.RemoteAddr)
+		return nil, fmt.Errorf("Cannot split remote address %s", r.RemoteAddr)
+	}
+
+	ip := net.ParseIP(host)
 	if ip == nil {
-		log.Printf("Cannot parse remote address %s", r.RemoteAddr)
-		return nil, fmt.Errorf("Cannot parse remote address %s", r.RemoteAddr)
+		log.Printf("Cannot parse ip %s", r.RemoteAddr)
+		return nil, fmt.Errorf("Cannot parse ip %s", r.RemoteAddr)
 	}
 
 	if xff := strings.Trim(r.Header.Get("X-Forwarded-For"), ","); len(xff) > 0 {
