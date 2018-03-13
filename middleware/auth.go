@@ -51,6 +51,7 @@ func checkCredentials(user string, password string, c *utils.Configuration) bool
 func isLocalNetworkRequest(r *http.Request, c *utils.Configuration) bool {
 	ip, err := getRemoteAddr(r)
 	if err != nil {
+		log.Print(err)
 		return false
 	}
 
@@ -70,20 +71,17 @@ func isLocalNetworkRequest(r *http.Request, c *utils.Configuration) bool {
 func getRemoteAddr(r *http.Request) (net.IP, error) {
 	host, _, err := net.SplitHostPort(r.RemoteAddr)
 	if err != nil {
-		log.Printf("Cannot split remote address %s", r.RemoteAddr)
-		return nil, fmt.Errorf("Cannot split remote address %s", r.RemoteAddr)
+		return nil, fmt.Errorf("Cannot split remote address %s: %v", r.RemoteAddr, err)
 	}
 
 	ip := net.ParseIP(host)
 	if ip == nil {
-		log.Printf("Cannot parse ip %s", r.RemoteAddr)
 		return nil, fmt.Errorf("Cannot parse ip %s", r.RemoteAddr)
 	}
 
 	if xff := strings.Trim(r.Header.Get("X-Forwarded-For"), ","); len(xff) > 0 {
 		addrs := strings.Split(xff, ",")
 		lastFwd := strings.TrimSpace(addrs[len(addrs)-1])
-		println(lastFwd)
 		if parsed := net.ParseIP(lastFwd); parsed != nil {
 			ip = parsed
 		} else {
