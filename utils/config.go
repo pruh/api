@@ -3,6 +3,8 @@ package utils
 import (
 	"encoding/json"
 	"errors"
+	"log"
+	"net"
 	"os"
 	"strconv"
 )
@@ -12,6 +14,7 @@ type Configuration struct {
 	TelegramBoToken  *string
 	DefaultChatID    *int
 	APIV1Credentials *map[string]string
+	LocalNets        []*net.IPNet
 }
 
 func NewFromEnv() (*Configuration, error) {
@@ -21,18 +24,6 @@ func NewFromEnv() (*Configuration, error) {
 	apiCreds := ptrOrNil(os.LookupEnv("API_V1_CREDS"))
 
 	return NewFromParams(port, botToken, chatID, apiCreds)
-}
-
-func ptr(str string) *string {
-	return &str
-}
-
-func ptrOrNil(str string, valueSet bool) *string {
-	if valueSet {
-		return &str
-	}
-
-	return nil
 }
 
 func NewFromParams(port *string, boToken *string, defaultChatID *string, apiV1Credentials *string) (*Configuration, error) {
@@ -63,5 +54,38 @@ func NewFromParams(port *string, boToken *string, defaultChatID *string, apiV1Cr
 		}
 	}
 
+	conf.LocalNets = getLocalIPNets()
+
 	return &conf, nil
+}
+
+func ptr(str string) *string {
+	return &str
+}
+
+func ptrOrNil(str string, valueSet bool) *string {
+	if valueSet {
+		return &str
+	}
+
+	return nil
+}
+
+func getLocalIPNets() []*net.IPNet {
+	var localIPNets []*net.IPNet
+	cidrs := []string{
+		"10.0.0.0/8",
+		"172.16.0.0/12",
+		"192.168.0.0/16",
+	}
+
+	for _, cidr := range cidrs {
+		_, ipnet, err := net.ParseCIDR(cidr)
+		if err != nil {
+			log.Printf("Cannot parse CIDR %s", cidr)
+			continue
+		}
+		localIPNets = append(localIPNets, ipnet)
+	}
+	return localIPNets
 }

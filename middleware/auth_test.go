@@ -20,6 +20,9 @@ func TestBasicAuth(t *testing.T) {
 		user         string
 		password     string
 		config       *utils.Configuration
+		requestIP    string
+		xFwdHeader   string
+		xRealIP      string
 		requestBody  io.Reader
 		responseCode int
 	}{
@@ -90,6 +93,63 @@ func TestBasicAuth(t *testing.T) {
 			requestBody:  nil,
 			responseCode: http.StatusOK,
 		},
+		{
+			description: "local network request",
+			user:        "",
+			password:    "",
+			config: NewConfigSafe(ptr("8080"), ptr("1"), nil, &map[string]string{
+				"papa": "castoro",
+			}),
+			requestIP:    "192.168.0.2",
+			requestBody:  nil,
+			responseCode: http.StatusOK,
+		},
+		{
+			description: "local network request for X-Forwarded-For local",
+			user:        "",
+			password:    "",
+			config: NewConfigSafe(ptr("8080"), ptr("1"), nil, &map[string]string{
+				"papa": "castoro",
+			}),
+			requestIP:    "8.8.4.4",
+			xFwdHeader:   "192.168.1.2, 8.8.4.4, 10.8.0.1",
+			requestBody:  nil,
+			responseCode: http.StatusOK,
+		},
+		{
+			description: "local network request for X-Forwarded-For remote",
+			user:        "",
+			password:    "",
+			config: NewConfigSafe(ptr("8080"), ptr("1"), nil, &map[string]string{
+				"papa": "castoro",
+			}),
+			xFwdHeader:   "10.8.0.1, 192.168.1.2, 8.8.4.4",
+			requestBody:  nil,
+			responseCode: http.StatusUnauthorized,
+		},
+		{
+			description: "local network request for X-Real-IP local",
+			user:        "",
+			password:    "",
+			config: NewConfigSafe(ptr("8080"), ptr("1"), nil, &map[string]string{
+				"papa": "castoro",
+			}),
+			requestIP:    "8.8.4.4",
+			xRealIP:      "10.8.0.1",
+			requestBody:  nil,
+			responseCode: http.StatusOK,
+		},
+		{
+			description: "local network request for X-Real-IP remote",
+			user:        "",
+			password:    "",
+			config: NewConfigSafe(ptr("8080"), ptr("1"), nil, &map[string]string{
+				"papa": "castoro",
+			}),
+			xRealIP:      "8.8.4.4",
+			requestBody:  nil,
+			responseCode: http.StatusUnauthorized,
+		},
 	}
 
 	assert := assert.New(t)
@@ -101,6 +161,17 @@ func TestBasicAuth(t *testing.T) {
 		req := httptest.NewRequest(http.MethodPost, "http://example.com/foo", testData.requestBody)
 		if testData.user != "" || testData.password != "" {
 			req.SetBasicAuth(testData.user, testData.password)
+		}
+		if testData.requestIP != "" {
+			req.RemoteAddr = testData.requestIP
+		} else {
+			req.RemoteAddr = "8.8.8.8"
+		}
+		if testData.xFwdHeader != "" {
+			req.Header.Set("X-Forwarded-For", testData.xFwdHeader)
+		}
+		if testData.xRealIP != "" {
+			req.Header.Set("X-Real-IP", testData.xRealIP)
 		}
 
 		AuthMiddleware(w, req, func(w http.ResponseWriter, r *http.Request) {
