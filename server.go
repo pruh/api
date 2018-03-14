@@ -1,7 +1,9 @@
 package main
 
 import (
+	"log"
 	"net/http"
+	"net/http/httputil"
 
 	"github.com/gorilla/mux"
 	"github.com/j-rooft/api/controllers"
@@ -22,6 +24,16 @@ func main() {
 	router := mux.NewRouter().StrictSlash(false)
 	apiV1Router := mux.NewRouter().PathPrefix(apiV1Path).Subrouter()
 	router.PathPrefix(apiV1Path).Handler(negroni.New(
+		negroni.HandlerFunc(func(w http.ResponseWriter, r *http.Request, next http.HandlerFunc) {
+			// Save a copy of this request for debugging.
+			requestDump, err := httputil.DumpRequest(r, true)
+			if err != nil {
+				log.Println(err)
+			}
+			log.Println(string(requestDump))
+
+			next(w, r)
+		}),
 		negroni.HandlerFunc(func(w http.ResponseWriter, r *http.Request, next http.HandlerFunc) {
 			middleware.AuthMiddleware(w, r, next, config)
 		}),
