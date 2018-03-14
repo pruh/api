@@ -20,12 +20,12 @@ func main() {
 
 	apiV1Path := "/api/v1"
 
-	n := negroni.Classic()
 	router := mux.NewRouter().StrictSlash(false)
 	apiV1Router := mux.NewRouter().PathPrefix(apiV1Path).Subrouter()
-	router.PathPrefix(apiV1Path).Handler(negroni.New(
+	n := negroni.New(
+		negroni.NewRecovery(),
+		negroni.NewLogger(),
 		negroni.HandlerFunc(func(w http.ResponseWriter, r *http.Request, next http.HandlerFunc) {
-			// Save a copy of this request for debugging.
 			requestDump, err := httputil.DumpRequest(r, true)
 			if err != nil {
 				log.Println(err)
@@ -38,7 +38,8 @@ func main() {
 			middleware.AuthMiddleware(w, r, next, config)
 		}),
 		negroni.Wrap(apiV1Router),
-	))
+	)
+	router.PathPrefix(apiV1Path).Handler(n)
 
 	tc := &controllers.TelegramController{
 		Config:     config,
@@ -48,7 +49,6 @@ func main() {
 
 	// n.Use(negroni.HandlerFunc(AuthMiddleware)) // global middleware
 
-	n.UseHandler(router)
-
-	n.Run(":" + *config.Port)
+	log.Printf("listening on :%s", *config.Port)
+	log.Fatal(http.ListenAndServe(":"+*config.Port, router))
 }
