@@ -7,9 +7,10 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/j-rooft/api/utils"
+	"github.com/pruh/api/utils"
 )
 
+// AuthMiddleware validates basic auth credentials.
 func AuthMiddleware(w http.ResponseWriter, r *http.Request, next http.HandlerFunc, c *utils.Configuration) {
 	if c.APIV1Credentials == nil || len(*c.APIV1Credentials) <= 0 {
 		log.Println("basic auth users not set, allowing request")

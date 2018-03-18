@@ -3,7 +3,7 @@ package utils_test
 import (
 	"testing"
 
-	. "github.com/j-rooft/api/tests"
+	. "github.com/pruh/api/tests"
 	"github.com/stretchr/testify/assert"
 )
 
