@@ -8,8 +8,8 @@ import (
 	"log"
 	"net/http"
 
-	"github.com/j-rooft/api/models"
-	"github.com/j-rooft/api/utils"
+	"github.com/pruh/api/models"
+	"github.com/pruh/api/utils"
 )
 
 type TelegramController struct {

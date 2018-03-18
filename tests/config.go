@@ -4,7 +4,7 @@ import (
 	"bytes"
 	"fmt"
 
-	"github.com/j-rooft/api/utils"
+	"github.com/pruh/api/utils"
 )
 
 func NewConfig(port *string, botToken *string, defaultChatId *string, credsMap *map[string]string) (*utils.Configuration, error) {

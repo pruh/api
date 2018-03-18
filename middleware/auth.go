@@ -4,7 +4,7 @@ import (
 	"log"
 	"net/http"
 
-	"github.com/j-rooft/api/utils"
+	"github.com/pruh/api/utils"
 )
 
 func AuthMiddleware(w http.ResponseWriter, r *http.Request, next http.HandlerFunc, config *utils.Configuration) {
