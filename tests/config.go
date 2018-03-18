@@ -4,7 +4,7 @@ import (
 	"bytes"
 	"fmt"
 
-	"github.com/j-roof/api/utils"
+	"github.com/pruh/api/utils"
 )
 
 // NewConfig creates new config or returns error.

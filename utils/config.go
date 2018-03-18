@@ -37,7 +37,7 @@ func ptrOrNil(str string, valueSet bool) *string {
 	return nil
 }
 
-// NewFromEnv creates new configuration from arguments.
+// NewFromParams creates new configuration from arguments.
 func NewFromParams(port *string, boToken *string, defaultChatID *string, apiV1Credentials *string) (*Configuration, error) {
 	var conf Configuration
 	if port == nil || *port == "" {

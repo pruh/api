@@ -4,9 +4,9 @@ import (
 	"net/http"
 
 	"github.com/gorilla/mux"
-	"github.com/j-rooft/api/controllers"
-	"github.com/j-rooft/api/middleware"
-	"github.com/j-rooft/api/utils"
+	"github.com/pruh/api/controllers"
+	"github.com/pruh/api/middleware"
+	"github.com/pruh/api/utils"
 	"github.com/urfave/negroni"
 )
 

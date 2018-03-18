@@ -4,7 +4,7 @@ import (
 	"log"
 	"net/http"
 
-	"github.com/j-rooft/api/utils"
+	"github.com/pruh/api/utils"
 )
 
 // AuthMiddleware validates basic auth credentials.

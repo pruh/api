@@ -12,9 +12,9 @@ import (
 
 	"github.com/stretchr/testify/assert"
 
-	. "github.com/j-rooft/api/controllers"
-	"github.com/j-rooft/api/models"
-	. "github.com/j-rooft/api/tests"
+	. "github.com/pruh/api/controllers"
+	"github.com/pruh/api/models"
+	. "github.com/pruh/api/tests"
 )
 
 func TestTelegramControllerSendMessage(t *testing.T) {
