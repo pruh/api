@@ -30,7 +30,7 @@ func main() {
 
 	tc := &controllers.TelegramController{
 		Config:     config,
-		HTTPClient: utils.NewHttpClient(),
+		HTTPClient: utils.NewHTTPClient(),
 	}
 	apiV1Router.HandleFunc("/telegram/messages/send", tc.SendMessage).Methods(http.MethodPost)
 

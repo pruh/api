@@ -7,6 +7,7 @@ import (
 	"strconv"
 )
 
+// Configuration contrains configuration parameters.
 type Configuration struct {
 	Port             *string
 	TelegramBoToken  *string
@@ -14,6 +15,7 @@ type Configuration struct {
 	APIV1Credentials *map[string]string
 }
 
+// NewFromEnv creates new configuration from environment variables.
 func NewFromEnv() (*Configuration, error) {
 	port := ptr(os.Getenv("PORT"))
 	botToken := ptr(os.Getenv("TELEGRAM_BOT_TOKEN"))
@@ -35,6 +37,7 @@ func ptrOrNil(str string, valueSet bool) *string {
 	return nil
 }
 
+// NewFromEnv creates new configuration from arguments.
 func NewFromParams(port *string, boToken *string, defaultChatID *string, apiV1Credentials *string) (*Configuration, error) {
 	var conf Configuration
 	if port == nil || *port == "" {
