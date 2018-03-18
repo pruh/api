@@ -7,6 +7,7 @@ import (
 	"github.com/j-rooft/api/utils"
 )
 
+// AuthMiddleware validates basic auth credentials.
 func AuthMiddleware(w http.ResponseWriter, r *http.Request, next http.HandlerFunc, config *utils.Configuration) {
 	if config.APIV1Credentials == nil || len(*config.APIV1Credentials) <= 0 {
 		log.Println("basic auth users not set, allowing request")
