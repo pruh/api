@@ -7,7 +7,7 @@ import (
 
 // HTTPClient defines list of supported methods.
 type HTTPClient interface {
-	Do(req *http.Request) (*http.Response, error)
+	Do(r *http.Request) (*http.Response, error)
 }
 
 type defaultHTTPClient struct {
@@ -15,8 +15,8 @@ type defaultHTTPClient struct {
 }
 
 // Do makes request and returns result or error.
-func (c *defaultHTTPClient) Do(req *http.Request) (*http.Response, error) {
-	return c.c.Do(req)
+func (c *defaultHTTPClient) Do(r *http.Request) (*http.Response, error) {
+	return c.c.Do(r)
 }
 
 // NewHTTPClient creates new HTTP client.
