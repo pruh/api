@@ -50,12 +50,58 @@ func checkCredentials(user string, password string, c *utils.Configuration) bool
 }
 
 func isLocalNetworkRequest(r *http.Request, c *utils.Configuration) bool {
-	ip, err := getRemoteAddr(r)
+	remoteIP, err := getRemoteIP(r)
 	if err != nil {
 		log.Print(err)
 		return false
 	}
 
+	headersIP, err := getHeadersIP(r)
+	if err != nil {
+		log.Print(err)
+		return false
+	}
+
+	return isLocalIP(remoteIP, c) && (len(headersIP) == 0 || isLocalIP(headersIP, c))
+}
+
+func getRemoteIP(r *http.Request) (net.IP, error) {
+	host, _, err := net.SplitHostPort(r.RemoteAddr)
+	if err != nil {
+		return nil, fmt.Errorf("Cannot split remote address %s: %v", r.RemoteAddr, err)
+	}
+
+	ip := net.ParseIP(host)
+	if ip == nil {
+		return nil, fmt.Errorf("Cannot parse ip %s", r.RemoteAddr)
+	}
+
+	return ip, nil
+}
+
+func getHeadersIP(r *http.Request) (net.IP, error) {
+	var ip net.IP
+	r.Header.Get("")
+	if xff := strings.Trim(r.Header.Get("X-Forwarded-For"), ","); len(xff) > 0 {
+		addrs := strings.Split(xff, ",")
+		lastFwd := strings.TrimSpace(addrs[len(addrs)-1])
+		if parsed := net.ParseIP(lastFwd); parsed != nil {
+			ip = parsed
+		} else {
+			return nil, fmt.Errorf("Cannot parse X-Forwarded-For %s", xff)
+		}
+	} else if xri := r.Header.Get("X-Real-Ip"); len(xri) > 0 {
+		if parsed := net.ParseIP(xri); parsed != nil {
+			ip = parsed
+		} else {
+			return nil, fmt.Errorf("Cannot parse X-Real-Ip %s", xri)
+		}
+	}
+
+	return ip, nil
+}
+
+func isLocalIP(ip net.IP, c *utils.Configuration) bool {
 	log.Printf("Checking if %s is in local network\n", ip)
 	for _, ipnet := range c.LocalNets {
 		log.Printf("Checking network %s\n", ipnet.String())
@@ -67,34 +113,4 @@ func isLocalNetworkRequest(r *http.Request, c *utils.Configuration) bool {
 
 	log.Printf("%s is NOT in local network\n", ip)
 	return false
-}
-
-func getRemoteAddr(r *http.Request) (net.IP, error) {
-	host, _, err := net.SplitHostPort(r.RemoteAddr)
-	if err != nil {
-		return nil, fmt.Errorf("Cannot split remote address %s: %v", r.RemoteAddr, err)
-	}
-
-	ip := net.ParseIP(host)
-	if ip == nil {
-		return nil, fmt.Errorf("Cannot parse ip %s", r.RemoteAddr)
-	}
-
-	if xff := strings.Trim(r.Header.Get("X-Forwarded-For"), ","); len(xff) > 0 {
-		addrs := strings.Split(xff, ",")
-		lastFwd := strings.TrimSpace(addrs[len(addrs)-1])
-		if parsed := net.ParseIP(lastFwd); parsed != nil {
-			ip = parsed
-		} else {
-			log.Printf("Cannot parse X-Forwarded-For %s", xff)
-		}
-	} else if xri := r.Header.Get("X-Real-Ip"); len(xri) > 0 {
-		if parsed := net.ParseIP(xri); parsed != nil {
-			ip = parsed
-		} else {
-			log.Printf("Cannot parse X-Real-Ip %s", xri)
-		}
-	}
-
-	return ip, nil
 }
