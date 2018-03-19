@@ -13,7 +13,6 @@ notifications:
   email: true
 
 before_install:
-  - GO_FILES=$(find . -iname '*.go' -type f | grep -v /vendor/) # All the .go files, excluding vendor/
   - go get github.com/golang/lint/golint
   - go get honnef.co/go/tools/cmd/megacheck
   - go get github.com/fzipp/gocyclo
@@ -22,11 +21,29 @@ before_install:
   #- go get golang.org/x/tools/cmd/cover
   - go get github.com/mattn/goveralls
 
+before_script:
+  # All the .go files, excluding vendor/
+  - GO_FILES=$(find . -iname '*.go' -type f | grep -v /vendor/)
+
+  # fail if a .go file hasn't been formatted with gofmt
+  - test -z $(gofmt -s -l $GO_FILES)
+  
+  # go vet is the official Go static analyzer
+  - go vet ./...
+  
+  # "go vet on steroids" + linter
+  - megacheck ./...
+  
+  # Fail builds when the cyclomatic complexity reaches 15 or more
+  - gocyclo -over 15 $GO_FILES
+
+  # one last linter
+  - golint -set_exit_status $(go list ./...)
+
 script:
-  - test -z $(gofmt -s -l $GO_FILES)                                          # Fail if a .go file hasn't been formatted with gofmt
-  - go test -v -race -covermode=count -coverprofile=coverage.out ./...        # Run all the tests with the race detector enabled
-  - goveralls -coverprofile=coverage.out -service=travis-ci                   # Report code coverage
-  - go vet ./...                                                              # go vet is the official Go static analyzer
-  - megacheck ./...                                                           # "go vet on steroids" + linter
-  - gocyclo -over 19 $GO_FILES                                                # forbid code with huge functions
-  - golint -set_exit_status $(go list ./...)                                  # one last linter
+  # run all the tests with the race detector enabled
+  - go test -v -covermode=count -coverprofile=coverage.out ./...
+
+after_success:
+  # report code coverage report to coveralls.io
+  - goveralls -service=travis-ci -coverprofile=coverage.out
