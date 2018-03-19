@@ -1,0 +1,48 @@
+language: go
+
+go:
+  - "1.10"
+  - tip
+
+matrix:
+  # Don't wait for tip tests to finish. Mark the test run green if the
+  # tests pass on the stable versions of Go.
+  fast_finish: true
+
+notifications:
+  email: true
+
+before_install:
+  - go get github.com/golang/lint/golint
+  - go get honnef.co/go/tools/cmd/megacheck
+  - go get github.com/fzipp/gocyclo
+  - go get github.com/gorilla/mux
+  - go get github.com/urfave/negroni
+  - go get github.com/mattn/goveralls
+
+before_script:
+  # All the .go files, excluding vendor/
+  - GO_FILES=$(find . -iname '*.go' -type f | grep -v /vendor/)
+
+  # fail if a .go file hasn't been formatted with gofmt
+  - test -z $(gofmt -s -l $GO_FILES)
+  
+  # go vet is the official Go static analyzer
+  - go vet ./...
+  
+  # "go vet on steroids" + linter
+  - megacheck ./...
+  
+  # Fail builds when the cyclomatic complexity reaches 15 or more
+  - gocyclo -over 15 $GO_FILES
+
+  # one last linter
+  - golint -set_exit_status $(go list ./...)
+
+script:
+  # run all the tests with the race detector enabled
+  - go test -v -covermode=count -coverprofile=coverage.out ./...
+
+after_success:
+  # report code coverage report to coveralls.io
+  - goveralls -service=travis-ci -coverprofile=coverage.out

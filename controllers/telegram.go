@@ -8,15 +8,17 @@ import (
 	"log"
 	"net/http"
 
-	"github.com/j-rooft/api/models"
-	"github.com/j-rooft/api/utils"
+	"github.com/pruh/api/models"
+	"github.com/pruh/api/utils"
 )
 
+// TelegramController stores config and HTTP client for requests.
 type TelegramController struct {
 	Config     *utils.Configuration
 	HTTPClient utils.HTTPClient
 }
 
+// SendMessage sends a message to Telegram and returns Telegram's response.
 func (c *TelegramController) SendMessage(w http.ResponseWriter, r *http.Request) {
 	m := models.NewInboundTelegramMessage(c.Config.DefaultChatID)
 	err := json.NewDecoder(r.Body).Decode(&m)
