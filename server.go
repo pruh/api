@@ -41,11 +41,18 @@ func main() {
 	)
 	router.PathPrefix(apiV1Path).Handler(n)
 
+	// messages controller
 	tc := &controllers.TelegramController{
 		Config:     config,
 		HTTPClient: utils.NewHTTPClient(),
 	}
 	apiV1Router.HandleFunc("/telegram/messages/send", tc.SendMessage).Methods(http.MethodPost)
+
+	// notifications controller
+	notif := &controllers.NotificationsController{}
+	apiV1Router.HandleFunc("/notifications", notif.Get).Methods(http.MethodGet)
+	apiV1Router.HandleFunc("/notifications", notif.Create).Methods(http.MethodPost)
+	apiV1Router.HandleFunc("/notifications", notif.Delete).Methods(http.MethodDelete)
 
 	// n.Use(negroni.HandlerFunc(AuthMiddleware)) // global middleware
 
