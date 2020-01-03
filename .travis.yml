@@ -10,7 +10,6 @@ notifications:
 
 before_install:
   - go get golang.org/x/lint/golint
-  - go get honnef.co/go/tools/cmd/megacheck
   - go get github.com/fzipp/gocyclo
   - go get github.com/gorilla/mux
   - go get github.com/urfave/negroni
@@ -25,9 +24,6 @@ before_script:
   
   # go vet is the official Go static analyzer
   - go vet ./...
-  
-  # "go vet on steroids" + linter
-  - megacheck ./...
   
   # Fail builds when the cyclomatic complexity reaches 15 or more
   - gocyclo -over 15 $GO_FILES
