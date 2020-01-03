@@ -6,7 +6,9 @@ go:
   - master
 
 notifications:
-  email: true
+  email:
+    on_success: never
+    on_failure: always
 
 before_install:
   - go get golang.org/x/lint/golint
