@@ -59,6 +59,7 @@ func (r *Repository) GetNofitications() ([]models.Notification, error) {
 		err := cur.Decode(&notif)
 		if err != nil {
 			glog.Errorf("Cannot decode notification. %s", err)
+			return nil, err
 		}
 		notifs = append(notifs, notif)
 	}
@@ -70,9 +71,22 @@ func (r *Repository) GetNofitications() ([]models.Notification, error) {
 }
 
 // GetNofitication returns notifications by ID or nil
-func (r *Repository) GetNofitication(ID string) models.Notification {
+func (r *Repository) GetNofitication(ID string) (models.Notification, error) {
 	glog.Infof("Querying for notification with UUID: %s\n", ID)
-	return models.Notification{}
+
+	collection := r.mongo.Database(dbName).Collection(notifCollectionName)
+
+	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+	defer cancel()
+
+	var notif models.Notification
+	err := collection.FindOne(ctx, bson.M{"_id": ID}).Decode(&notif)
+	if err != nil {
+		glog.Errorf("Cannot decode notification. %s", err)
+		return notif, err
+	}
+
+	return notif, nil
 }
 
 // CreateNofitication creates new notification for specified params

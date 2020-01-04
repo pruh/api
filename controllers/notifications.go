@@ -52,7 +52,12 @@ func (c *NotificationsController) Get(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	notification := c.Repository.GetNofitication(notifUUID)
+	notification, err := c.Repository.GetNofitication(notifUUID)
+	if err != nil {
+		glog.Errorf("Error while querying notification. %s", err)
+		http.Error(w, fmt.Sprint("Error while querying notification."), http.StatusInternalServerError)
+		return
+	}
 	data, err := json.Marshal(notification)
 	if err != nil {
 		glog.Errorf("Cannot marshal notification. %s", err)
