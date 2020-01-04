@@ -50,9 +50,10 @@ func main() {
 
 	// notifications controller
 	notif := &controllers.NotificationsController{}
-	apiV1Router.HandleFunc("/notifications", notif.Get).Methods(http.MethodGet)
+	apiV1Router.HandleFunc("/notifications/", notif.GetAll).Methods(http.MethodGet)
+	apiV1Router.HandleFunc("/notifications/{uuid}", notif.Get).Methods(http.MethodGet)
 	apiV1Router.HandleFunc("/notifications", notif.Create).Methods(http.MethodPost)
-	apiV1Router.HandleFunc("/notifications", notif.Delete).Methods(http.MethodDelete)
+	apiV1Router.HandleFunc("/notifications/{uuid}", notif.Delete).Methods(http.MethodDelete)
 
 	// n.Use(negroni.HandlerFunc(AuthMiddleware)) // global middleware
 
