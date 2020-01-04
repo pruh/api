@@ -3,7 +3,7 @@ package utils
 import (
 	"encoding/json"
 	"errors"
-	"log"
+	"github.com/golang/glog"
 	"net"
 	"os"
 	"strconv"
@@ -85,7 +85,7 @@ func getLocalIPNets() []*net.IPNet {
 	for _, cidr := range cidrs {
 		_, ipnet, err := net.ParseCIDR(cidr)
 		if err != nil {
-			log.Printf("Cannot parse CIDR %s", cidr)
+			glog.Infof("Cannot parse CIDR %s", cidr)
 			continue
 		}
 		localIPNets = append(localIPNets, ipnet)

@@ -3,9 +3,9 @@ package controllers
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/golang/glog"
 	"io"
 	"io/ioutil"
-	"log"
 	"net/http"
 
 	"github.com/google/uuid"
@@ -24,7 +24,7 @@ func (c *NotificationsController) GetAll(w http.ResponseWriter, r *http.Request)
 	notifications := c.Repository.GetNofitications()
 	data, err := json.Marshal(notifications)
 	if err != nil {
-		log.Fatalln("Cannot marshal notifications.", err)
+		glog.Errorf("Cannot marshal notifications. %s", err)
 		http.Error(w, fmt.Sprintf("Cannot marshal notifications: %s", err.Error()), http.StatusInternalServerError)
 		return
 	}
@@ -40,6 +40,7 @@ func (c *NotificationsController) Get(w http.ResponseWriter, r *http.Request) {
 	notifUUID := params["uuid"]
 	_, err := validateUUID(notifUUID)
 	if err != nil {
+		glog.Errorf("Notification UUID is malformed. %s", err)
 		http.Error(w, fmt.Sprintf("Notification UUID is malformed: %s", err.Error()), http.StatusBadRequest)
 		return
 	}
@@ -47,7 +48,7 @@ func (c *NotificationsController) Get(w http.ResponseWriter, r *http.Request) {
 	notification := c.Repository.GetNofitication(notifUUID)
 	data, err := json.Marshal(notification)
 	if err != nil {
-		log.Fatalln("Cannot marshal notification.", err)
+		glog.Errorf("Cannot marshal notification. %s", err)
 		http.Error(w, fmt.Sprintf("Cannot marshal notification: %s", err.Error()), http.StatusInternalServerError)
 		return
 	}
@@ -62,7 +63,7 @@ func (c *NotificationsController) Create(w http.ResponseWriter, r *http.Request)
 	var notification models.Notification
 	body, err := ioutil.ReadAll(io.LimitReader(r.Body, 1024*1024))
 	if err != nil {
-		log.Fatalln("Error reading request.", err)
+		glog.Errorf("Error reading request. %s", err)
 		http.Error(w, fmt.Sprintf("Error reading request: %s", err.Error()), http.StatusInternalServerError)
 		return
 	}
@@ -70,14 +71,14 @@ func (c *NotificationsController) Create(w http.ResponseWriter, r *http.Request)
 
 	err = json.Unmarshal(body, &notification)
 	if err != nil {
-		log.Fatalln("Error reading request data.", err)
+		glog.Errorf("Error reading request data. %s", err)
 		http.Error(w, fmt.Sprintf("Error reading request data: %s", err.Error()), http.StatusUnprocessableEntity)
 		return
 	}
 
 	success := c.Repository.CreateNofitication(notification)
 	if !success {
-		log.Fatalln("Failed to create notification.", err)
+		glog.Errorf("Failed to create notification. %s", err)
 		http.Error(w, fmt.Sprintf("Failed to create notification: %s", err.Error()), http.StatusInternalServerError)
 		return
 	}
@@ -92,13 +93,14 @@ func (c *NotificationsController) Delete(w http.ResponseWriter, r *http.Request)
 	notifUUID := params["uuid"]
 	_, err := validateUUID(notifUUID)
 	if err != nil {
+		glog.Errorf("Notification UUID is malformed. %s", err)
 		http.Error(w, fmt.Sprintf("Notification UUID is malformed: %s", err.Error()), http.StatusBadRequest)
 		return
 	}
 
 	res := c.Repository.DeleteNofitication(notifUUID)
 	if !res {
-		log.Printf("Notification with ID %s was not removed", notifUUID)
+		glog.Infof("Notification with ID %s was not removed", notifUUID)
 		http.Error(w, fmt.Sprintf("Notification with ID %s was not removed", notifUUID), http.StatusNotFound)
 		return
 	}

@@ -1,7 +1,8 @@
 package main
 
 import (
-	"log"
+	"flag"
+	"github.com/golang/glog"
 	"net/http"
 	"net/http/httputil"
 
@@ -14,6 +15,8 @@ import (
 )
 
 func main() {
+	flag.Parse()
+
 	config, err := utils.NewFromEnv()
 	if err != nil {
 		panic(err)
@@ -29,9 +32,9 @@ func main() {
 		negroni.HandlerFunc(func(w http.ResponseWriter, r *http.Request, next http.HandlerFunc) {
 			requestDump, err := httputil.DumpRequest(r, true)
 			if err != nil {
-				log.Println(err)
+				glog.Infoln(err)
 			}
-			log.Println(string(requestDump))
+			glog.Infoln(string(requestDump))
 
 			next(w, r)
 		}),
@@ -60,6 +63,6 @@ func main() {
 
 	// n.Use(negroni.HandlerFunc(AuthMiddleware)) // global middleware
 
-	log.Printf("listening on :%s", *config.Port)
-	log.Fatal(http.ListenAndServe(":"+*config.Port, router))
+	glog.Infof("listening on :%s", *config.Port)
+	glog.Fatal(http.ListenAndServe(":"+*config.Port, router))
 }
