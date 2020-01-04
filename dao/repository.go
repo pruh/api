@@ -32,12 +32,6 @@ func NewRepository() *Repository {
 	if err != nil {
 		glog.Fatalf("Cannot connect to databse. %s", err)
 	}
-	glog.Infof("connection ping")
-
-	// err = client.Ping(ctx, nil)
-	// if err != nil {
-	// 	glog.Fatalf("Cannot ping databse. %s", err)
-	// }
 
 	return &Repository{
 		mongo: client,
@@ -84,6 +78,17 @@ func (r *Repository) GetNofitication(ID string) models.Notification {
 // CreateNofitication creates new notification for specified params
 func (r *Repository) CreateNofitication(notification models.Notification) bool {
 	glog.Infof("Creating new notification: %+v\n", notification)
+	collection := r.mongo.Database(dbName).Collection(notifCollectionName)
+
+	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+	defer cancel()
+
+	_, err := collection.InsertOne(ctx, notification)
+	if err != nil {
+		glog.Errorf("Failed to insert notification. %s", err)
+		return false
+	}
+
 	return true
 }
 

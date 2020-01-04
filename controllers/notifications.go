@@ -27,12 +27,14 @@ func (c *NotificationsController) GetAll(w http.ResponseWriter, r *http.Request)
 		http.Error(w, fmt.Sprint("Error while querying notifications."), http.StatusInternalServerError)
 		return
 	}
+
 	data, err := json.Marshal(notifications)
 	if err != nil {
 		glog.Errorf("Cannot marshal notifications. %s", err)
 		http.Error(w, fmt.Sprint("Cannot marshal notifications."), http.StatusInternalServerError)
 		return
 	}
+
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
 	w.Write(data)
