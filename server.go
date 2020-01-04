@@ -54,7 +54,7 @@ func main() {
 
 	// notifications controller
 	notif := &controllers.NotificationsController{
-		Repository: dao.Repository{},
+		Repository: dao.NewRepository(),
 	}
 	apiV1Router.HandleFunc("/notifications/", notif.GetAll).Methods(http.MethodGet)
 	apiV1Router.HandleFunc("/notifications/{uuid}", notif.Get).Methods(http.MethodGet)
