@@ -7,6 +7,7 @@ import (
 
 	"github.com/gorilla/mux"
 	"github.com/pruh/api/controllers"
+	"github.com/pruh/api/dao"
 	"github.com/pruh/api/middleware"
 	"github.com/pruh/api/utils"
 	"github.com/urfave/negroni"
@@ -49,10 +50,12 @@ func main() {
 	apiV1Router.HandleFunc("/telegram/messages/send", tc.SendMessage).Methods(http.MethodPost)
 
 	// notifications controller
-	notif := &controllers.NotificationsController{}
+	notif := &controllers.NotificationsController{
+		Repository: dao.Repository{},
+	}
 	apiV1Router.HandleFunc("/notifications/", notif.GetAll).Methods(http.MethodGet)
 	apiV1Router.HandleFunc("/notifications/{uuid}", notif.Get).Methods(http.MethodGet)
-	apiV1Router.HandleFunc("/notifications", notif.Create).Methods(http.MethodPost)
+	apiV1Router.HandleFunc("/notifications/", notif.Create).Methods(http.MethodPost)
 	apiV1Router.HandleFunc("/notifications/{uuid}", notif.Delete).Methods(http.MethodDelete)
 
 	// n.Use(negroni.HandlerFunc(AuthMiddleware)) // global middleware
