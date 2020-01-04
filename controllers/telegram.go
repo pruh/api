@@ -24,25 +24,25 @@ func (c *TelegramController) SendMessage(w http.ResponseWriter, r *http.Request)
 	m := models.NewInboundTelegramMessage(c.Config.DefaultChatID)
 	err := json.NewDecoder(r.Body).Decode(&m)
 	if err != nil {
-		glog.Errorf("Cannot decode body.", err)
+		glog.Errorf("Cannot decode body. %s", err)
 		http.Error(w, fmt.Sprintf("Cannot decode body: %s", err.Error()), http.StatusInternalServerError)
 		return
 	}
 
 	if m.ChatID == nil {
-		glog.Errorf("ChatID not set.", err)
+		glog.Errorf("ChatID not set. %s", err)
 		http.Error(w, "ChatID not set", http.StatusInternalServerError)
 		return
 	}
 	if m.Message == "" {
-		glog.Errorf("Message should not be empty.", err)
+		glog.Errorf("Message should not be empty. %s", err)
 		http.Error(w, "Message should not be empty", http.StatusInternalServerError)
 		return
 	}
 
 	resp, err := sendTelegram(m.Message, m.ChatID, m.Silent, c.Config.TelegramBoToken, c.HTTPClient)
 	if err != nil {
-		glog.Errorf("Cannot send message to telegram.", err)
+		glog.Errorf("Cannot send message to telegram. %s", err)
 		http.Error(w, fmt.Sprintf("Cannot send message to telegram: %s", err.Error()), http.StatusInternalServerError)
 		return
 	}
