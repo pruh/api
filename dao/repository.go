@@ -78,6 +78,7 @@ func (r *Repository) GetNofitication(ID string) models.Notification {
 // CreateNofitication creates new notification for specified params
 func (r *Repository) CreateNofitication(notification models.Notification) bool {
 	glog.Infof("Creating new notification: %+v\n", notification)
+
 	collection := r.mongo.Database(dbName).Collection(notifCollectionName)
 
 	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
@@ -95,6 +96,17 @@ func (r *Repository) CreateNofitication(notification models.Notification) bool {
 // DeleteNofitication deletes notifications with ID
 func (r *Repository) DeleteNofitication(ID string) bool {
 	glog.Infof("Deleting notification with UUID: %s\n", ID)
-	// todo handle not found vs internal error
+
+	collection := r.mongo.Database(dbName).Collection(notifCollectionName)
+
+	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+	defer cancel()
+
+	_, err := collection.DeleteOne(ctx, bson.M{"_id": ID})
+	if err != nil {
+		glog.Errorf("Failed to delete notification. %s", err)
+		return false
+	}
+
 	return true
 }
