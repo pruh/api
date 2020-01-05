@@ -2,11 +2,13 @@ package controllers
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"github.com/golang/glog"
 	"io"
 	"io/ioutil"
 	"net/http"
+	"time"
 
 	"github.com/google/uuid"
 	"github.com/gorilla/mux"
@@ -88,6 +90,13 @@ func (c *NotificationsController) Create(w http.ResponseWriter, r *http.Request)
 		return
 	}
 
+	err = validateNotification(notification)
+	if err != nil {
+		glog.Error(err)
+		http.Error(w, fmt.Sprintf("Input data is not valid. %s", err), http.StatusUnprocessableEntity)
+		return
+	}
+
 	success := c.Repository.CreateNofitication(notification)
 	if !success {
 		glog.Errorf("Failed to create notification. %s", err)
@@ -123,4 +132,23 @@ func (c *NotificationsController) Delete(w http.ResponseWriter, r *http.Request)
 
 func validateUUID(notifUUID string) (uuid.UUID, error) {
 	return uuid.Parse(notifUUID)
+}
+
+func validateNotification(notif models.Notification) error {
+	if len(notif.Message) == 0 {
+		return errors.New("message not set")
+	}
+	if notif.StartTime.IsZero() {
+		return errors.New("start_time not set")
+	}
+	if notif.EndTime.IsZero() {
+		return errors.New("end_time not set")
+	}
+	if notif.StartTime.After(notif.EndTime.Time) {
+		return errors.New("start_time can not be after end_time")
+	}
+	if notif.EndTime.Before(time.Now()) {
+		return errors.New("end_time is in the past")
+	}
+	return nil
 }
