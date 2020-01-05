@@ -47,14 +47,14 @@ func (c *NotificationsController) GetAll(w http.ResponseWriter, r *http.Request)
 func (c *NotificationsController) Get(w http.ResponseWriter, r *http.Request) {
 	params := mux.Vars(r)
 	notifUUID := params["uuid"]
-	_, err := validateUUID(notifUUID)
+	mongoUUID, err := validateUUID(notifUUID)
 	if err != nil {
 		glog.Errorf("Notification UUID is malformed. %s", err)
 		http.Error(w, fmt.Sprint("Notification UUID is malformed."), http.StatusBadRequest)
 		return
 	}
 
-	notification, err := c.Repository.GetNofitication(notifUUID)
+	notification, err := c.Repository.GetNofitication(*mongoUUID)
 	if err != nil {
 		glog.Errorf("Error while querying notification. %s", err)
 		http.Error(w, fmt.Sprint("Error while querying notification."), http.StatusInternalServerError)
@@ -116,14 +116,14 @@ func (c *NotificationsController) Create(w http.ResponseWriter, r *http.Request)
 func (c *NotificationsController) Delete(w http.ResponseWriter, r *http.Request) {
 	params := mux.Vars(r)
 	notifUUID := params["uuid"]
-	_, err := validateUUID(notifUUID)
+	mongoUUID, err := validateUUID(notifUUID)
 	if err != nil {
 		glog.Errorf("Notification UUID is malformed. %s", err)
 		http.Error(w, fmt.Sprint("Notification UUID is malformed."), http.StatusBadRequest)
 		return
 	}
 
-	res, err := c.Repository.DeleteNofitication(notifUUID)
+	res, err := c.Repository.DeleteNofitication(*mongoUUID)
 	if err != nil {
 		glog.Errorf("Failed to delete notification. %s", err)
 		http.Error(w, fmt.Sprintf("Failed to delete notification. %s", err), http.StatusInternalServerError)
@@ -140,8 +140,13 @@ func (c *NotificationsController) Delete(w http.ResponseWriter, r *http.Request)
 	return
 }
 
-func validateUUID(notifUUID string) (uuid.UUID, error) {
-	return uuid.Parse(notifUUID)
+func validateUUID(notifUUID string) (*models.MongoUUID, error) {
+	u, err := uuid.Parse(notifUUID)
+	if err != nil {
+		return nil, err
+	}
+
+	return &models.MongoUUID{UUID: u}, nil
 }
 
 func validateNotification(notif models.Notification) error {

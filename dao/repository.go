@@ -71,22 +71,16 @@ func (r *Repository) GetNofitications() ([]models.Notification, error) {
 }
 
 // GetNofitication returns notifications by ID or nil
-func (r *Repository) GetNofitication(ID string) (*models.Notification, error) {
-	glog.Infof("Querying for notification with UUID: %s\n", ID)
+func (r *Repository) GetNofitication(uuid models.MongoUUID) (*models.Notification, error) {
+	glog.Infof("Querying for notification with UUID: %s\n", uuid)
 
 	collection := r.mongo.Database(dbName).Collection(notifCollectionName)
 
 	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 	defer cancel()
 
-	uuid, err := models.ParseMongoUUID(ID)
-	if err != nil {
-		glog.Errorf("Cannot parse ID. %s", err)
-		return nil, err
-	}
-
 	var notif models.Notification
-	err = collection.FindOne(ctx, bson.M{"_id": models.MongoUUID(uuid)}).Decode(&notif)
+	err := collection.FindOne(ctx, bson.M{"_id": uuid}).Decode(&notif)
 	if err != nil {
 		if err == mongo.ErrNoDocuments {
 			return nil, nil
@@ -117,21 +111,15 @@ func (r *Repository) CreateNofitication(notification models.Notification) bool {
 }
 
 // DeleteNofitication deletes notifications with ID and returns true if record was removed
-func (r *Repository) DeleteNofitication(ID string) (bool, error) {
-	glog.Infof("Deleting notification with UUID: %s\n", ID)
+func (r *Repository) DeleteNofitication(uuid models.MongoUUID) (bool, error) {
+	glog.Infof("Deleting notification with UUID: %s\n", uuid)
 
 	collection := r.mongo.Database(dbName).Collection(notifCollectionName)
 
 	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 	defer cancel()
 
-	uuid, err := models.ParseMongoUUID(ID)
-	if err != nil {
-		glog.Errorf("Cannot parse ID. %s", err)
-		return false, err
-	}
-
-	res, err := collection.DeleteOne(ctx, bson.M{"_id": models.MongoUUID(uuid)})
+	res, err := collection.DeleteOne(ctx, bson.M{"_id": uuid})
 	if err != nil {
 		glog.Errorf("Failed to delete notification. %s", err)
 		return false, err

@@ -18,15 +18,6 @@ func NewMongoUUID() MongoUUID {
 	return MongoUUID{uuid.New()}
 }
 
-// ParseMongoUUID parses UUID from string
-func ParseMongoUUID(ID string) (MongoUUID, error) {
-	u, err := uuid.Parse(ID)
-	if err != nil {
-		return MongoUUID{}, err
-	}
-	return MongoUUID{u}, nil
-}
-
 // MarshalBSONValue implements mongo Marshaler interface
 func (u MongoUUID) MarshalBSONValue() (bsontype.Type, []byte, error) {
 	b, err := u.MarshalBinary()
