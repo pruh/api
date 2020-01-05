@@ -60,6 +60,10 @@ func (c *NotificationsController) Get(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, fmt.Sprint("Error while querying notification."), http.StatusInternalServerError)
 		return
 	}
+	if notification == nil {
+		w.WriteHeader(http.StatusNotFound)
+		return
+	}
 	data, err := json.Marshal(notification)
 	if err != nil {
 		glog.Errorf("Cannot marshal notification. %s", err)

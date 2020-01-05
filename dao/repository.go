@@ -71,7 +71,7 @@ func (r *Repository) GetNofitications() ([]models.Notification, error) {
 }
 
 // GetNofitication returns notifications by ID or nil
-func (r *Repository) GetNofitication(ID string) (models.Notification, error) {
+func (r *Repository) GetNofitication(ID string) (*models.Notification, error) {
 	glog.Infof("Querying for notification with UUID: %s\n", ID)
 
 	collection := r.mongo.Database(dbName).Collection(notifCollectionName)
@@ -79,20 +79,23 @@ func (r *Repository) GetNofitication(ID string) (models.Notification, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 	defer cancel()
 
-	var notif models.Notification
 	uuid, err := models.ParseMongoUUID(ID)
 	if err != nil {
 		glog.Errorf("Cannot parse ID. %s", err)
-		return notif, err
+		return nil, err
 	}
 
+	var notif models.Notification
 	err = collection.FindOne(ctx, bson.M{"_id": models.MongoUUID(uuid)}).Decode(&notif)
 	if err != nil {
+		if err == mongo.ErrNoDocuments {
+			return nil, nil
+		}
 		glog.Errorf("Cannot decode notification. %s", err)
-		return notif, err
+		return nil, err
 	}
 
-	return notif, nil
+	return &notif, nil
 }
 
 // CreateNofitication creates new notification for specified params
