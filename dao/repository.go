@@ -116,8 +116,8 @@ func (r *Repository) CreateNofitication(notification models.Notification) bool {
 	return true
 }
 
-// DeleteNofitication deletes notifications with ID
-func (r *Repository) DeleteNofitication(ID string) bool {
+// DeleteNofitication deletes notifications with ID and returns true if record was removed
+func (r *Repository) DeleteNofitication(ID string) (bool, error) {
 	glog.Infof("Deleting notification with UUID: %s\n", ID)
 
 	collection := r.mongo.Database(dbName).Collection(notifCollectionName)
@@ -128,14 +128,18 @@ func (r *Repository) DeleteNofitication(ID string) bool {
 	uuid, err := models.ParseMongoUUID(ID)
 	if err != nil {
 		glog.Errorf("Cannot parse ID. %s", err)
-		return false
+		return false, err
 	}
 
-	_, err = collection.DeleteOne(ctx, bson.M{"_id": models.MongoUUID(uuid)})
+	res, err := collection.DeleteOne(ctx, bson.M{"_id": models.MongoUUID(uuid)})
 	if err != nil {
 		glog.Errorf("Failed to delete notification. %s", err)
-		return false
+		return false, err
 	}
 
-	return true
+	if res.DeletedCount == 0 {
+		return false, nil
+	}
+
+	return true, nil
 }

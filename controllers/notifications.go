@@ -123,14 +123,20 @@ func (c *NotificationsController) Delete(w http.ResponseWriter, r *http.Request)
 		return
 	}
 
-	res := c.Repository.DeleteNofitication(notifUUID)
+	res, err := c.Repository.DeleteNofitication(notifUUID)
+	if err != nil {
+		glog.Errorf("Failed to delete notification. %s", err)
+		http.Error(w, fmt.Sprintf("Failed to delete notification. %s", err), http.StatusInternalServerError)
+		return
+	}
+
 	if !res {
 		glog.Infof("Notification with ID %s was not removed", notifUUID)
 		http.Error(w, fmt.Sprintf("Notification with ID %s was not removed", notifUUID), http.StatusNotFound)
 		return
 	}
 
-	w.WriteHeader(http.StatusOK)
+	w.WriteHeader(http.StatusNoContent)
 	return
 }
 
