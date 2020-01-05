@@ -16,6 +16,7 @@ import (
 
 func main() {
 	flag.Parse()
+	flag.Lookup("logtostderr").Value.Set("true")
 
 	config, err := utils.NewFromEnv()
 	if err != nil {
