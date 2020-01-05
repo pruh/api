@@ -8,10 +8,3 @@ type Notification struct {
 	EndTime   Timestamp `json:"end_time" bson:"end_time"`
 	Source    *string   `json:"source,omitempty" bson:"source,omitempty"`
 }
-
-// NewNotification creates new notification.
-func NewNotification() Notification {
-	return Notification{
-		ID: NewMongoUUID(),
-	}
-}
