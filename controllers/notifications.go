@@ -72,7 +72,7 @@ func (c *NotificationsController) Get(w http.ResponseWriter, r *http.Request) {
 
 // Create creates a new notification.
 func (c *NotificationsController) Create(w http.ResponseWriter, r *http.Request) {
-	var notification models.Notification
+	notification := models.NewNotification()
 	body, err := ioutil.ReadAll(io.LimitReader(r.Body, 1024*1024))
 	if err != nil {
 		glog.Errorf("Error reading request. %s", err)

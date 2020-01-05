@@ -80,7 +80,13 @@ func (r *Repository) GetNofitication(ID string) (models.Notification, error) {
 	defer cancel()
 
 	var notif models.Notification
-	err := collection.FindOne(ctx, bson.M{"_id": ID}).Decode(&notif)
+	uuid, err := models.ParseMongoUUID(ID)
+	if err != nil {
+		glog.Errorf("Cannot parse ID. %s", err)
+		return notif, err
+	}
+
+	err = collection.FindOne(ctx, bson.M{"_id": models.MongoUUID(uuid)}).Decode(&notif)
 	if err != nil {
 		glog.Errorf("Cannot decode notification. %s", err)
 		return notif, err
@@ -116,7 +122,13 @@ func (r *Repository) DeleteNofitication(ID string) bool {
 	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 	defer cancel()
 
-	_, err := collection.DeleteOne(ctx, bson.M{"_id": ID})
+	uuid, err := models.ParseMongoUUID(ID)
+	if err != nil {
+		glog.Errorf("Cannot parse ID. %s", err)
+		return false
+	}
+
+	_, err = collection.DeleteOne(ctx, bson.M{"_id": models.MongoUUID(uuid)})
 	if err != nil {
 		glog.Errorf("Failed to delete notification. %s", err)
 		return false

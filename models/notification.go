@@ -1,17 +1,24 @@
 package models
 
-import "time"
-
-import "github.com/google/uuid"
+import (
+	"time"
+)
 
 // Timestamp represents unix time
 type Timestamp time.Time
 
 // Notification model for storing notifications
 type Notification struct {
-	ID        uuid.UUID
-	Message   string
-	StartTime Timestamp
-	EndTime   Timestamp
-	Source    string
+	ID        MongoUUID `json:"_id" bson:"_id"`
+	Message   string    `json:"message" bson:"message"`
+	StartTime Timestamp `json:"start_time" bson:"start_time"`
+	EndTime   Timestamp `json:"end_time" bson:"end_time"`
+	Source    string    `json:"source,omitempty" bson:"source,omitempty"`
+}
+
+// NewNotification creates new notification.
+func NewNotification() Notification {
+	return Notification{
+		ID: NewMongoUUID(),
+	}
 }
