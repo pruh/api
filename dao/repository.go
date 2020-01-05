@@ -53,7 +53,7 @@ func (r *Repository) GetNofitications() ([]models.Notification, error) {
 	}
 	defer cur.Close(ctx)
 
-	var notifs []models.Notification
+	notifs := []models.Notification{}
 	for cur.Next(ctx) {
 		var notif models.Notification
 		err := cur.Decode(&notif)
