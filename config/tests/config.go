@@ -4,11 +4,11 @@ import (
 	"bytes"
 	"fmt"
 
-	"github.com/pruh/api/utils"
+	"github.com/pruh/api/config"
 )
 
 // NewConfig creates new config or returns error.
-func NewConfig(port *string, botToken *string, defaultChatID *string, credsMap *map[string]string) (*utils.Configuration, error) {
+func NewConfig(port *string, botToken *string, defaultChatID *string, credsMap *map[string]string) (*config.Configuration, error) {
 	var buffer bytes.Buffer
 	var authCreds string
 	if credsMap != nil {
@@ -23,11 +23,11 @@ func NewConfig(port *string, botToken *string, defaultChatID *string, credsMap *
 		authCreds = buffer.String()
 	}
 
-	return utils.NewFromParams(port, botToken, defaultChatID, &authCreds)
+	return config.NewFromParams(port, botToken, defaultChatID, &authCreds)
 }
 
 // NewConfigSafe creates new config or calls panic if config can not be created.
-func NewConfigSafe(port *string, botToken *string, defaultChatID *string, credsMap *map[string]string) *utils.Configuration {
+func NewConfigSafe(port *string, botToken *string, defaultChatID *string, credsMap *map[string]string) *config.Configuration {
 	config, err := NewConfig(port, botToken, defaultChatID, credsMap)
 	if err != nil {
 		panic("Error is not nil")

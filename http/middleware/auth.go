@@ -2,16 +2,17 @@ package middleware
 
 import (
 	"fmt"
-	"github.com/golang/glog"
 	"net"
 	"net/http"
 	"strings"
 
-	"github.com/pruh/api/utils"
+	"github.com/golang/glog"
+
+	"github.com/pruh/api/config"
 )
 
 // AuthMiddleware validates basic auth credentials.
-func AuthMiddleware(w http.ResponseWriter, r *http.Request, next http.HandlerFunc, c *utils.Configuration) {
+func AuthMiddleware(w http.ResponseWriter, r *http.Request, next http.HandlerFunc, c *config.Configuration) {
 	if c.APIV1Credentials == nil || len(*c.APIV1Credentials) <= 0 {
 		glog.Infoln("basic auth users not set, allowing request")
 		next(w, r)
@@ -37,7 +38,7 @@ func AuthMiddleware(w http.ResponseWriter, r *http.Request, next http.HandlerFun
 	}
 }
 
-func checkCredentials(user string, password string, c *utils.Configuration) bool {
+func checkCredentials(user string, password string, c *config.Configuration) bool {
 	glog.Infoln("checking credentials")
 
 	if value, ok := (*c.APIV1Credentials)[user]; !ok || value != password {
@@ -49,7 +50,7 @@ func checkCredentials(user string, password string, c *utils.Configuration) bool
 	return true
 }
 
-func isLocalNetworkRequest(r *http.Request, c *utils.Configuration) bool {
+func isLocalNetworkRequest(r *http.Request, c *config.Configuration) bool {
 	remoteIP, err := getRemoteIP(r)
 	if err != nil {
 		glog.Info(err)
@@ -101,7 +102,7 @@ func getHeadersIP(r *http.Request) (net.IP, error) {
 	return ip, nil
 }
 
-func isLocalIP(ip net.IP, c *utils.Configuration) bool {
+func isLocalIP(ip net.IP, c *config.Configuration) bool {
 	glog.Infof("Checking if %s is in local network\n", ip)
 	for _, ipnet := range c.LocalNets {
 		glog.Infof("Checking network %s\n", ipnet.String())

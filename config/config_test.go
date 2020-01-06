@@ -1,9 +1,9 @@
-package utils_test
+package config_test
 
 import (
 	"testing"
 
-	. "github.com/pruh/api/tests"
+	. "github.com/pruh/api/config/tests"
 	"github.com/stretchr/testify/assert"
 )
 

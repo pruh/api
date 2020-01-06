@@ -2,15 +2,16 @@ package main
 
 import (
 	"flag"
-	"github.com/golang/glog"
 	"net/http"
 	"net/http/httputil"
 
+	"github.com/golang/glog"
 	"github.com/gorilla/mux"
-	"github.com/pruh/api/controllers"
-	"github.com/pruh/api/dao"
-	"github.com/pruh/api/middleware"
-	"github.com/pruh/api/utils"
+	"github.com/pruh/api/config"
+	apihttp "github.com/pruh/api/http"
+	"github.com/pruh/api/http/middleware"
+	"github.com/pruh/api/messages"
+	"github.com/pruh/api/notifications"
 	"github.com/urfave/negroni"
 )
 
@@ -18,7 +19,7 @@ func main() {
 	flag.Parse()
 	flag.Lookup("logtostderr").Value.Set("true")
 
-	config, err := utils.NewFromEnv()
+	config, err := config.NewFromEnv()
 	if err != nil {
 		panic(err)
 	}
@@ -47,20 +48,20 @@ func main() {
 	router.PathPrefix(apiV1Path).Handler(n)
 
 	// messages controller
-	tc := &controllers.TelegramController{
+	tc := &messages.Controller{
 		Config:     config,
-		HTTPClient: utils.NewHTTPClient(),
+		HTTPClient: apihttp.NewHTTPClient(),
 	}
 	apiV1Router.HandleFunc("/telegram/messages/send", tc.SendMessage).Methods(http.MethodPost)
 
 	// notifications controller
-	notif := &controllers.NotificationsController{
-		Repository: dao.NewRepository(),
+	notif := &notifications.Controller{
+		Repository: notifications.NewRepository(),
 	}
-	apiV1Router.HandleFunc(controllers.GetPath, notif.GetAll).Methods(http.MethodGet)
-	apiV1Router.HandleFunc(controllers.SingleGetPath, notif.Get).Methods(http.MethodGet)
-	apiV1Router.HandleFunc(controllers.CreatePath, notif.Create).Methods(http.MethodPost)
-	apiV1Router.HandleFunc(controllers.DeletePath, notif.Delete).Methods(http.MethodDelete)
+	apiV1Router.HandleFunc(notifications.GetPath, notif.GetAll).Methods(http.MethodGet)
+	apiV1Router.HandleFunc(notifications.SingleGetPath, notif.Get).Methods(http.MethodGet)
+	apiV1Router.HandleFunc(notifications.CreatePath, notif.Create).Methods(http.MethodPost)
+	apiV1Router.HandleFunc(notifications.DeletePath, notif.Delete).Methods(http.MethodDelete)
 
 	// n.Use(negroni.HandlerFunc(AuthMiddleware)) // global middleware
 

@@ -7,11 +7,11 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"github.com/pruh/api/utils"
+	"github.com/pruh/api/config"
 	"github.com/stretchr/testify/assert"
 
-	. "github.com/pruh/api/middleware"
-	. "github.com/pruh/api/tests"
+	. "github.com/pruh/api/http/middleware"
+	. "github.com/pruh/api/config/tests"
 )
 
 func TestBasicAuth(t *testing.T) {
@@ -19,7 +19,7 @@ func TestBasicAuth(t *testing.T) {
 		description  string
 		user         string
 		password     string
-		config       *utils.Configuration
+		config       *config.Configuration
 		remoteIP     string
 		xFwdHeader   string
 		xRealIP      string

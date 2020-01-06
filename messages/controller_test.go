@@ -1,4 +1,4 @@
-package controllers_test
+package messages_test
 
 import (
 	"bytes"
@@ -12,9 +12,9 @@ import (
 
 	"github.com/stretchr/testify/assert"
 
-	. "github.com/pruh/api/controllers"
-	"github.com/pruh/api/models"
-	. "github.com/pruh/api/tests"
+	. "github.com/pruh/api/config/tests"
+	"github.com/pruh/api/messages"
+	. "github.com/pruh/api/messages"
 )
 
 func TestTelegramControllerSendMessage(t *testing.T) {
@@ -23,14 +23,14 @@ func TestTelegramControllerSendMessage(t *testing.T) {
 		requestBody             string
 		defaultChatID           *string
 		telegramShouldBeCalled  bool
-		expectedOutboundMessage *models.OutboundTelegramMessage
+		expectedOutboundMessage *messages.OutboundTelegramMessage
 		responseCode            int
 	}{
 		{
 			description:            "happy path",
 			requestBody:            `{"message":"opossum","chat_id":1234}`,
 			telegramShouldBeCalled: true,
-			expectedOutboundMessage: &models.OutboundTelegramMessage{
+			expectedOutboundMessage: &messages.OutboundTelegramMessage{
 				ChatID:              intPtr(1234),
 				DisablePreview:      true,
 				DisableNotification: true,
@@ -57,7 +57,7 @@ func TestTelegramControllerSendMessage(t *testing.T) {
 			description:            "telegram server error",
 			requestBody:            `{"message":"opossum","chat_id":1234}`,
 			telegramShouldBeCalled: true,
-			expectedOutboundMessage: &models.OutboundTelegramMessage{
+			expectedOutboundMessage: &messages.OutboundTelegramMessage{
 				ChatID:              intPtr(1234),
 				DisablePreview:      true,
 				DisableNotification: true,
@@ -77,7 +77,7 @@ func TestTelegramControllerSendMessage(t *testing.T) {
 			requestBody:            `{"message":"opossum"}`,
 			defaultChatID:          strPtr("1111"),
 			telegramShouldBeCalled: true,
-			expectedOutboundMessage: &models.OutboundTelegramMessage{
+			expectedOutboundMessage: &messages.OutboundTelegramMessage{
 				ChatID:              intPtr(1111),
 				DisablePreview:      true,
 				DisableNotification: true,
@@ -89,7 +89,7 @@ func TestTelegramControllerSendMessage(t *testing.T) {
 			description:            "default chat_id override",
 			requestBody:            `{"message":"opossum","chat_id":1111,"silent":true}`,
 			telegramShouldBeCalled: true,
-			expectedOutboundMessage: &models.OutboundTelegramMessage{
+			expectedOutboundMessage: &messages.OutboundTelegramMessage{
 				ChatID:              intPtr(1111),
 				DisablePreview:      true,
 				DisableNotification: true,
@@ -102,7 +102,7 @@ func TestTelegramControllerSendMessage(t *testing.T) {
 			description:            "silent message",
 			requestBody:            `{"message":"opossum","chat_id":1234,"silent":true}`,
 			telegramShouldBeCalled: true,
-			expectedOutboundMessage: &models.OutboundTelegramMessage{
+			expectedOutboundMessage: &messages.OutboundTelegramMessage{
 				ChatID:              intPtr(1234),
 				DisablePreview:      true,
 				DisableNotification: true,
@@ -114,7 +114,7 @@ func TestTelegramControllerSendMessage(t *testing.T) {
 			description:            "non-silent message",
 			requestBody:            `{"message":"opossum","chat_id":1234,"silent":false}`,
 			telegramShouldBeCalled: true,
-			expectedOutboundMessage: &models.OutboundTelegramMessage{
+			expectedOutboundMessage: &messages.OutboundTelegramMessage{
 				ChatID:              intPtr(1234),
 				DisablePreview:      true,
 				DisableNotification: false,
@@ -129,14 +129,14 @@ func TestTelegramControllerSendMessage(t *testing.T) {
 	for _, testData := range testsData {
 		t.Logf("tesing %+v", testData)
 
-		telegramController := TelegramController{
+		controller := Controller{
 			Config: NewConfigSafe(strPtr("8080"), strPtr("1"), testData.defaultChatID, nil),
 			HTTPClient: &MockHTTPClient{
 				do: func(req *http.Request) (*http.Response, error) {
 					if !testData.telegramShouldBeCalled {
 						assert.Fail("do function should not be called")
 					} else {
-						m := models.NewOutboundTelegramMessage(nil)
+						m := messages.NewOutboundTelegramMessage(nil)
 						err := json.NewDecoder(req.Body).Decode(&m)
 						if err != nil {
 							panic(fmt.Sprintf("Cannot decode outbound telegram message: %s", err))
@@ -160,7 +160,7 @@ func TestTelegramControllerSendMessage(t *testing.T) {
 		w := httptest.NewRecorder()
 		req := httptest.NewRequest(http.MethodPost, "http://example.com/foo", bytes.NewReader([]byte(testData.requestBody)))
 
-		telegramController.SendMessage(w, req)
+		controller.SendMessage(w, req)
 
 		assert.Equal(testData.responseCode, w.Code, fmt.Sprintf("Response code is not correct: %s", formatBody(w)))
 	}

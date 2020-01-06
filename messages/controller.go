@@ -1,4 +1,4 @@
-package controllers
+package messages
 
 import (
 	"bytes"
@@ -8,20 +8,20 @@ import (
 	"net/http"
 
 	"github.com/golang/glog"
+	"github.com/pruh/api/config"
 
-	"github.com/pruh/api/models"
-	"github.com/pruh/api/utils"
+	apihttp "github.com/pruh/api/http"
 )
 
-// TelegramController stores config and HTTP client for requests.
-type TelegramController struct {
-	Config     *utils.Configuration
-	HTTPClient utils.HTTPClient
+// Controller stores config and HTTP client for requests.
+type Controller struct {
+	Config     *config.Configuration
+	HTTPClient apihttp.Client
 }
 
 // SendMessage sends a message to Telegram and returns Telegram's response.
-func (c *TelegramController) SendMessage(w http.ResponseWriter, r *http.Request) {
-	m := models.NewInboundTelegramMessage(c.Config.DefaultChatID)
+func (c *Controller) SendMessage(w http.ResponseWriter, r *http.Request) {
+	m := NewInboundTelegramMessage(c.Config.DefaultChatID)
 	err := json.NewDecoder(r.Body).Decode(&m)
 	if err != nil {
 		glog.Errorf("Cannot decode body. %s", err)
@@ -60,8 +60,8 @@ func (c *TelegramController) SendMessage(w http.ResponseWriter, r *http.Request)
 /**
  * Utility function to send message to Telegram using REST API.
  */
-func sendTelegram(text string, chatID *int, silent bool, botToken *string, httpClient utils.HTTPClient) (*http.Response, error) {
-	m := models.NewOutboundTelegramMessage(chatID)
+func sendTelegram(text string, chatID *int, silent bool, botToken *string, httpClient apihttp.Client) (*http.Response, error) {
+	m := NewOutboundTelegramMessage(chatID)
 	m.DisableNotification = silent
 	m.Text = text
 

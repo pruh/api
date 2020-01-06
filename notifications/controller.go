@@ -1,20 +1,20 @@
-package controllers
+package notifications
 
 import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"github.com/golang/glog"
 	"io"
 	"io/ioutil"
 	"net/http"
 	"strings"
 	"time"
 
+	"github.com/golang/glog"
+	"github.com/pruh/api/notifications/models"
+
 	"github.com/google/uuid"
 	"github.com/gorilla/mux"
-	"github.com/pruh/api/dao"
-	"github.com/pruh/api/models"
 )
 
 const (
@@ -30,13 +30,13 @@ const (
 	DeletePath = "/notifications/" + uuidPattern
 )
 
-// NotificationsController handles all notification related requests.
-type NotificationsController struct {
-	Repository *dao.Repository
+// Controller handles all notification related requests.
+type Controller struct {
+	Repository *Repository
 }
 
 // GetAll returns all notifications.
-func (c *NotificationsController) GetAll(w http.ResponseWriter, r *http.Request) {
+func (c *Controller) GetAll(w http.ResponseWriter, r *http.Request) {
 	notifications, err := c.Repository.GetNofitications()
 	if err != nil {
 		glog.Errorf("Error while querying notifications. %s", err)
@@ -63,7 +63,7 @@ func (c *NotificationsController) GetAll(w http.ResponseWriter, r *http.Request)
 }
 
 // Get returns one notification.
-func (c *NotificationsController) Get(w http.ResponseWriter, r *http.Request) {
+func (c *Controller) Get(w http.ResponseWriter, r *http.Request) {
 	params := mux.Vars(r)
 	notifUUID := params[uuidParam]
 	mongoUUID, err := validateUUID(notifUUID)
@@ -96,7 +96,7 @@ func (c *NotificationsController) Get(w http.ResponseWriter, r *http.Request) {
 }
 
 // Create creates a new notification.
-func (c *NotificationsController) Create(w http.ResponseWriter, r *http.Request) {
+func (c *Controller) Create(w http.ResponseWriter, r *http.Request) {
 	var notification models.Notification
 	body, err := ioutil.ReadAll(io.LimitReader(r.Body, 1024*1024))
 	if err != nil {
@@ -138,7 +138,7 @@ func (c *NotificationsController) Create(w http.ResponseWriter, r *http.Request)
 }
 
 // Delete deletes notification.
-func (c *NotificationsController) Delete(w http.ResponseWriter, r *http.Request) {
+func (c *Controller) Delete(w http.ResponseWriter, r *http.Request) {
 	params := mux.Vars(r)
 	notifUUID := params[uuidParam]
 	mongoUUID, err := validateUUID(notifUUID)

@@ -1,4 +1,4 @@
-package models
+package messages
 
 // OutboundTelegramMessage message to send to Telegram.
 type OutboundTelegramMessage struct {

@@ -1,12 +1,11 @@
-package dao
+package notifications
 
 import (
 	"context"
 	"time"
 
 	"github.com/golang/glog"
-
-	"github.com/pruh/api/models"
+	"github.com/pruh/api/notifications/models"
 
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"

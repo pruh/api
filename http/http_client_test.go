@@ -1,4 +1,4 @@
-package utils_test
+package http_test
 
 import (
 	"io/ioutil"
@@ -6,7 +6,7 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	. "github.com/pruh/api/utils"
+	. "github.com/pruh/api/http"
 	"github.com/stretchr/testify/assert"
 )
 
