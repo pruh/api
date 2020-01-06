@@ -40,7 +40,9 @@ API to send messages.
 
 ### Notifications:
 
-API to store and retrive notifications. The following methods are supported:
+API to store and retrive notifications. Notifications that expire will be periodically removed.
+
+The following HTTP methods are supported:
 
 * `/api/v1/notifications/?only_current=true` HTTP GET method to return all notifications.
   
@@ -52,7 +54,7 @@ API to store and retrive notifications. The following methods are supported:
       "_id": "c146d6f1-8992-4010-85da-80459bb55d10",
       "title": "title",
       "message": "message", // can be omitted, if was not set
-        "start_time": "2020-01-01T00:00:00Z", // date time in ISO-8601 format
+      "start_time": "2020-01-01T00:00:00Z", // date time in ISO-8601 format
       "end_time": "2020-01-01T00:00:00Z", // date time in ISO-8601 format
       "source": "message source" // can be omitted, if was not set
   }
