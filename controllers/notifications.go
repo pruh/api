@@ -151,14 +151,14 @@ func validateUUID(notifUUID string) (*models.MongoUUID, error) {
 }
 
 func validateNotification(notif models.Notification) error {
-	if len(notif.Message) == 0 {
-		return errors.New("message not set")
+	if notif.Title == nil {
+		return errors.New("title should be set")
 	}
 	if notif.StartTime.IsZero() {
-		return errors.New("start_time not set")
+		return errors.New("start_time should be set")
 	}
 	if notif.EndTime.IsZero() {
-		return errors.New("end_time not set")
+		return errors.New("end_time should be set")
 	}
 	if notif.StartTime.After(notif.EndTime.Time) {
 		return errors.New("start_time can not be after end_time")

@@ -32,16 +32,11 @@ API to send messages.
 
 ```json
 {
-    "message": "message to send",
-    "chat_id": 1234567890,
-    "silent": true
+    "message": "message to send", // message to sent
+    "chat_id": 1234567890, // telegram chat id
+    "silent": true // true if should send message silently
 }
 ```
-
-where:<br />
-`message` message to be sent.<br />
-`chat_id` chat ID to send message to. This parameter is optional and default Telegram chat ID will be used otherwise.<br />
-`silent` send message silently. This parameter is optional and will be set to true by default.
 
 ### Notifications:
 
@@ -55,20 +50,22 @@ API to store and retrive notifications. The following methods are supported:
 ```json
 {
     "_id": "c146d6f1-8992-4010-85da-80459bb55d10",
-    "message": "message",
+    "title": "title",
+    "message": "message", // can be omitted, if was not set
     "start_time": "2020-01-01T00:00:00Z", // date time in ISO-8601 format
     "end_time": "2020-01-01T00:00:00Z", // date time in ISO-8601 format
-    "source": "message source"
+    "source": "message source" // can be omitted, if was not set
 }
 ```
 * `/api/v1/notifications/` HTTP POST method to save notification.
 Method accepts JSON in the following format:
 ```json
 {
-    "message": "message",
+    "title": "title",
+    "message": "message", // optional
     "start_time": "2020-01-01T00:00:00Z", // date time in ISO-8601 format
     "end_time": "2020-01-01T00:00:00Z", // date time in ISO-8601 format
-    "source": "message source"
+    "source": "message source" // optional
 }
 ```
 * `/api/v1/notifications/{UUID}` HTTP DELETE method to delete previously saved notification by UUID.
