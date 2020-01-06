@@ -34,11 +34,13 @@ API to send messages.
 
   ```json
   {
-      "message": "message to send", // message to sent
-      "chat_id": 1234567890, // telegram chat id
-      "silent": true // true if should send message silently
+      "message": "message to send",
+      "chat_id": 1234567890,
+      "silent": true
   }
   ```
+
+  where `chat_id` is telegram chat id and `silent` is a flag indicating if message should be sent silently
 
 ### Notifications:
 
@@ -55,10 +57,10 @@ The following HTTP methods are supported:
   {
       "_id": "c146d6f1-8992-4010-85da-80459bb55d10",
       "title": "title",
-      "message": "message", // can be omitted, if was not set
-      "start_time": "2020-01-01T00:00:00Z", // date time in ISO-8601 format
-      "end_time": "2020-01-01T00:00:00Z", // date time in ISO-8601 format
-      "source": "message source" // can be omitted, if was not set
+      "message": "message",
+      "start_time": "2020-01-01T00:00:00Z",
+      "end_time": "2020-01-01T00:00:00Z",
+      "source": "notification source"
   }
   ```
 
@@ -70,11 +72,15 @@ The following HTTP methods are supported:
   ```json
   {
       "title": "title",
-      "message": "message", // optional
-      "start_time": "2020-01-01T00:00:00Z", // date time in ISO-8601 format
-      "end_time": "2020-01-01T00:00:00Z", // date time in ISO-8601 format
-      "source": "message source" // optional
+      "message": "message",
+      "start_time": "2020-01-01T00:00:00Z",
+      "end_time": "2020-01-01T00:00:00Z",
+      "source": "notification source"
   }
   ```
 
 * `/api/v1/notifications/{UUID}` HTTP DELETE method to delete previously saved notification by UUID.
+
+`message` and `source` are optional
+
+`start_time` and `end_time` should be date time in [ISO-8601](https://en.wikipedia.org/wiki/ISO_8601) format
