@@ -37,8 +37,8 @@ func NewRepository() *Repository {
 	}
 }
 
-// GetNofitications returns all notifications
-func (r *Repository) GetNofitications() ([]models.Notification, error) {
+// GetAll returns all notifications
+func (r *Repository) GetAll() ([]models.Notification, error) {
 	glog.Info("Querying for all notifications")
 	collection := r.mongo.Database(dbName).Collection(notifCollectionName)
 
@@ -69,8 +69,8 @@ func (r *Repository) GetNofitications() ([]models.Notification, error) {
 	return notifs, nil
 }
 
-// GetNofitication returns notifications by ID or nil
-func (r *Repository) GetNofitication(uuid models.MongoUUID) (*models.Notification, error) {
+// GetOne returns notifications by ID or nil
+func (r *Repository) GetOne(uuid models.MongoUUID) (*models.Notification, error) {
 	glog.Infof("Querying for notification with UUID: %s\n", uuid)
 
 	collection := r.mongo.Database(dbName).Collection(notifCollectionName)
@@ -91,8 +91,8 @@ func (r *Repository) GetNofitication(uuid models.MongoUUID) (*models.Notificatio
 	return &notif, nil
 }
 
-// CreateNofitication creates new notification for specified params
-func (r *Repository) CreateNofitication(notification models.Notification) bool {
+// CreateOne creates new notification for specified params
+func (r *Repository) CreateOne(notification models.Notification) bool {
 	glog.Infof("Creating new notification: %+v\n", notification)
 
 	collection := r.mongo.Database(dbName).Collection(notifCollectionName)
@@ -109,8 +109,8 @@ func (r *Repository) CreateNofitication(notification models.Notification) bool {
 	return true
 }
 
-// DeleteNofitication deletes notifications with ID and returns true if record was removed
-func (r *Repository) DeleteNofitication(uuid models.MongoUUID) (bool, error) {
+// DeleteOne deletes notifications with ID and returns true if record was removed
+func (r *Repository) DeleteOne(uuid models.MongoUUID) (bool, error) {
 	glog.Infof("Deleting notification with UUID: %s\n", uuid)
 
 	collection := r.mongo.Database(dbName).Collection(notifCollectionName)
@@ -121,6 +121,29 @@ func (r *Repository) DeleteNofitication(uuid models.MongoUUID) (bool, error) {
 	res, err := collection.DeleteOne(ctx, bson.M{"_id": uuid})
 	if err != nil {
 		glog.Errorf("Failed to delete notification. %s", err)
+		return false, err
+	}
+
+	if res.DeletedCount == 0 {
+		return false, nil
+	}
+
+	return true, nil
+}
+
+// DeleteAll deletes notifications with IDs and returns true if any record was removed
+func (r *Repository) DeleteAll(uuids []models.MongoUUID) (bool, error) {
+	glog.Infof("Deleting notification with UUID: %v\n", uuids)
+
+	collection := r.mongo.Database(dbName).Collection(notifCollectionName)
+
+	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+	defer cancel()
+
+	filter := bson.M{"_id": bson.M{"$in": uuids}}
+	res, err := collection.DeleteMany(ctx, filter)
+	if err != nil {
+		glog.Error("Failed to delete notifications. ", err)
 		return false, err
 	}
 

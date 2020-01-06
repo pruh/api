@@ -55,13 +55,19 @@ func main() {
 	apiV1Router.HandleFunc("/telegram/messages/send", tc.SendMessage).Methods(http.MethodPost)
 
 	// notifications controller
+	repo := notifications.NewRepository()
 	notif := &notifications.Controller{
-		Repository: notifications.NewRepository(),
+		Repository: repo,
 	}
 	apiV1Router.HandleFunc(notifications.GetPath, notif.GetAll).Methods(http.MethodGet)
 	apiV1Router.HandleFunc(notifications.SingleGetPath, notif.Get).Methods(http.MethodGet)
 	apiV1Router.HandleFunc(notifications.CreatePath, notif.Create).Methods(http.MethodPost)
 	apiV1Router.HandleFunc(notifications.DeletePath, notif.Delete).Methods(http.MethodDelete)
+
+	cleaner := notifications.Cleaner{
+		Repository: repo,
+	}
+	cleaner.StartPeriodicCleaner()
 
 	// n.Use(negroni.HandlerFunc(AuthMiddleware)) // global middleware
 

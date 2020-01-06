@@ -37,7 +37,7 @@ type Controller struct {
 
 // GetAll returns all notifications.
 func (c *Controller) GetAll(w http.ResponseWriter, r *http.Request) {
-	notifications, err := c.Repository.GetNofitications()
+	notifications, err := c.Repository.GetAll()
 	if err != nil {
 		glog.Errorf("Error while querying notifications. %s", err)
 		http.Error(w, fmt.Sprint("Error while querying notifications."), http.StatusInternalServerError)
@@ -46,7 +46,7 @@ func (c *Controller) GetAll(w http.ResponseWriter, r *http.Request) {
 
 	current, ok := r.URL.Query()["only_current"]
 	if ok && "true" == current[0] {
-		notifications = filterNotificatons(notifications, currentFilter)
+		notifications = FilterNotificatons(notifications, CurrentFilter)
 	}
 
 	data, err := json.Marshal(notifications)
@@ -73,7 +73,7 @@ func (c *Controller) Get(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	notification, err := c.Repository.GetNofitication(*mongoUUID)
+	notification, err := c.Repository.GetOne(*mongoUUID)
 	if err != nil {
 		glog.Errorf("Error while querying notification. %s", err)
 		http.Error(w, fmt.Sprint("Error while querying notification."), http.StatusInternalServerError)
@@ -121,7 +121,7 @@ func (c *Controller) Create(w http.ResponseWriter, r *http.Request) {
 	}
 
 	notification.ID = models.NewMongoUUID()
-	success := c.Repository.CreateNofitication(notification)
+	success := c.Repository.CreateOne(notification)
 	if !success {
 		glog.Errorf("Failed to create notification. %s", err)
 		http.Error(w, fmt.Sprint("Failed to create notification."), http.StatusInternalServerError)
@@ -148,7 +148,7 @@ func (c *Controller) Delete(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	res, err := c.Repository.DeleteNofitication(*mongoUUID)
+	res, err := c.Repository.DeleteOne(*mongoUUID)
 	if err != nil {
 		glog.Errorf("Failed to delete notification. %s", err)
 		http.Error(w, fmt.Sprintf("Failed to delete notification. %s", err), http.StatusInternalServerError)
@@ -191,20 +191,4 @@ func validateNotification(notif models.Notification) error {
 		return errors.New("end_time is in the past")
 	}
 	return nil
-}
-
-func filterNotificatons(notifications []models.Notification,
-	filterFunc func(models.Notification) bool) []models.Notification {
-	filtered := []models.Notification{}
-	for _, notif := range notifications {
-		if filterFunc(notif) {
-			filtered = append(filtered, notif)
-		}
-	}
-	return filtered
-}
-
-func currentFilter(notif models.Notification) bool {
-	now := time.Now()
-	return notif.StartTime.Before(now) && now.Before(notif.EndTime.Time)
 }
