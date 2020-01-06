@@ -57,9 +57,9 @@ func main() {
 	notif := &controllers.NotificationsController{
 		Repository: dao.NewRepository(),
 	}
-	apiV1Router.HandleFunc("/notifications/", notif.GetAll).Methods(http.MethodGet)
+	apiV1Router.HandleFunc("/notifications", notif.GetAll).Methods(http.MethodGet)
 	apiV1Router.HandleFunc("/notifications/{uuid}", notif.Get).Methods(http.MethodGet)
-	apiV1Router.HandleFunc("/notifications/", notif.Create).Methods(http.MethodPost)
+	apiV1Router.HandleFunc("/notifications", notif.Create).Methods(http.MethodPost)
 	apiV1Router.HandleFunc("/notifications/{uuid}", notif.Delete).Methods(http.MethodDelete)
 
 	// n.Use(negroni.HandlerFunc(AuthMiddleware)) // global middleware
