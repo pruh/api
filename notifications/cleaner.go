@@ -38,7 +38,7 @@ func (c *Cleaner) removeExpired() {
 	glog.Info("Checking for expired notifications")
 	notifs, err := c.Repository.GetAll()
 	if err != nil {
-		glog.Error("Cannot query for notifications", err)
+		glog.Error("Cannot query for notifications. ", err)
 		return
 	}
 

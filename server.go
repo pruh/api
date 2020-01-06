@@ -55,7 +55,7 @@ func main() {
 	apiV1Router.HandleFunc("/telegram/messages/send", tc.SendMessage).Methods(http.MethodPost)
 
 	// notifications controller
-	repo := notifications.NewRepository()
+	repo := notifications.NewRepository(config)
 	notif := &notifications.Controller{
 		Repository: repo,
 	}

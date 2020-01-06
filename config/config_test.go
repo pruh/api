@@ -94,7 +94,7 @@ func TestConfiguraionLoading(t *testing.T) {
 	for _, testData := range testsData {
 		t.Logf("testing %+v", testData.description)
 
-		conf, err := NewConfig(testData.port, testData.botToken, testData.defaultChatID, testData.credsMap)
+		conf, err := NewConfig(testData.port, testData.botToken, testData.defaultChatID, testData.credsMap, nil, nil)
 
 		if !testData.expectError && err != nil {
 			assert.Fail("Config load should not return error: %s", err.Error)

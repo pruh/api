@@ -8,7 +8,9 @@ import (
 )
 
 // NewConfig creates new config or returns error.
-func NewConfig(port *string, botToken *string, defaultChatID *string, credsMap *map[string]string) (*config.Configuration, error) {
+func NewConfig(port *string, botToken *string, defaultChatID *string,
+	credsMap *map[string]string, mongoUsername *string,
+	mongoPassword *string) (*config.Configuration, error) {
 	var buffer bytes.Buffer
 	var authCreds string
 	if credsMap != nil {
@@ -23,12 +25,14 @@ func NewConfig(port *string, botToken *string, defaultChatID *string, credsMap *
 		authCreds = buffer.String()
 	}
 
-	return config.NewFromParams(port, botToken, defaultChatID, &authCreds)
+	return config.NewFromParams(port, botToken, defaultChatID, &authCreds, mongoUsername, mongoPassword)
 }
 
 // NewConfigSafe creates new config or calls panic if config can not be created.
-func NewConfigSafe(port *string, botToken *string, defaultChatID *string, credsMap *map[string]string) *config.Configuration {
-	config, err := NewConfig(port, botToken, defaultChatID, credsMap)
+func NewConfigSafe(port *string, botToken *string, defaultChatID *string,
+	credsMap *map[string]string, mongoUsername *string,
+	mongoPassword *string) *config.Configuration {
+	config, err := NewConfig(port, botToken, defaultChatID, credsMap, mongoUsername, mongoPassword)
 	if err != nil {
 		panic("Error is not nil")
 	}
