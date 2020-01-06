@@ -10,8 +10,8 @@ import (
 	"github.com/pruh/api/config"
 	"github.com/stretchr/testify/assert"
 
-	. "github.com/pruh/api/http/middleware"
 	. "github.com/pruh/api/config/tests"
+	. "github.com/pruh/api/http/middleware"
 )
 
 func TestBasicAuth(t *testing.T) {
