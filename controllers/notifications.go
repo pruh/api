@@ -8,12 +8,26 @@ import (
 	"io"
 	"io/ioutil"
 	"net/http"
+	"strings"
 	"time"
 
 	"github.com/google/uuid"
 	"github.com/gorilla/mux"
 	"github.com/pruh/api/dao"
 	"github.com/pruh/api/models"
+)
+
+const (
+	uuidParam   = "uuid"
+	uuidPattern = "{" + uuidParam + "}"
+	// GetPath path for HTTP GET Method which to query for array of notifications
+	GetPath = "/notifications"
+	// SingleGetPath path for HTTP GET Method to query for single notification
+	SingleGetPath = GetPath + "/" + uuidPattern
+	// CreatePath path for HTTP POST Method which creates new notification
+	CreatePath = "/notifications"
+	// DeletePath path for HTTP DELETE Method which deletes notification
+	DeletePath = "/notifications/" + uuidPattern
 )
 
 // NotificationsController handles all notification related requests.
@@ -51,7 +65,7 @@ func (c *NotificationsController) GetAll(w http.ResponseWriter, r *http.Request)
 // Get returns one notification.
 func (c *NotificationsController) Get(w http.ResponseWriter, r *http.Request) {
 	params := mux.Vars(r)
-	notifUUID := params["uuid"]
+	notifUUID := params[uuidParam]
 	mongoUUID, err := validateUUID(notifUUID)
 	if err != nil {
 		glog.Errorf("Notification UUID is malformed. %s", err)
@@ -114,6 +128,11 @@ func (c *NotificationsController) Create(w http.ResponseWriter, r *http.Request)
 		return
 	}
 
+	// add relative location header as required by RFC 7231 § 7.1.2
+	getPath := strings.ReplaceAll(SingleGetPath, uuidPattern, notification.ID.String())
+	location := strings.ReplaceAll(r.URL.String(), CreatePath, getPath)
+	w.Header().Set("Location", location)
+
 	w.WriteHeader(http.StatusCreated)
 	return
 }
@@ -121,7 +140,7 @@ func (c *NotificationsController) Create(w http.ResponseWriter, r *http.Request)
 // Delete deletes notification.
 func (c *NotificationsController) Delete(w http.ResponseWriter, r *http.Request) {
 	params := mux.Vars(r)
-	notifUUID := params["uuid"]
+	notifUUID := params[uuidParam]
 	mongoUUID, err := validateUUID(notifUUID)
 	if err != nil {
 		glog.Errorf("Notification UUID is malformed. %s", err)
