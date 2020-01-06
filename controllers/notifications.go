@@ -30,6 +30,11 @@ func (c *NotificationsController) GetAll(w http.ResponseWriter, r *http.Request)
 		return
 	}
 
+	current, ok := r.URL.Query()["only_current"]
+	if ok && "true" == current[0] {
+		notifications = filterNotificatons(notifications, currentFilter)
+	}
+
 	data, err := json.Marshal(notifications)
 	if err != nil {
 		glog.Errorf("Cannot marshal notifications. %s", err)
@@ -167,4 +172,20 @@ func validateNotification(notif models.Notification) error {
 		return errors.New("end_time is in the past")
 	}
 	return nil
+}
+
+func filterNotificatons(notifications []models.Notification,
+	filterFunc func(models.Notification) bool) []models.Notification {
+	filtered := []models.Notification{}
+	for _, notif := range notifications {
+		if filterFunc(notif) {
+			filtered = append(filtered, notif)
+		}
+	}
+	return filtered
+}
+
+func currentFilter(notif models.Notification) bool {
+	now := time.Now()
+	return notif.StartTime.Before(now) && now.Before(notif.EndTime.Time)
 }

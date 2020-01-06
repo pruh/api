@@ -30,42 +30,47 @@ API to send messages.
 
 * `/api/v1/telegram/messages/send` POST method which passes message to telegram. It accepts JSON in the following format:
 
-```json
-{
-    "message": "message to send", // message to sent
-    "chat_id": 1234567890, // telegram chat id
-    "silent": true // true if should send message silently
-}
-```
+  ```json
+  {
+      "message": "message to send", // message to sent
+      "chat_id": 1234567890, // telegram chat id
+      "silent": true // true if should send message silently
+  }
+  ```
 
 ### Notifications:
 
 API to store and retrive notifications. The following methods are supported:
 
-* `/api/v1/notifications/` HTTP GET method to return all notifications.
+* `/api/v1/notifications/?only_current=true` HTTP GET method to return all notifications.
   
   `/api/v1/notifications/{UUID}` HTTP GET method to return single notification by UUID.
 
   Methods return notifications in the following format:
-```json
-{
-    "_id": "c146d6f1-8992-4010-85da-80459bb55d10",
-    "title": "title",
-    "message": "message", // can be omitted, if was not set
-    "start_time": "2020-01-01T00:00:00Z", // date time in ISO-8601 format
-    "end_time": "2020-01-01T00:00:00Z", // date time in ISO-8601 format
-    "source": "message source" // can be omitted, if was not set
-}
-```
+  ```json
+  {
+      "_id": "c146d6f1-8992-4010-85da-80459bb55d10",
+      "title": "title",
+      "message": "message", // can be omitted, if was not set
+        "start_time": "2020-01-01T00:00:00Z", // date time in ISO-8601 format
+      "end_time": "2020-01-01T00:00:00Z", // date time in ISO-8601 format
+      "source": "message source" // can be omitted, if was not set
+  }
+  ```
+
+  optional `only_current` query param will filter returned result to include only current (`start_time` <= now <= `end_time`) notifications
+
 * `/api/v1/notifications/` HTTP POST method to save notification.
-Method accepts JSON in the following format:
-```json
-{
-    "title": "title",
-    "message": "message", // optional
-    "start_time": "2020-01-01T00:00:00Z", // date time in ISO-8601 format
-    "end_time": "2020-01-01T00:00:00Z", // date time in ISO-8601 format
-    "source": "message source" // optional
-}
-```
+  Method accepts JSON in the following format:
+
+  ```json
+  {
+      "title": "title",
+      "message": "message", // optional
+      "start_time": "2020-01-01T00:00:00Z", // date time in ISO-8601 format
+      "end_time": "2020-01-01T00:00:00Z", // date time in ISO-8601 format
+      "source": "message source" // optional
+  }
+  ```
+
 * `/api/v1/notifications/{UUID}` HTTP DELETE method to delete previously saved notification by UUID.
