@@ -23,14 +23,14 @@ func TestTelegramControllerSendMessage(t *testing.T) {
 		requestBody             string
 		defaultChatID           *string
 		telegramShouldBeCalled  bool
-		expectedOutboundMessage *messages.OutboundTelegramMessage
+		expectedOutboundMessage *messages.TelegramMessage
 		responseCode            int
 	}{
 		{
 			description:            "happy path",
 			requestBody:            `{"message":"opossum","chat_id":1234}`,
 			telegramShouldBeCalled: true,
-			expectedOutboundMessage: &messages.OutboundTelegramMessage{
+			expectedOutboundMessage: &messages.TelegramMessage{
 				ChatID:              intPtr(1234),
 				DisablePreview:      true,
 				DisableNotification: true,
@@ -57,7 +57,7 @@ func TestTelegramControllerSendMessage(t *testing.T) {
 			description:            "telegram server error",
 			requestBody:            `{"message":"opossum","chat_id":1234}`,
 			telegramShouldBeCalled: true,
-			expectedOutboundMessage: &messages.OutboundTelegramMessage{
+			expectedOutboundMessage: &messages.TelegramMessage{
 				ChatID:              intPtr(1234),
 				DisablePreview:      true,
 				DisableNotification: true,
@@ -77,7 +77,7 @@ func TestTelegramControllerSendMessage(t *testing.T) {
 			requestBody:            `{"message":"opossum"}`,
 			defaultChatID:          strPtr("1111"),
 			telegramShouldBeCalled: true,
-			expectedOutboundMessage: &messages.OutboundTelegramMessage{
+			expectedOutboundMessage: &messages.TelegramMessage{
 				ChatID:              intPtr(1111),
 				DisablePreview:      true,
 				DisableNotification: true,
@@ -89,7 +89,7 @@ func TestTelegramControllerSendMessage(t *testing.T) {
 			description:            "default chat_id override",
 			requestBody:            `{"message":"opossum","chat_id":1111,"silent":true}`,
 			telegramShouldBeCalled: true,
-			expectedOutboundMessage: &messages.OutboundTelegramMessage{
+			expectedOutboundMessage: &messages.TelegramMessage{
 				ChatID:              intPtr(1111),
 				DisablePreview:      true,
 				DisableNotification: true,
@@ -102,7 +102,7 @@ func TestTelegramControllerSendMessage(t *testing.T) {
 			description:            "silent message",
 			requestBody:            `{"message":"opossum","chat_id":1234,"silent":true}`,
 			telegramShouldBeCalled: true,
-			expectedOutboundMessage: &messages.OutboundTelegramMessage{
+			expectedOutboundMessage: &messages.TelegramMessage{
 				ChatID:              intPtr(1234),
 				DisablePreview:      true,
 				DisableNotification: true,
@@ -114,7 +114,7 @@ func TestTelegramControllerSendMessage(t *testing.T) {
 			description:            "non-silent message",
 			requestBody:            `{"message":"opossum","chat_id":1234,"silent":false}`,
 			telegramShouldBeCalled: true,
-			expectedOutboundMessage: &messages.OutboundTelegramMessage{
+			expectedOutboundMessage: &messages.TelegramMessage{
 				ChatID:              intPtr(1234),
 				DisablePreview:      true,
 				DisableNotification: false,
@@ -136,7 +136,7 @@ func TestTelegramControllerSendMessage(t *testing.T) {
 					if !testData.telegramShouldBeCalled {
 						assert.Fail("do function should not be called")
 					} else {
-						m := messages.NewOutboundTelegramMessage(nil)
+						m := messages.NewTelegramMessage(nil)
 						err := json.NewDecoder(req.Body).Decode(&m)
 						if err != nil {
 							panic(fmt.Sprintf("Cannot decode outbound telegram message: %s", err))

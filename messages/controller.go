@@ -21,7 +21,7 @@ type Controller struct {
 
 // SendMessage sends a message to Telegram and returns Telegram's response.
 func (c *Controller) SendMessage(w http.ResponseWriter, r *http.Request) {
-	m := NewInboundTelegramMessage(c.Config.DefaultChatID)
+	m := NewMessage(c.Config.DefaultChatID)
 	err := json.NewDecoder(r.Body).Decode(&m)
 	if err != nil {
 		glog.Errorf("Cannot decode body. %s", err)
@@ -61,7 +61,7 @@ func (c *Controller) SendMessage(w http.ResponseWriter, r *http.Request) {
  * Utility function to send message to Telegram using REST API.
  */
 func sendTelegram(text string, chatID *int, silent bool, botToken *string, httpClient apihttp.Client) (*http.Response, error) {
-	m := NewOutboundTelegramMessage(chatID)
+	m := NewTelegramMessage(chatID)
 	m.DisableNotification = silent
 	m.Text = text
 
