@@ -2,6 +2,9 @@ language: go
 
 sudo: false
 
+services:
+  - docker
+
 go:
   - master
 
@@ -34,6 +37,9 @@ before_script:
   - golint -set_exit_status $(go list ./...)
 
 script:
+  # build service with docker compose
+  - docker-compose build && docker-composer up
+
   # run all the tests with the race detector enabled
   - go test -v -covermode=count -coverprofile=coverage.out ./...
 
