@@ -24,6 +24,12 @@ before_script:
   # add api.env, required for docker build
   - cp api.env.template api.env
 
+  # build docker containers
+  - docker-compose build
+
+  # start docker containers
+  - docker-compose up -d
+
   # All the .go files, excluding vendor/
   - GO_FILES=$(find . -iname '*.go' -type f)
 
@@ -40,12 +46,13 @@ before_script:
   - golint -set_exit_status $(go list ./...)
 
 script:
-  # build service with docker compose
-  - docker-compose build && docker-compose up && docker-composer stop
-
   # run all the tests with the race detector enabled
   - go test -v -covermode=count -coverprofile=coverage.out ./...
 
 after_success:
   # report code coverage report to coveralls.io
   - goveralls -service=travis-ci -coverprofile=coverage.out
+
+  # stop docker containers
+  - docker-compose stop
+  
