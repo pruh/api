@@ -1,5 +1,5 @@
 # api
-[![Build Status](https://travis-ci.org/pruh/api.svg?branch=master)](https://travis-ci.org/pruh/api)
+[![Build Status](https://travis-ci.com/pruh/api.svg?branch=master)](https://travis-ci.com/pruh/api)
 [![Coverage Status](https://coveralls.io/repos/github/pruh/api/badge.svg?branch=master)](https://coveralls.io/github/pruh/api?branch=master)
 [![GoDoc](https://godoc.org/github.com/pruh/api?status.svg)](http://godoc.org/github.com/pruh/api)
 
