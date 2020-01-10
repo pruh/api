@@ -41,7 +41,7 @@ before_script:
 
 script:
   # build service with docker compose
-  - docker-compose build && docker-composer up
+  - docker-compose build && docker-compose up
 
   # run all the tests with the race detector enabled
   - go test -v -covermode=count -coverprofile=coverage.out ./...
