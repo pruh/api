@@ -11,6 +11,7 @@ import (
 	apihttp "github.com/pruh/api/http"
 	"github.com/pruh/api/http/middleware"
 	"github.com/pruh/api/messages"
+	"github.com/pruh/api/mongo"
 	"github.com/pruh/api/notifications"
 	"github.com/urfave/negroni"
 )
@@ -54,8 +55,13 @@ func main() {
 	}
 	apiV1Router.HandleFunc("/telegram/messages/send", tc.SendMessage).Methods(http.MethodPost)
 
+	mongoClient := mongo.NewClient(config)
+
 	// notifications controller
-	repo := notifications.NewRepository(config)
+	repo := &notifications.Repository{
+		Mongo:  mongoClient,
+		Config: config,
+	}
 	notif := &notifications.Controller{
 		Repository: repo,
 	}

@@ -2,7 +2,6 @@ package notifications
 
 import (
 	"context"
-	"fmt"
 	"time"
 
 	"github.com/golang/glog"
@@ -11,13 +10,12 @@ import (
 
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
-	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
 // Repository accesses notifications store
 type Repository struct {
-	mongo  *mongo.Client
-	config *config.Configuration
+	Mongo  *mongo.Client
+	Config *config.Configuration
 }
 
 const (
@@ -25,32 +23,10 @@ const (
 	notifCollectionName = "notifications"
 )
 
-// NewRepository creates new repository and sets up connection to DB
-func NewRepository(config *config.Configuration) *Repository {
-	var uri string
-	if config.MongoUsername != nil && config.MongoPassword != nil {
-		uri = fmt.Sprintf("mongodb://%s:%s@mongo:27017", *config.MongoUsername, *config.MongoPassword)
-	} else {
-		uri = "mongodb://mongo:27017"
-	}
-	clientOptions := options.Client().ApplyURI(uri)
-	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
-	defer cancel()
-	client, err := mongo.Connect(ctx, clientOptions)
-	if err != nil {
-		glog.Fatalf("Cannot connect to databse. %s", err)
-	}
-
-	return &Repository{
-		mongo:  client,
-		config: config,
-	}
-}
-
 // GetAll returns all notifications
 func (r *Repository) GetAll() ([]Notification, error) {
 	glog.Info("Querying for all notifications")
-	collection := r.mongo.Database(dbName).Collection(notifCollectionName)
+	collection := r.Mongo.Database(dbName).Collection(notifCollectionName)
 
 	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 	defer cancel()
@@ -83,7 +59,7 @@ func (r *Repository) GetAll() ([]Notification, error) {
 func (r *Repository) GetOne(uuid apimongo.UUID) (*Notification, error) {
 	glog.Infof("Querying for notification with UUID: %s", uuid)
 
-	collection := r.mongo.Database(dbName).Collection(notifCollectionName)
+	collection := r.Mongo.Database(dbName).Collection(notifCollectionName)
 
 	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 	defer cancel()
@@ -105,7 +81,7 @@ func (r *Repository) GetOne(uuid apimongo.UUID) (*Notification, error) {
 func (r *Repository) CreateOne(notification Notification) bool {
 	glog.Infof("Creating new notification: %+v", notification)
 
-	collection := r.mongo.Database(dbName).Collection(notifCollectionName)
+	collection := r.Mongo.Database(dbName).Collection(notifCollectionName)
 
 	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 	defer cancel()
@@ -123,7 +99,7 @@ func (r *Repository) CreateOne(notification Notification) bool {
 func (r *Repository) DeleteOne(uuid apimongo.UUID) (bool, error) {
 	glog.Infof("Deleting notification with UUID: %s", uuid)
 
-	collection := r.mongo.Database(dbName).Collection(notifCollectionName)
+	collection := r.Mongo.Database(dbName).Collection(notifCollectionName)
 
 	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 	defer cancel()
@@ -145,7 +121,7 @@ func (r *Repository) DeleteOne(uuid apimongo.UUID) (bool, error) {
 func (r *Repository) DeleteAll(uuids []apimongo.UUID) (bool, error) {
 	glog.Infof("Deleting notification with UUID: %v", uuids)
 
-	collection := r.mongo.Database(dbName).Collection(notifCollectionName)
+	collection := r.Mongo.Database(dbName).Collection(notifCollectionName)
 
 	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 	defer cancel()
