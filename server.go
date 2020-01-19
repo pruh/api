@@ -79,9 +79,7 @@ func main() {
 	provRepo := &providers.Repository{
 		Mongo: mongoClient,
 	}
-	provController := &providers.Controller{
-		Repository: provRepo,
-	}
+	provController := providers.NewController(provRepo)
 	apiV1Router.HandleFunc(providers.GetPath, provController.GetAll).Methods(http.MethodGet)
 	apiV1Router.HandleFunc(providers.SingleGetPath, provController.Get).Methods(http.MethodGet)
 	apiV1Router.HandleFunc(providers.CreatePath, provController.Create).Methods(http.MethodPost)

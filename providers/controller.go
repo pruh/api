@@ -2,6 +2,7 @@ package providers
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"io/ioutil"
@@ -30,6 +31,17 @@ const (
 // Controller handles all provider related requests.
 type Controller struct {
 	Repository *Repository
+	validators map[string]func(prov Provider) error
+}
+
+// NewController creates new Providers controller
+func NewController(repo *Repository) Controller {
+	return Controller{
+		Repository: repo,
+		validators: map[string]func(prov Provider) error{
+			NJTransitType: validateNJTransit,
+		},
+	}
 }
 
 // GetAll returns all providers.
@@ -105,7 +117,7 @@ func (c *Controller) Create(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = validateProvider(provider)
+	err = c.validateProvider(provider)
 	if err != nil {
 		glog.Error(err)
 		http.Error(w, fmt.Sprintf("Input data is not valid. %s", err), http.StatusUnprocessableEntity)
@@ -166,6 +178,18 @@ func validateUUID(uuidStr string) (*mongo.UUID, error) {
 	return &mongo.UUID{UUID: u}, nil
 }
 
-func validateProvider(prov Provider) error {
+func (c *Controller) validateProvider(prov Provider) error {
+	if prov.Type == nil {
+		return errors.New("Provider type is null")
+	}
+	validator := c.validators[*prov.Type]
+
+	return validator(prov)
+}
+
+func validateNJTransit(prov Provider) error {
+	if prov.NJTransit == nil {
+		return errors.New("NJTransit object is not set")
+	}
 	return nil
 }

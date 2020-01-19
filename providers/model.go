@@ -4,12 +4,17 @@ import "github.com/pruh/api/mongo"
 
 // Provider model that represents providers
 type Provider struct {
-	ID   mongo.UUID `json:"_id" bson:"_id"`
-	Type *string    `json:"type" bson:"type"`
+	ID        mongo.UUID `json:"_id" bson:"_id"`
+	Type      *string    `json:"type" bson:"type"`
+	NJTransit *NJTransit `json:"njtransit,omitempty" bson:"njtransit,omitempty"`
+}
 
-	// Title     *string    `json:"title" bson:"title"`
-	// Message   *string    `json:"message,omitempty" bson:"message,omitempty"`
-	// StartTime *Timestamp `json:"start_time" bson:"start_time"`
-	// EndTime   *Timestamp `json:"end_time" bson:"end_time"`
-	// Source    *string    `json:"source,omitempty" bson:"source,omitempty"`
+const (
+	// NJTransitType one of supported Provider types
+	NJTransitType = "NJTransit"
+)
+
+// NJTransit model that represents NJ Transit provider
+type NJTransit struct {
+	StationID *string `json:"station_id" bson:"station_id"`
 }
