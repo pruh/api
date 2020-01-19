@@ -24,7 +24,7 @@ const (
 // GetAll returns all providers
 func (r *Repository) GetAll() ([]Provider, error) {
 	glog.Info("Querying for all providers")
-	collection := r.mongo.Database(dbName).Collection(collectionName)
+	collection := r.Mongo.Database(dbName).Collection(collectionName)
 
 	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 	defer cancel()
@@ -57,7 +57,7 @@ func (r *Repository) GetAll() ([]Provider, error) {
 func (r *Repository) GetOne(uuid apimongo.UUID) (*Provider, error) {
 	glog.Infof("Querying for provider with UUID: %s", uuid)
 
-	collection := r.mongo.Database(dbName).Collection(collectionName)
+	collection := r.Mongo.Database(dbName).Collection(collectionName)
 
 	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 	defer cancel()
@@ -79,7 +79,7 @@ func (r *Repository) GetOne(uuid apimongo.UUID) (*Provider, error) {
 func (r *Repository) CreateOne(provider Provider) bool {
 	glog.Infof("Creating new provider: %+v", provider)
 
-	collection := r.mongo.Database(dbName).Collection(collectionName)
+	collection := r.Mongo.Database(dbName).Collection(collectionName)
 
 	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 	defer cancel()
@@ -97,7 +97,7 @@ func (r *Repository) CreateOne(provider Provider) bool {
 func (r *Repository) DeleteOne(uuid apimongo.UUID) (bool, error) {
 	glog.Infof("Deleting provider with UUID: %s", uuid)
 
-	collection := r.mongo.Database(dbName).Collection(collectionName)
+	collection := r.Mongo.Database(dbName).Collection(collectionName)
 
 	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 	defer cancel()
@@ -119,7 +119,7 @@ func (r *Repository) DeleteOne(uuid apimongo.UUID) (bool, error) {
 func (r *Repository) DeleteAll(uuids []apimongo.UUID) (bool, error) {
 	glog.Infof("Deleting providers with UUID: %v", uuids)
 
-	collection := r.mongo.Database(dbName).Collection(collectionName)
+	collection := r.Mongo.Database(dbName).Collection(collectionName)
 
 	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 	defer cancel()
