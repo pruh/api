@@ -7,7 +7,7 @@ import (
 
 	"github.com/golang/glog"
 	"github.com/pruh/api/config"
-	"github.com/pruh/api/notifications/models"
+	apimongo "github.com/pruh/api/mongo"
 
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
@@ -48,7 +48,7 @@ func NewRepository(config *config.Configuration) *Repository {
 }
 
 // GetAll returns all notifications
-func (r *Repository) GetAll() ([]models.Notification, error) {
+func (r *Repository) GetAll() ([]Notification, error) {
 	glog.Info("Querying for all notifications")
 	collection := r.mongo.Database(dbName).Collection(notifCollectionName)
 
@@ -62,9 +62,9 @@ func (r *Repository) GetAll() ([]models.Notification, error) {
 	}
 	defer cur.Close(ctx)
 
-	notifs := []models.Notification{}
+	notifs := []Notification{}
 	for cur.Next(ctx) {
-		var notif models.Notification
+		var notif Notification
 		err := cur.Decode(&notif)
 		if err != nil {
 			glog.Errorf("Cannot decode notification. %s", err)
@@ -80,7 +80,7 @@ func (r *Repository) GetAll() ([]models.Notification, error) {
 }
 
 // GetOne returns notifications by ID or nil
-func (r *Repository) GetOne(uuid models.MongoUUID) (*models.Notification, error) {
+func (r *Repository) GetOne(uuid apimongo.UUID) (*Notification, error) {
 	glog.Infof("Querying for notification with UUID: %s", uuid)
 
 	collection := r.mongo.Database(dbName).Collection(notifCollectionName)
@@ -88,7 +88,7 @@ func (r *Repository) GetOne(uuid models.MongoUUID) (*models.Notification, error)
 	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 	defer cancel()
 
-	var notif models.Notification
+	var notif Notification
 	err := collection.FindOne(ctx, bson.M{"_id": uuid}).Decode(&notif)
 	if err != nil {
 		if err == mongo.ErrNoDocuments {
@@ -102,7 +102,7 @@ func (r *Repository) GetOne(uuid models.MongoUUID) (*models.Notification, error)
 }
 
 // CreateOne creates new notification for specified params
-func (r *Repository) CreateOne(notification models.Notification) bool {
+func (r *Repository) CreateOne(notification Notification) bool {
 	glog.Infof("Creating new notification: %+v", notification)
 
 	collection := r.mongo.Database(dbName).Collection(notifCollectionName)
@@ -120,7 +120,7 @@ func (r *Repository) CreateOne(notification models.Notification) bool {
 }
 
 // DeleteOne deletes notifications with ID and returns true if record was removed
-func (r *Repository) DeleteOne(uuid models.MongoUUID) (bool, error) {
+func (r *Repository) DeleteOne(uuid apimongo.UUID) (bool, error) {
 	glog.Infof("Deleting notification with UUID: %s", uuid)
 
 	collection := r.mongo.Database(dbName).Collection(notifCollectionName)
@@ -142,7 +142,7 @@ func (r *Repository) DeleteOne(uuid models.MongoUUID) (bool, error) {
 }
 
 // DeleteAll deletes notifications with IDs and returns true if any record was removed
-func (r *Repository) DeleteAll(uuids []models.MongoUUID) (bool, error) {
+func (r *Repository) DeleteAll(uuids []apimongo.UUID) (bool, error) {
 	glog.Infof("Deleting notification with UUID: %v", uuids)
 
 	collection := r.mongo.Database(dbName).Collection(notifCollectionName)

@@ -4,7 +4,7 @@ import (
 	"time"
 
 	"github.com/golang/glog"
-	"github.com/pruh/api/notifications/models"
+	"github.com/pruh/api/mongo"
 )
 
 const (
@@ -61,7 +61,7 @@ func (c *Cleaner) removeExpired() {
 	c.Repository.DeleteAll(ids)
 }
 
-func extractUuids(notifs []models.Notification) (ids []models.MongoUUID) {
+func extractUuids(notifs []Notification) (ids []mongo.UUID) {
 	for _, notif := range notifs {
 		ids = append(ids, notif.ID)
 	}

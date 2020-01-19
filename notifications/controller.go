@@ -11,7 +11,7 @@ import (
 	"time"
 
 	"github.com/golang/glog"
-	"github.com/pruh/api/notifications/models"
+	"github.com/pruh/api/mongo"
 
 	"github.com/google/uuid"
 	"github.com/gorilla/mux"
@@ -97,7 +97,7 @@ func (c *Controller) Get(w http.ResponseWriter, r *http.Request) {
 
 // Create creates a new notification.
 func (c *Controller) Create(w http.ResponseWriter, r *http.Request) {
-	var notification models.Notification
+	var notification Notification
 	body, err := ioutil.ReadAll(io.LimitReader(r.Body, 1024*1024))
 	if err != nil {
 		glog.Errorf("Error reading request. %s", err)
@@ -120,7 +120,7 @@ func (c *Controller) Create(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	notification.ID = models.NewMongoUUID()
+	notification.ID = mongo.NewUUID()
 	success := c.Repository.CreateOne(notification)
 	if !success {
 		glog.Errorf("Failed to create notification. %s", err)
@@ -165,16 +165,16 @@ func (c *Controller) Delete(w http.ResponseWriter, r *http.Request) {
 	return
 }
 
-func validateUUID(notifUUID string) (*models.MongoUUID, error) {
+func validateUUID(notifUUID string) (*mongo.UUID, error) {
 	u, err := uuid.Parse(notifUUID)
 	if err != nil {
 		return nil, err
 	}
 
-	return &models.MongoUUID{UUID: u}, nil
+	return &mongo.UUID{UUID: u}, nil
 }
 
-func validateNotification(notif models.Notification) error {
+func validateNotification(notif Notification) error {
 	if notif.Title == nil {
 		return errors.New("title should be set")
 	}

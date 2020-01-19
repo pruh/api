@@ -1,4 +1,4 @@
-package models
+package mongo
 
 import (
 	"errors"
@@ -8,18 +8,18 @@ import (
 	"go.mongodb.org/mongo-driver/x/bsonx/bsoncore"
 )
 
-// MongoUUID embedding UUID and adds bson support
-type MongoUUID struct {
+// UUID embedding uuid.UUID and adds bson support
+type UUID struct {
 	uuid.UUID
 }
 
-// NewMongoUUID creates new random UUID
-func NewMongoUUID() MongoUUID {
-	return MongoUUID{uuid.New()}
+// NewUUID creates new random UUID
+func NewUUID() UUID {
+	return UUID{uuid.New()}
 }
 
 // MarshalBSONValue implements mongo Marshaler interface
-func (u MongoUUID) MarshalBSONValue() (bsontype.Type, []byte, error) {
+func (u UUID) MarshalBSONValue() (bsontype.Type, []byte, error) {
 	b, err := u.MarshalBinary()
 	if err != nil {
 		return bsontype.Binary, nil, err
@@ -28,7 +28,7 @@ func (u MongoUUID) MarshalBSONValue() (bsontype.Type, []byte, error) {
 }
 
 // UnmarshalBSONValue implements mongo UnMarshaler interface
-func (u *MongoUUID) UnmarshalBSONValue(t bsontype.Type, raw []byte) error {
+func (u *UUID) UnmarshalBSONValue(t bsontype.Type, raw []byte) error {
 	if t != bsontype.Binary {
 		return errors.New("invalid format on unmarshal bson value")
 	}
