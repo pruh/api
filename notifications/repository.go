@@ -5,7 +5,6 @@ import (
 	"time"
 
 	"github.com/golang/glog"
-	"github.com/pruh/api/config"
 	apimongo "github.com/pruh/api/mongo"
 
 	"go.mongodb.org/mongo-driver/bson"
@@ -14,8 +13,7 @@ import (
 
 // Repository accesses notifications store
 type Repository struct {
-	Mongo  *mongo.Client
-	Config *config.Configuration
+	Mongo *mongo.Client
 }
 
 const (
@@ -55,7 +53,7 @@ func (r *Repository) GetAll() ([]Notification, error) {
 	return notifs, nil
 }
 
-// GetOne returns notifications by ID or nil
+// GetOne returns notification by ID or nil
 func (r *Repository) GetOne(uuid apimongo.UUID) (*Notification, error) {
 	glog.Infof("Querying for notification with UUID: %s", uuid)
 
@@ -95,7 +93,7 @@ func (r *Repository) CreateOne(notification Notification) bool {
 	return true
 }
 
-// DeleteOne deletes notifications with ID and returns true if record was removed
+// DeleteOne deletes notification with ID and returns true if record was removed
 func (r *Repository) DeleteOne(uuid apimongo.UUID) (bool, error) {
 	glog.Infof("Deleting notification with UUID: %s", uuid)
 
@@ -119,7 +117,7 @@ func (r *Repository) DeleteOne(uuid apimongo.UUID) (bool, error) {
 
 // DeleteAll deletes notifications with IDs and returns true if any record was removed
 func (r *Repository) DeleteAll(uuids []apimongo.UUID) (bool, error) {
-	glog.Infof("Deleting notification with UUID: %v", uuids)
+	glog.Infof("Deleting notifications with UUID: %v", uuids)
 
 	collection := r.Mongo.Database(dbName).Collection(notifCollectionName)
 
