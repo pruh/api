@@ -13,6 +13,7 @@ import (
 	"github.com/pruh/api/messages"
 	"github.com/pruh/api/mongo"
 	"github.com/pruh/api/notifications"
+	"github.com/pruh/api/providers"
 	"github.com/urfave/negroni"
 )
 
@@ -59,8 +60,7 @@ func main() {
 
 	// notifications controller
 	repo := &notifications.Repository{
-		Mongo:  mongoClient,
-		Config: config,
+		Mongo: mongoClient,
 	}
 	notif := &notifications.Controller{
 		Repository: repo,
@@ -74,6 +74,18 @@ func main() {
 		Repository: repo,
 	}
 	cleaner.StartPeriodicCleaner()
+
+	// providers controller
+	provRepo := &providers.Repository{
+		Mongo: mongoClient,
+	}
+	provController := &providers.Controller{
+		Repository: provRepo,
+	}
+	apiV1Router.HandleFunc(providers.GetPath, provController.GetAll).Methods(http.MethodGet)
+	apiV1Router.HandleFunc(providers.SingleGetPath, provController.Get).Methods(http.MethodGet)
+	apiV1Router.HandleFunc(providers.CreatePath, provController.Create).Methods(http.MethodPost)
+	apiV1Router.HandleFunc(providers.DeletePath, provController.Delete).Methods(http.MethodDelete)
 
 	// n.Use(negroni.HandlerFunc(AuthMiddleware)) // global middleware
 

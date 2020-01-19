@@ -13,7 +13,7 @@ import (
 
 // Repository to access providers store
 type Repository struct {
-	mongo *mongo.Client
+	Mongo *mongo.Client
 }
 
 const (
