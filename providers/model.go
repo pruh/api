@@ -16,5 +16,6 @@ const (
 
 // NJTransit model that represents NJ Transit provider
 type NJTransit struct {
-	StationID *string `json:"station_id" bson:"station_id"`
+	OrigStationID *string `json:"orig_station_id" bson:"orig_station_id"`
+	DestStationID *string `json:"dest_station_id" bson:"dest_station_id"`
 }
