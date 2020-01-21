@@ -84,3 +84,42 @@ The following HTTP methods are supported:
 `message` and `source` are optional
 
 `start_time` and `end_time` should be date time in [ISO-8601](https://en.wikipedia.org/wiki/ISO_8601) format
+
+### Providers:
+
+API to store and retrive providers.
+
+The following HTTP methods are supported:
+
+* `/api/v1/providers/` HTTP GET method to return all providers.
+  
+  `/api/v1/providers/{UUID}` HTTP GET method to return a single provider by UUID.
+
+  Methods return providers in the following format:
+  ```json
+  {
+      "_id": "c146d6f1-8992-4010-85da-80459bb55d10",
+      "type": "NJTransit",
+      "njtransit": {
+        "orig_station_code":"AA",
+        "dest_station_code":"AB"
+      }
+  }
+  ```
+
+  based on `type` different optional data will present in json, like `njtransit` in the example above
+
+* `/api/v1/providers/` HTTP POST method to save a provider.
+  Method accepts JSON in the following format:
+
+  ```json
+  {
+      "type": "NJTransit",
+      "njtransit": {
+        "orig_station_code":"AA",
+        "dest_station_code":"AB"
+      }
+  }
+  ```
+
+* `/api/v1/providers/{UUID}` HTTP DELETE method to delete a previously saved provider by UUID.
