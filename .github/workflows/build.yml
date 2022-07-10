@@ -25,11 +25,14 @@ jobs:
       with:
         go-version: ${{ matrix.go }}
 
-    - name: setup env
-      run: |
-        echo "::set-env name=GOPATH::$(go env GOPATH)"
-        echo "::add-path::$(go env GOPATH)/bin"
-      shell: bash
+    - name: Verify dependencies
+      run: go mod verify
+
+    # - name: setup env
+    #   run: |
+    #     echo "::set-env name=GOPATH::$(go env GOPATH)"
+    #     echo "::add-path::$(go env GOPATH)/bin"
+    #   shell: bash
 
     - name: go info
       shell: bash
@@ -48,10 +51,10 @@ jobs:
 
     - name: Install dependencies
       run: |
-        go get golang.org/x/lint/golint
-        go get github.com/fzipp/gocyclo
-        go get github.com/gorilla/mux
-        go get github.com/urfave/negroni
+        go install golang.org/x/lint/golint
+        go install github.com/fzipp/gocyclo
+        go install github.com/gorilla/mux
+        go install github.com/urfave/negroni
 
     - name: Run lint
       run: |
