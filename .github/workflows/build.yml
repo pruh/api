@@ -25,13 +25,18 @@ jobs:
       with:
         go-version: ${{ matrix.go }}
 
+    - name: Debug
+      run: |
+        pwd
+        echo GOPATH ${GOPATH}
+        echo GOROOT ${GOROOT}
+
     - name: Install dependencies
       run: |
         go get golang.org/x/lint/golint
         go get github.com/fzipp/gocyclo
         go get github.com/gorilla/mux
         go get github.com/urfave/negroni
-        go get github.com/mattn/goveralls
 
     - name: Run lint
       run: |
