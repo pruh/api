@@ -24,8 +24,6 @@ jobs:
       uses: actions/setup-go@v3
       with:
         go-version: ${{ matrix.go }}
-      env:
-        GOPATH: $HOME
 
     - name: go info
       shell: bash
@@ -34,6 +32,12 @@ jobs:
         echo go version: $(go version)
         echo go env: $(go env GOPATH) 
         echo cache: $(ls $RUNNER_TOOL_CACHE/go)
+
+    - name: Debug
+      run: |
+        pwd
+        echo GOPATH ${GOPATH}
+        echo GOROOT ${GOROOT}
 
     - name: Install dependencies
       run: |
