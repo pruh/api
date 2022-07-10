@@ -42,19 +42,10 @@ jobs:
         echo go env: $(go env GOPATH) 
         echo cache: $(ls $RUNNER_TOOL_CACHE/go)
 
-    - name: Debug
-      run: |
-        pwd
-        echo "GOPATH ${GOPATH}"
-        echo "GOROOT ${GOROOT}"
-      shell: bash
-
     - name: Install dependencies
       run: |
-        go install golang.org/x/lint/golint
-        go install github.com/fzipp/gocyclo
-        go install github.com/gorilla/mux
-        go install github.com/urfave/negroni
+        go get golang.org/x/lint/golint
+        go get github.com/fzipp/gocyclo
 
     - name: Run lint
       run: |
