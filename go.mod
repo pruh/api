@@ -1,6 +1,6 @@
 module github.com/pruh/api
 
-go 1.13
+go 1.18
 
 require (
 	github.com/DataDog/zstd v1.4.4 // indirect
