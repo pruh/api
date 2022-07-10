@@ -42,11 +42,13 @@ jobs:
         echo go env: $(go env GOPATH) 
         echo cache: $(ls $RUNNER_TOOL_CACHE/go)
 
-    # - name: Install dependencies
-    #   shell: bash
-    #   run: |
-    #     go get golang.org/x/lint/golint
-    #     go get github.com/fzipp/gocyclo
+    - name: Install dependencies
+      shell: bash
+      run: |
+        go get golang.org/x/lint/golint
+        go install golang.org/x/lint/golint
+        go get github.com/fzipp/gocyclo
+        go install github.com/fzipp/gocyclo
 
     - name: Run lint
       shell: bash
