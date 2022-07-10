@@ -1,6 +1,6 @@
 # api
-[![Build Status](https://travis-ci.com/pruh/api.svg?branch=master)](https://travis-ci.com/pruh/api)
-[![Coverage Status](https://coveralls.io/repos/github/pruh/api/badge.svg?branch=master)](https://coveralls.io/github/pruh/api?branch=master)
+![Build](https://github.com/pruh/api/actions/workflows/build.yml/badge.svg)
+[![CodeCov](https://codecov.io/gh/pruh/api/branch/master/graph/badge.svg)](https://codecov.io/gh/pruh/api)
 [![GoDoc](https://godoc.org/github.com/pruh/api?status.svg)](http://godoc.org/github.com/pruh/api)
 
 REST API server written in Go. Supports basic HTTP auth and uses Mongo as a storage.
