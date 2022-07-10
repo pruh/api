@@ -61,10 +61,10 @@ jobs:
         test -z $(gofmt -s -l $GO_FILES)
         echo 'go vet is the official Go static analyzer'
         go vet ./...
-        echo 'Fail builds when the cyclomatic complexity reaches 15 or more'
-        gocyclo -over 15 $GO_FILES
         echo 'one last linter'
         golint -set_exit_status $(go list ./...)
+        echo 'Fail builds when the cyclomatic complexity reaches 15 or more'
+        gocyclo -over 15 $GO_FILES
 
     - name: Run tests
       run: go test -race -coverprofile=coverage.out -covermode=atomic ./...
