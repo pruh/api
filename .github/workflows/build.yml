@@ -1,0 +1,53 @@
+name: build
+
+on: 
+  push:
+    branches: [ "master" ]
+    tags: [ "v*" ]
+  pull_request:
+    branches: [ "master" ]
+  schedule:
+    - cron: '0 0 * * 0' # weekly
+
+jobs:
+  testing:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        go:
+          - '1.13'
+        
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: Set up Go
+      uses: actions/setup-go@v3
+      with:
+        go-version: ${{ matrix.go }}
+
+    - name: Install dependencies
+      run: |
+        go get golang.org/x/lint/golint
+        go get github.com/fzipp/gocyclo
+        go get github.com/gorilla/mux
+        go get github.com/urfave/negroni
+        go get github.com/mattn/goveralls
+
+    - name: Run lint
+      run: |
+        cp api.env.template api.env
+        GO_FILES=$(find . -iname '*.go' -type f)
+        echo 'fail if a .go file has not been formatted with gofmt'
+        test -z $(gofmt -s -l $GO_FILES)
+        echo 'go vet is the official Go static analyzer'
+        go vet ./...
+        echo 'Fail builds when the cyclomatic complexity reaches 15 or more'
+        gocyclo -over 15 $GO_FILES
+        echo 'one last linter'
+        golint -set_exit_status $(go list ./...)
+
+    - name: Run tests
+      run: go test -race -coverprofile=coverage.out -covermode=atomic
+
+    - name: Upload coverage to Codecov
+      uses: codecov/codecov-action@v3
