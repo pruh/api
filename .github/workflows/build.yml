@@ -1,4 +1,4 @@
-name: build
+name: test
 
 on: 
   push:
@@ -25,6 +25,12 @@ jobs:
       with:
         go-version: ${{ matrix.go }}
 
+    - name: setup env
+      run: |
+        echo "::set-env name=GOPATH::$(go env GOPATH)"
+        echo "::add-path::$(go env GOPATH)/bin"
+      shell: bash
+
     - name: go info
       shell: bash
       run: |          
@@ -36,8 +42,9 @@ jobs:
     - name: Debug
       run: |
         pwd
-        echo GOPATH ${GOPATH}
-        echo GOROOT ${GOROOT}
+        echo "GOPATH ${GOPATH}"
+        echo "GOROOT ${GOROOT}"
+      shell: bash
 
     - name: Install dependencies
       run: |
@@ -46,18 +53,19 @@ jobs:
         go get github.com/gorilla/mux
         go get github.com/urfave/negroni
 
-    # - name: Run lint
-    #   run: |
-    #     cp api.env.template api.env
-    #     GO_FILES=$(find . -iname '*.go' -type f)
-    #     echo 'fail if a .go file has not been formatted with gofmt'
-    #     test -z $(gofmt -s -l $GO_FILES)
-    #     echo 'go vet is the official Go static analyzer'
-    #     go vet ./...
-    #     echo 'Fail builds when the cyclomatic complexity reaches 15 or more'
-    #     gocyclo -over 15 $GO_FILES
-    #     echo 'one last linter'
-    #     golint -set_exit_status $(go list ./...)
+    - name: Run lint
+      run: |
+        go env
+        cp api.env.template api.env
+        GO_FILES=$(find . -iname '*.go' -type f)
+        echo 'fail if a .go file has not been formatted with gofmt'
+        test -z $(gofmt -s -l $GO_FILES)
+        echo 'go vet is the official Go static analyzer'
+        go vet ./...
+        echo 'Fail builds when the cyclomatic complexity reaches 15 or more'
+        gocyclo -over 15 $GO_FILES
+        echo 'one last linter'
+        golint -set_exit_status $(go list ./...)
 
     - name: Run tests
       run: go test -race -coverprofile=coverage.out -covermode=atomic ./...
