@@ -28,11 +28,11 @@ jobs:
     - name: Verify dependencies
       run: go mod verify
 
-    - name: setup env
-      shell: bash
-      run: |
-        echo "{GOPATH}={$(go env GOPATH)}" >> $GITHUB_ENV
-        echo "$(go env GOPATH)/bin" >> $GITHUB_PATH
+    # - name: setup env
+    #   shell: bash
+    #   run: |
+    #     echo "{GOPATH}={$(go env GOPATH)}" >> $GITHUB_ENV
+    #     echo "$(go env GOPATH)/bin" >> $GITHUB_PATH
 
     - name: go info
       shell: bash
@@ -41,20 +41,16 @@ jobs:
         echo go version: $(go version)
         echo go env: $(go env GOPATH) 
         echo cache: $(ls $RUNNER_TOOL_CACHE/go)
-        echo GOPATH $GOPATH
-        echo GITHUB_ENV $GITHUB_ENV
-        echo GITHUB_PATH $GITHUB_PATH
 
-    - name: Install dependencies
-      shell: bash
-      run: |
-        go get golang.org/x/lint/golint
-        go get github.com/fzipp/gocyclo
+    # - name: Install dependencies
+    #   shell: bash
+    #   run: |
+    #     go get golang.org/x/lint/golint
+    #     go get github.com/fzipp/gocyclo
 
     - name: Run lint
       shell: bash
       run: |
-        go env
         cp api.env.template api.env
         GO_FILES=$(find . -iname '*.go' -type f)
         echo 'fail if a .go file has not been formatted with gofmt'
