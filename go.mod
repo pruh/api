@@ -3,21 +3,27 @@ module github.com/pruh/api
 go 1.18
 
 require (
-	github.com/DataDog/zstd v1.4.4 // indirect
-	github.com/fzipp/gocyclo v0.0.0-20150627053110-6acd4345c835 // indirect
-	github.com/go-stack/stack v1.8.0 // indirect
-	github.com/golang/glog v0.0.0-20160126235308-23def4e6c14b
-	github.com/golang/snappy v0.0.1 // indirect
-	github.com/google/go-cmp v0.3.1 // indirect
-	github.com/google/uuid v1.1.1
-	github.com/gorilla/mux v1.7.3
-	github.com/pkg/errors v0.8.1 // indirect
-	github.com/stretchr/testify v1.4.0
-	github.com/tidwall/pretty v1.0.0 // indirect
+	github.com/golang/glog v1.0.0
+	github.com/google/uuid v1.3.0
+	github.com/gorilla/mux v1.8.0
+	github.com/stretchr/testify v1.6.1
 	github.com/urfave/negroni v1.0.0
-	github.com/xdg/scram v0.0.0-20180814205039-7eeb5667e42c // indirect
-	github.com/xdg/stringprep v1.0.0 // indirect
-	go.mongodb.org/mongo-driver v1.2.0
-	golang.org/x/lint v0.0.0-20191125180803-fdd1cda4f05f // indirect
-	golang.org/x/tools v0.0.0-20200103211127-7bda30096dc1 // indirect
+	go.mongodb.org/mongo-driver v1.9.1
+)
+
+require (
+	github.com/davecgh/go-spew v1.1.1 // indirect
+	github.com/go-stack/stack v1.8.1 // indirect
+	github.com/golang/snappy v0.0.4 // indirect
+	github.com/klauspost/compress v1.15.7 // indirect
+	github.com/pkg/errors v0.9.1 // indirect
+	github.com/pmezard/go-difflib v1.0.0 // indirect
+	github.com/xdg-go/pbkdf2 v1.0.0 // indirect
+	github.com/xdg-go/scram v1.1.1 // indirect
+	github.com/xdg-go/stringprep v1.0.3 // indirect
+	github.com/youmark/pkcs8 v0.0.0-20201027041543-1326539a0a0a // indirect
+	golang.org/x/crypto v0.0.0-20220622213112-05595931fe9d // indirect
+	golang.org/x/sync v0.0.0-20220601150217-0de741cfad7f // indirect
+	golang.org/x/text v0.3.7 // indirect
+	gopkg.in/yaml.v3 v3.0.0-20200313102051-9f266ea9e77c // indirect
 )

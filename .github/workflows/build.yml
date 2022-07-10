@@ -24,12 +24,16 @@ jobs:
       uses: actions/setup-go@v3
       with:
         go-version: ${{ matrix.go }}
+      env:
+        GOPATH: $HOME
 
-    # - name: Debug
-    #   run: |
-    #     pwd
-    #     echo GOPATH ${GOPATH}
-    #     echo GOROOT ${GOROOT}
+    - name: go info
+      shell: bash
+      run: |          
+        echo $(go version) at $(which go)
+        echo go version: $(go version)
+        echo go env: $(go env GOPATH) 
+        echo cache: $(ls $RUNNER_TOOL_CACHE/go)
 
     - name: Install dependencies
       run: |
@@ -52,7 +56,7 @@ jobs:
     #     golint -set_exit_status $(go list ./...)
 
     - name: Run tests
-      run: go test -race -coverprofile=coverage.out -covermode=atomic
+      run: go test -race -coverprofile=coverage.out -covermode=atomic ./...
 
     - name: Upload coverage to Codecov
       uses: codecov/codecov-action@v3
