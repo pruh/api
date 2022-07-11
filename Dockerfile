@@ -1,12 +1,12 @@
 # Build stage
-FROM golang:1.13-alpine AS build-env
+FROM golang:1.18-alpine AS build-env
 
 ADD . /go/src/github.com/pruh/api/
 
 RUN apk update \
     && apk add --no-cache \
-        gcc \
-        musl-dev
+    gcc \
+    musl-dev
 
 RUN cd /go/src/github.com/pruh/api/ && go build -o api
 

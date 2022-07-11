@@ -1,0 +1,68 @@
+name: test
+
+on: 
+  push:
+    branches: [ "master" ]
+    tags: [ "v*" ]
+  pull_request:
+    branches: [ "master" ]
+  schedule:
+    - cron: '0 0 * * 0' # weekly
+
+jobs:
+  testing:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        go:
+          - '1.18'
+        
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: Set up Go
+      uses: actions/setup-go@v3
+      with:
+        go-version: ${{ matrix.go }}
+
+    - name: Verify dependencies
+      run: go mod verify
+
+    - name: go info
+      shell: bash
+      run: |          
+        echo $(go version) at $(which go)
+        echo go version: $(go version)
+        echo go env: $(go env GOPATH) 
+        echo cache: $(ls $RUNNER_TOOL_CACHE/go)
+
+    - name: Run lint
+      shell: bash
+      run: |
+        GO_FILES=$(find . -iname '*.go' -type f)
+        echo 'fail if a .go file has not been formatted with gofmt'
+        test -z $(gofmt -s -l $GO_FILES)
+        echo 'go vet is the official Go static analyzer'
+        go vet ./...
+
+    - name: golangci-lint
+      uses: golangci/golangci-lint-action@v3
+
+    - name: Run tests
+      run: go test -race -coverprofile=coverage.out -covermode=atomic ./...
+
+    - name: Upload coverage to Codecov
+      uses: codecov/codecov-action@v3
+  
+  docker:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: Build and start docker container
+      run: |
+        cp api.env.template api.env
+        docker-compose build
+        docker-compose up -d
+        docker-compose stop
