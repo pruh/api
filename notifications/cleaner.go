@@ -58,7 +58,11 @@ func (c *Cleaner) removeExpired() {
 	ids := extractUuids(notifs)
 
 	glog.Info("Deleting expired notifications with ids: ", ids)
-	c.Repository.DeleteAll(ids)
+	_, err = c.Repository.DeleteAll(ids)
+	if err != nil {
+		glog.Error("Cannot delete expired notifications. ", err)
+		return
+	}
 }
 
 func extractUuids(notifs []Notification) (ids []mongo.UUID) {

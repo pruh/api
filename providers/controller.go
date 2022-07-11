@@ -49,21 +49,25 @@ func (c *Controller) GetAll(w http.ResponseWriter, r *http.Request) {
 	providers, err := c.Repository.GetAll()
 	if err != nil {
 		glog.Errorf("Error while querying providers. %s", err)
-		http.Error(w, fmt.Sprint("Error while querying providers."), http.StatusInternalServerError)
+		http.Error(w, "Error while querying providers.", http.StatusInternalServerError)
 		return
 	}
 
 	data, err := json.Marshal(providers)
 	if err != nil {
 		glog.Errorf("Cannot marshal providers. %s", err)
-		http.Error(w, fmt.Sprint("Cannot marshal providers."), http.StatusInternalServerError)
+		http.Error(w, "Cannot marshal providers.", http.StatusInternalServerError)
 		return
 	}
 
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
-	w.Write(data)
-	return
+	_, err = w.Write(data)
+	if err != nil {
+		glog.Errorf("Cannot write a response. %s", err)
+		http.Error(w, "Cannot write a response.", http.StatusInternalServerError)
+		return
+	}
 }
 
 // Get returns one provider.
@@ -73,14 +77,14 @@ func (c *Controller) Get(w http.ResponseWriter, r *http.Request) {
 	mongoUUID, err := validateUUID(uuid)
 	if err != nil {
 		glog.Errorf("Provider UUID is malformed. %s", err)
-		http.Error(w, fmt.Sprint("Provider UUID is malformed."), http.StatusBadRequest)
+		http.Error(w, "Provider UUID is malformed.", http.StatusBadRequest)
 		return
 	}
 
 	provider, err := c.Repository.GetOne(*mongoUUID)
 	if err != nil {
 		glog.Errorf("Error while querying provider. %s", err)
-		http.Error(w, fmt.Sprint("Error while querying provider."), http.StatusInternalServerError)
+		http.Error(w, "Error while querying provider.", http.StatusInternalServerError)
 		return
 	}
 	if provider == nil {
@@ -90,13 +94,17 @@ func (c *Controller) Get(w http.ResponseWriter, r *http.Request) {
 	data, err := json.Marshal(provider)
 	if err != nil {
 		glog.Errorf("Cannot marshal provider. %s", err)
-		http.Error(w, fmt.Sprint("Cannot marshal provider."), http.StatusInternalServerError)
+		http.Error(w, "Cannot marshal provider.", http.StatusInternalServerError)
 		return
 	}
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
-	w.Write(data)
-	return
+	_, err = w.Write(data)
+	if err != nil {
+		glog.Errorf("Cannot write a response. %s", err)
+		http.Error(w, "Cannot write a response.", http.StatusInternalServerError)
+		return
+	}
 }
 
 // Create creates a new provider.
@@ -105,7 +113,7 @@ func (c *Controller) Create(w http.ResponseWriter, r *http.Request) {
 	body, err := ioutil.ReadAll(io.LimitReader(r.Body, 1024*1024))
 	if err != nil {
 		glog.Errorf("Error reading request. %s", err)
-		http.Error(w, fmt.Sprint("Error reading request."), http.StatusInternalServerError)
+		http.Error(w, "Error reading request.", http.StatusInternalServerError)
 		return
 	}
 	defer r.Body.Close()
@@ -113,7 +121,7 @@ func (c *Controller) Create(w http.ResponseWriter, r *http.Request) {
 	err = json.Unmarshal(body, &provider)
 	if err != nil {
 		glog.Errorf("Error reading request data. %s", err)
-		http.Error(w, fmt.Sprint("Error reading request data."), http.StatusUnprocessableEntity)
+		http.Error(w, "Error reading request data.", http.StatusUnprocessableEntity)
 		return
 	}
 
@@ -128,7 +136,7 @@ func (c *Controller) Create(w http.ResponseWriter, r *http.Request) {
 	success := c.Repository.CreateOne(provider)
 	if !success {
 		glog.Errorf("Failed to create provider. %s", err)
-		http.Error(w, fmt.Sprint("Failed to create provider."), http.StatusInternalServerError)
+		http.Error(w, "Failed to create provider.", http.StatusInternalServerError)
 		return
 	}
 
@@ -138,7 +146,6 @@ func (c *Controller) Create(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Location", location)
 
 	w.WriteHeader(http.StatusCreated)
-	return
 }
 
 // Delete deletes provider.
@@ -148,7 +155,7 @@ func (c *Controller) Delete(w http.ResponseWriter, r *http.Request) {
 	mongoUUID, err := validateUUID(uuid)
 	if err != nil {
 		glog.Errorf("Provider UUID is malformed. %s", err)
-		http.Error(w, fmt.Sprint("Provider UUID is malformed."), http.StatusBadRequest)
+		http.Error(w, "Provider UUID is malformed.", http.StatusBadRequest)
 		return
 	}
 
@@ -166,7 +173,6 @@ func (c *Controller) Delete(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.WriteHeader(http.StatusNoContent)
-	return
 }
 
 func validateUUID(uuidStr string) (*mongo.UUID, error) {

@@ -54,7 +54,12 @@ func (c *Controller) SendMessage(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Length", resp.Header.Get("Content-Length"))
 	w.WriteHeader(resp.StatusCode)
 
-	io.Copy(w, resp.Body)
+	_, err = io.Copy(w, resp.Body)
+	if err != nil {
+		glog.Errorf("Cannot copy a response. %s", err)
+		http.Error(w, "Cannot copy a response.", http.StatusInternalServerError)
+		return
+	}
 }
 
 /**
