@@ -27,8 +27,10 @@ func TestHTTPClient(t *testing.T) {
 
 	for _, testData := range testsData {
 		ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			w.Write([]byte(testData.responseBody))
-			// fmt.Fprintln(w, `{"fake twitter json string"}`)
+			_, err := w.Write([]byte(testData.responseBody))
+			if err != nil {
+				t.Fatal(err)
+			}
 		}))
 		defer ts.Close()
 

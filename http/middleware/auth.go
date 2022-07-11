@@ -34,7 +34,12 @@ func AuthMiddleware(w http.ResponseWriter, r *http.Request, next http.HandlerFun
 
 		w.Header().Set("WWW-Authenticate", `Basic realm="Provide username and password"`)
 		w.WriteHeader(http.StatusUnauthorized)
-		w.Write([]byte("401 Unauthorized.\n"))
+		_, err := w.Write([]byte("401 Unauthorized.\n"))
+		if err != nil {
+			glog.Errorf("Cannot write a response. %s", err)
+			http.Error(w, "Cannot write a response.", http.StatusInternalServerError)
+			return
+		}
 	}
 }
 

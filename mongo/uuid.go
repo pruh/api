@@ -38,6 +38,9 @@ func (u *UUID) UnmarshalBSONValue(t bsontype.Type, raw []byte) error {
 		return errors.New("not enough bytes to unmarshal bson value")
 	}
 
-	u.UnmarshalBinary(data)
+	err := u.UnmarshalBinary(data)
+	if err != nil {
+		return err
+	}
 	return nil
 }
