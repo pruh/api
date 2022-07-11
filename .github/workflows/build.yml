@@ -39,7 +39,6 @@ jobs:
     - name: Run lint
       shell: bash
       run: |
-        cp api.env.template api.env
         GO_FILES=$(find . -iname '*.go' -type f)
         echo 'fail if a .go file has not been formatted with gofmt'
         test -z $(gofmt -s -l $GO_FILES)
@@ -63,6 +62,7 @@ jobs:
 
     - name: Build and start docker container
       run: |
+        cp api.env.template api.env
         docker-compose build
         docker-compose up -d
         docker-compose stop
