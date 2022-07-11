@@ -54,3 +54,15 @@ jobs:
 
     - name: Upload coverage to Codecov
       uses: codecov/codecov-action@v3
+  
+  docker:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: Build and start docker container
+      run: |
+        docker-compose build
+        docker-compose up -d
+        docker-compose stop
