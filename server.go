@@ -19,7 +19,10 @@ import (
 
 func main() {
 	flag.Parse()
-	flag.Lookup("logtostderr").Value.Set("true")
+	err := flag.Lookup("logtostderr").Value.Set("true")
+	if err != nil {
+		glog.Warningf("Cannot set a flag. %s", err)
+	}
 
 	config, err := config.NewFromEnv()
 	if err != nil {
