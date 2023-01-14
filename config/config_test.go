@@ -17,6 +17,8 @@ func TestConfiguraionLoading(t *testing.T) {
 		mongoUsername *string
 		mongoPassword *string
 		omadaUrl      *string
+		omadaUsername *string
+		omadaPassword *string
 		expectError   bool
 	}{
 		{
@@ -105,6 +107,15 @@ func TestConfiguraionLoading(t *testing.T) {
 			omadaUrl:    ptr("abc"),
 			expectError: false,
 		},
+		{
+			description:   "omada url with credentials",
+			port:          ptr("1234"),
+			botToken:      ptr("botToken"),
+			omadaUrl:      ptr("abc"),
+			omadaUsername: ptr("omada username"),
+			omadaPassword: ptr("omada password"),
+			expectError:   false,
+		},
 	}
 
 	assert := assert.New(t)
@@ -114,7 +125,7 @@ func TestConfiguraionLoading(t *testing.T) {
 
 		conf, err := NewConfig(testData.port, testData.botToken, testData.defaultChatID,
 			testData.credsMap, testData.mongoUsername,
-			testData.mongoPassword, testData.omadaUrl)
+			testData.mongoPassword, testData.omadaUrl, testData.omadaUsername, testData.omadaPassword)
 
 		if !testData.expectError && err != nil {
 			assert.Fail("Config load should not return error: " + err.Error())

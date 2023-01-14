@@ -21,7 +21,9 @@ type Configuration struct {
 	MongoUsername *string
 	MongoPassword *string
 
-	OmadaUrl *string
+	OmadaUrl      *string
+	OmadaUsername *string
+	OmadaPassword *string
 }
 
 // NewFromEnv creates new configuration from environment variables.
@@ -34,15 +36,18 @@ func NewFromEnv() (*Configuration, error) {
 	mongoUsername := ptrOrNil(os.LookupEnv("MONGO_INITDB_ROOT_USERNAME"))
 	mongoPassword := ptrOrNil(os.LookupEnv("MONGO_INITDB_ROOT_PASSWORD"))
 
-	omadaUrl := ptrOrNil(os.LookupEnv("MONGO_INITDB_ROOT_PASSWORD"))
+	omadaUrl := ptrOrNil(os.LookupEnv("OMADA_URL"))
+	omadaUsername := ptrOrNil(os.LookupEnv("OMADA_USERNAME"))
+	omadaPassword := ptrOrNil(os.LookupEnv("OMADA_PASSWORD"))
 
-	return NewFromParams(port, botToken, chatID, apiCreds, mongoUsername, mongoPassword, omadaUrl)
+	return NewFromParams(port, botToken, chatID, apiCreds, mongoUsername, mongoPassword,
+		omadaUrl, omadaUsername, omadaPassword)
 }
 
 // NewFromParams creates new configuration from arguments.
 func NewFromParams(port *string, boToken *string, defaultChatID *string,
 	apiV1Credentials *string, mongoUsername *string, mongoPassword *string,
-	omadaUrl *string) (*Configuration, error) {
+	omadaUrl *string, omadaUsername *string, omadaPassword *string) (*Configuration, error) {
 	var conf Configuration
 	if port == nil || *port == "" {
 		return nil, errors.New("port should not be empty")
@@ -76,7 +81,11 @@ func NewFromParams(port *string, boToken *string, defaultChatID *string,
 		conf.MongoPassword = mongoPassword
 	}
 
-	conf.OmadaUrl = omadaUrl
+	if omadaUrl != nil {
+		conf.OmadaUrl = omadaUrl
+		conf.OmadaUsername = omadaUsername
+		conf.OmadaPassword = omadaPassword
+	}
 
 	return &conf, nil
 }
