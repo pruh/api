@@ -3,10 +3,11 @@ package config
 import (
 	"encoding/json"
 	"errors"
-	"github.com/golang/glog"
 	"net"
 	"os"
 	"strconv"
+
+	"github.com/golang/glog"
 )
 
 // Configuration contrains configuration parameters.
@@ -19,6 +20,8 @@ type Configuration struct {
 
 	MongoUsername *string
 	MongoPassword *string
+
+	OmadaUrl *string
 }
 
 // NewFromEnv creates new configuration from environment variables.
@@ -31,12 +34,15 @@ func NewFromEnv() (*Configuration, error) {
 	mongoUsername := ptrOrNil(os.LookupEnv("MONGO_INITDB_ROOT_USERNAME"))
 	mongoPassword := ptrOrNil(os.LookupEnv("MONGO_INITDB_ROOT_PASSWORD"))
 
-	return NewFromParams(port, botToken, chatID, apiCreds, mongoUsername, mongoPassword)
+	omadaUrl := ptrOrNil(os.LookupEnv("MONGO_INITDB_ROOT_PASSWORD"))
+
+	return NewFromParams(port, botToken, chatID, apiCreds, mongoUsername, mongoPassword, omadaUrl)
 }
 
 // NewFromParams creates new configuration from arguments.
 func NewFromParams(port *string, boToken *string, defaultChatID *string,
-	apiV1Credentials *string, mongoUsername *string, mongoPassword *string) (*Configuration, error) {
+	apiV1Credentials *string, mongoUsername *string, mongoPassword *string,
+	omadaUrl *string) (*Configuration, error) {
 	var conf Configuration
 	if port == nil || *port == "" {
 		return nil, errors.New("port should not be empty")
@@ -69,6 +75,8 @@ func NewFromParams(port *string, boToken *string, defaultChatID *string,
 		conf.MongoUsername = mongoUsername
 		conf.MongoPassword = mongoPassword
 	}
+
+	conf.OmadaUrl = omadaUrl
 
 	return &conf, nil
 }

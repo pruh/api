@@ -32,7 +32,7 @@ func TestBasicAuth(t *testing.T) {
 			password:    "castoro",
 			config: NewConfigSafe(ptr("8080"), ptr("1"), nil, &map[string]string{
 				"papa": "castoro",
-			}, nil, nil),
+			}, nil, nil, nil),
 			requestBody:  nil,
 			responseCode: http.StatusOK,
 		},
@@ -42,7 +42,7 @@ func TestBasicAuth(t *testing.T) {
 			password:    "castoro",
 			config: NewConfigSafe(ptr("8080"), ptr("1"), nil, &map[string]string{
 				"papa": "castoro",
-			}, nil, nil),
+			}, nil, nil, nil),
 			requestBody:  bytes.NewReader([]byte(`{"test":"test"}`)),
 			responseCode: http.StatusOK,
 		},
@@ -53,7 +53,7 @@ func TestBasicAuth(t *testing.T) {
 			config: NewConfigSafe(ptr("8080"), ptr("1"), nil, &map[string]string{
 				"mama": "castoro",
 				"papa": "castoro",
-			}, nil, nil),
+			}, nil, nil, nil),
 			requestBody:  nil,
 			responseCode: http.StatusOK,
 		},
@@ -63,7 +63,7 @@ func TestBasicAuth(t *testing.T) {
 			password:    "castoro",
 			config: NewConfigSafe(ptr("8080"), ptr("1"), nil, &map[string]string{
 				"papa": "castoro",
-			}, nil, nil),
+			}, nil, nil, nil),
 			requestBody:  nil,
 			responseCode: http.StatusUnauthorized,
 		},
@@ -73,7 +73,7 @@ func TestBasicAuth(t *testing.T) {
 			password:    "castoro2",
 			config: NewConfigSafe(ptr("8080"), ptr("1"), nil, &map[string]string{
 				"papa": "castoro",
-			}, nil, nil),
+			}, nil, nil, nil),
 			requestBody:  nil,
 			responseCode: http.StatusUnauthorized,
 		},
@@ -81,7 +81,7 @@ func TestBasicAuth(t *testing.T) {
 			description:  "empty credentials",
 			user:         "",
 			password:     "",
-			config:       NewConfigSafe(ptr("8080"), ptr("1"), nil, &map[string]string{}, nil, nil),
+			config:       NewConfigSafe(ptr("8080"), ptr("1"), nil, &map[string]string{}, nil, nil, nil),
 			requestBody:  nil,
 			responseCode: http.StatusOK,
 		},
@@ -89,7 +89,7 @@ func TestBasicAuth(t *testing.T) {
 			description:  "nil credentials",
 			user:         "",
 			password:     "",
-			config:       NewConfigSafe(ptr("8080"), ptr("1"), nil, nil, nil, nil),
+			config:       NewConfigSafe(ptr("8080"), ptr("1"), nil, nil, nil, nil, nil),
 			requestBody:  nil,
 			responseCode: http.StatusOK,
 		},
@@ -99,7 +99,7 @@ func TestBasicAuth(t *testing.T) {
 			password:    "",
 			config: NewConfigSafe(ptr("8080"), ptr("1"), nil, &map[string]string{
 				"papa": "castoro",
-			}, nil, nil),
+			}, nil, nil, nil),
 			remoteIP:     "192.168.0.2:8080",
 			requestBody:  nil,
 			responseCode: http.StatusOK,
@@ -110,7 +110,7 @@ func TestBasicAuth(t *testing.T) {
 			password:    "",
 			config: NewConfigSafe(ptr("8080"), ptr("1"), nil, &map[string]string{
 				"papa": "castoro",
-			}, nil, nil),
+			}, nil, nil, nil),
 			remoteIP:     "10.8.0.2:8080",
 			xFwdHeader:   "192.168.1.2, 8.8.4.4, 10.8.0.1",
 			requestBody:  nil,
@@ -122,7 +122,7 @@ func TestBasicAuth(t *testing.T) {
 			password:    "",
 			config: NewConfigSafe(ptr("8080"), ptr("1"), nil, &map[string]string{
 				"papa": "castoro",
-			}, nil, nil),
+			}, nil, nil, nil),
 			xFwdHeader:   "10.8.0.1, 192.168.1.2, 8.8.4.4",
 			requestBody:  nil,
 			responseCode: http.StatusUnauthorized,
@@ -133,7 +133,7 @@ func TestBasicAuth(t *testing.T) {
 			password:    "",
 			config: NewConfigSafe(ptr("8080"), ptr("1"), nil, &map[string]string{
 				"papa": "castoro",
-			}, nil, nil),
+			}, nil, nil, nil),
 			remoteIP:     "10.8.0.2:8080",
 			xRealIP:      "10.8.0.1",
 			requestBody:  nil,
@@ -145,7 +145,7 @@ func TestBasicAuth(t *testing.T) {
 			password:    "",
 			config: NewConfigSafe(ptr("8080"), ptr("1"), nil, &map[string]string{
 				"papa": "castoro",
-			}, nil, nil),
+			}, nil, nil, nil),
 			xRealIP:      "8.8.4.4",
 			requestBody:  nil,
 			responseCode: http.StatusUnauthorized,
@@ -156,7 +156,7 @@ func TestBasicAuth(t *testing.T) {
 			password:    "",
 			config: NewConfigSafe(ptr("8080"), ptr("1"), nil, &map[string]string{
 				"papa": "castoro",
-			}, nil, nil),
+			}, nil, nil, nil),
 			remoteIP:     "8.8.4.4:8080",
 			xFwdHeader:   "192.168.1.2",
 			requestBody:  nil,
@@ -168,7 +168,7 @@ func TestBasicAuth(t *testing.T) {
 			password:    "",
 			config: NewConfigSafe(ptr("8080"), ptr("1"), nil, &map[string]string{
 				"papa": "castoro",
-			}, nil, nil),
+			}, nil, nil, nil),
 			remoteIP:     "8.8.4.4:8080",
 			xRealIP:      "192.168.1.2",
 			requestBody:  nil,

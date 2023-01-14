@@ -14,6 +14,7 @@ func TestConfiguraionLoading(t *testing.T) {
 		botToken      *string
 		defaultChatID *string
 		credsMap      *map[string]string
+		omadaUrl      *string
 		expectError   bool
 	}{
 		{
@@ -87,6 +88,13 @@ func TestConfiguraionLoading(t *testing.T) {
 			credsMap:      &map[string]string{},
 			expectError:   false,
 		},
+		{
+			description: "omada url",
+			port:        ptr("1234"),
+			botToken:    ptr("botToken"),
+			omadaUrl:    ptr("abc"),
+			expectError: false,
+		},
 	}
 
 	assert := assert.New(t)
@@ -94,10 +102,10 @@ func TestConfiguraionLoading(t *testing.T) {
 	for _, testData := range testsData {
 		t.Logf("testing %+v", testData.description)
 
-		conf, err := NewConfig(testData.port, testData.botToken, testData.defaultChatID, testData.credsMap, nil, nil)
+		conf, err := NewConfig(testData.port, testData.botToken, testData.defaultChatID, testData.credsMap, nil, nil, testData.omadaUrl)
 
 		if !testData.expectError && err != nil {
-			assert.Fail("Config load should not return error: %s", err.Error)
+			assert.Fail("Config load should not return error: " + err.Error())
 			continue
 		}
 
@@ -113,6 +121,7 @@ func TestConfiguraionLoading(t *testing.T) {
 		assert.Equal(testData.port, conf.Port, "Port is not correct")
 		assert.Equal(testData.botToken, conf.TelegramBoToken, "Bot token is not correct")
 		assert.Equal(testData.credsMap, conf.APIV1Credentials, "Credentials is not correct")
+		assert.Equal(testData.omadaUrl, conf.OmadaUrl, "Omada Controller ID is not correct")
 	}
 }
 
