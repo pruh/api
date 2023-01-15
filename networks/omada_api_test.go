@@ -75,8 +75,8 @@ func TestGetControllerId(t *testing.T) {
 			continue
 		}
 
-		assert.Equal(testData.omadaErrorCode, omadaControllerId.ErrorCode, "Response code is not correct")
-		assert.Equal(testData.omadacId, *omadaControllerId.Result.OmadacId, "omada id parsing is not correct")
+		assert.Equal(testData.omadaErrorCode, omadaControllerId.ErrorCode, "Error code is not correct")
+		assert.Equal(testData.omadacId, *omadaControllerId.Result.OmadacId, "Omada id parsing is not correct")
 	}
 }
 
@@ -163,7 +163,83 @@ func TestLogin(t *testing.T) {
 			continue
 		}
 
-		assert.Equal(testData.omadaErrorCode, omadaControllerId.ErrorCode, "Response code is not correct")
-		assert.Equal(testData.loginToken, *omadaControllerId.Result.Token, "omada id parsing is not correct")
+		assert.Equal(testData.omadaErrorCode, omadaControllerId.ErrorCode, "Error code is not correct")
+		assert.Equal(testData.loginToken, *omadaControllerId.Result.Token, "Login token is not correct")
+	}
+}
+
+func TestGetSites(t *testing.T) {
+	testsData := []struct {
+		description    string
+		omadaUrl       string
+		omadacId       *string
+		loginToken     *string
+		expectError    bool
+		responseCode   int
+		responseBody   string
+		omadaErrorCode int
+	}{
+		{
+			description:    "happy path",
+			omadaUrl:       "https://omada.example.com",
+			omadacId:       StrPtr("omada_cid"),
+			loginToken:     StrPtr("login_token"),
+			expectError:    false,
+			responseCode:   http.StatusOK,
+			responseBody:   "{\"errorCode\": 0,\"msg\": \"Success.\",\"result\": {\"data\": [{\"name\": \"site_name\", \"id\": \"site_id\"}]}}",
+			omadaErrorCode: 0,
+		},
+		{
+			description:    "upstream error",
+			omadaUrl:       "https://omada.example.com",
+			omadacId:       StrPtr("omada_cid"),
+			loginToken:     StrPtr("login_token"),
+			expectError:    true,
+			responseCode:   http.StatusInternalServerError,
+			responseBody:   "{\"errorCode\": 0,\"msg\": \"Success.\",\"result\": {\"data\": [{\"name\": \"site_name\", \"id\": \"site_id\"}]}}",
+			omadaErrorCode: 0,
+		},
+	}
+
+	assert := assert.New(t)
+
+	for _, testData := range testsData {
+		t.Logf("tesing %+v", testData.description)
+
+		mockHttpClient := MockHTTPClient{
+			MockDo: func(req *http.Request) (*http.Response, error) {
+				assert.Equal(fmt.Sprintf("%s/%s/api/v2/sites?currentPageSize=1&currentPage=1",
+					testData.omadaUrl, *testData.omadacId),
+					req.URL.String(), "Omada request url is not correct")
+
+				assert.Equal(*testData.loginToken, req.Header.Get("Csrf-token"), "Login token is missing")
+
+				var respErr error
+				if testData.responseCode != http.StatusOK {
+					respErr = errors.New("test error")
+				}
+
+				w := httptest.NewRecorder()
+				w.WriteHeader(testData.responseCode)
+				w.WriteString(testData.responseBody)
+
+				return w.Result(), respErr
+			},
+		}
+
+		omadaApi := NewOmadaApi(
+			NewConfigSafe(StrPtr("8080"), StrPtr("1"), StrPtr("123"), nil, nil, nil,
+				StrPtr(testData.omadaUrl), nil, nil),
+			&mockHttpClient)
+
+		omadaControllerId, err := omadaApi.GetSites(testData.omadacId, testData.loginToken)
+		if testData.expectError {
+			assert.True(err != nil, "should return error")
+			continue
+		}
+
+		assert.Equal(testData.omadaErrorCode, omadaControllerId.ErrorCode, "Error code is not correct")
+		assert.Equal(1, len(*omadaControllerId.Result.Data), "omada id parsing is not correct")
+		assert.Equal(Data{Id: StrPtr("site_id"), Name: StrPtr("site_name")}, (*omadaControllerId.Result.Data)[0], "omada id parsing is not correct")
 	}
 }

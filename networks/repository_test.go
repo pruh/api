@@ -15,8 +15,8 @@ func TestRepoGetControllerId(t *testing.T) {
 		MockGetControllerId: func() (*OmadaResponse, error) {
 			resp := &OmadaResponse{
 				ErrorCode: 0,
-				Msg:       "Success.",
-				Result: Result{
+				Msg:       StrPtr("Success."),
+				Result: &Result{
 					OmadacId: StrPtr("someId"),
 				},
 			}
@@ -44,8 +44,8 @@ func TestRepoLogin(t *testing.T) {
 		MockLogin: func(omadaControllerId *string) (*OmadaResponse, error) {
 			resp := &OmadaResponse{
 				ErrorCode: 0,
-				Msg:       "Success.",
-				Result: Result{
+				Msg:       StrPtr("Success."),
+				Result: &Result{
 					Token: StrPtr("login_token"),
 				},
 			}
@@ -64,4 +64,34 @@ func TestRepoLogin(t *testing.T) {
 
 	assert.True(mockCalled, "mock is not called")
 	assert.Equal("login_token", *controllerId.Result.Token, "login token is not as expected")
+}
+
+func TestRepoGetSites(t *testing.T) {
+	var mockCalled = false
+
+	mockOmadaApi := MockOmadaApi{
+		MockGetSites: func(omadaControllerId *string, loginToken *string) (*OmadaResponse, error) {
+			resp := &OmadaResponse{
+				ErrorCode: 0,
+				Msg:       StrPtr("Success."),
+				Result: &Result{
+					Data: &[]Data{{Id: StrPtr("site_id"), Name: StrPtr("site_name")}},
+				},
+			}
+
+			mockCalled = true
+
+			return resp, nil
+		},
+	}
+
+	repo := NewRepository(&mockOmadaApi)
+
+	assert := assert.New(t)
+
+	controllerId, _ := repo.GetSites(nil, nil)
+
+	assert.True(mockCalled, "mock is not called")
+	assert.Equal(Data{Id: StrPtr("site_id"), Name: StrPtr("site_name")},
+		(*controllerId.Result.Data)[0], "login token is not as expected")
 }

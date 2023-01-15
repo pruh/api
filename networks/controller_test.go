@@ -72,8 +72,8 @@ func TestUpdateWifis_ControllerId(t *testing.T) {
 
 					resp := &OmadaResponse{
 						ErrorCode: 0,
-						Msg:       "test",
-						Result: Result{
+						Msg:       StrPtr("test"),
+						Result: &Result{
 							OmadacId: testData.omadaControllerId,
 						},
 					}
@@ -83,9 +83,25 @@ func TestUpdateWifis_ControllerId(t *testing.T) {
 				MockLogin: func(omadaControllerId *string) (*OmadaResponse, error) {
 					resp := &OmadaResponse{
 						ErrorCode: 0,
-						Msg:       "test",
-						Result: Result{
+						Msg:       StrPtr("test"),
+						Result: &Result{
 							Token: testData.loginToken,
+						},
+					}
+
+					return resp, nil
+				},
+				MockGetSites: func(omadaControllerId *string, loginToken *string) (*OmadaResponse, error) {
+					resp := &OmadaResponse{
+						ErrorCode: 0,
+						Msg:       StrPtr("test"),
+						Result: &Result{
+							Data: &[]Data{
+								{
+									Id:   StrPtr("site_id"),
+									Name: StrPtr("site_name"),
+								},
+							},
 						},
 					}
 
@@ -133,14 +149,14 @@ func TestUpdateWifis_Login(t *testing.T) {
 			responseCode: http.StatusOK,
 		},
 		{
-			description:        "omada controller id response error",
+			description:        "omada Login response error",
 			requestUrl:         "https://omada.example.com",
 			loginToken:         StrPtr("login_token"),
 			omadaResponseError: true,
 			responseCode:       http.StatusBadGateway,
 		},
 		{
-			description:  "controller id is missing in omada response",
+			description:  "LoginToken is missing in omada response",
 			requestUrl:   "https://omada.example.com",
 			loginToken:   nil,
 			responseCode: http.StatusBadGateway,
@@ -158,8 +174,8 @@ func TestUpdateWifis_Login(t *testing.T) {
 				MockGetControllerId: func() (*OmadaResponse, error) {
 					return &OmadaResponse{
 						ErrorCode: 0,
-						Msg:       "test",
-						Result: Result{
+						Msg:       StrPtr("test"),
+						Result: &Result{
 							OmadacId: StrPtr("omada_cid"),
 						},
 					}, nil
@@ -171,10 +187,123 @@ func TestUpdateWifis_Login(t *testing.T) {
 
 					resp := &OmadaResponse{
 						ErrorCode: 0,
-						Msg:       "test",
-						Result: Result{
+						Msg:       StrPtr("test"),
+						Result: &Result{
 							Token: testData.loginToken,
 						},
+					}
+
+					return resp, nil
+				},
+				MockGetSites: func(omadaControllerId *string, loginToken *string) (*OmadaResponse, error) {
+					resp := &OmadaResponse{
+						ErrorCode: 0,
+						Msg:       StrPtr("test"),
+						Result: &Result{
+							Data: &[]Data{{Id: StrPtr("site_id"), Name: StrPtr("site_name")}},
+						},
+					}
+
+					return resp, nil
+				},
+			},
+		)
+
+		w := httptest.NewRecorder()
+		req := httptest.NewRequest(http.MethodPost, "http://example.com/foo", nil)
+
+		// setting mux vars for testing
+		vars := map[string]string{
+			"ssid": "some_ssid",
+		}
+		req = mux.SetURLVars(req, vars)
+
+		controller.UpdateWifi(w, req)
+
+		netsResponse := readResponse(w)
+
+		assert.Equal(testData.responseCode, w.Code, "Response code is not correct")
+		if testData.responseCode == http.StatusOK {
+			assert.True(netsResponse.Data.Updated, "Response success body missing updated flag")
+		} else {
+			assert.True(len(netsResponse.Error.Message) > 0, "Response error message is missing")
+		}
+	}
+}
+
+func TestUpdateWifis_GetSites(t *testing.T) {
+	testsData := []struct {
+		description        string
+		requestUrl         string
+		omadaResponseError bool
+		includeSites       bool
+		responseCode       int
+	}{
+		{
+			description:  "happy path",
+			requestUrl:   "https://omada.example.com/networks/ssid",
+			includeSites: true,
+			responseCode: http.StatusOK,
+		},
+		{
+			description:        "omada GetSites response error",
+			requestUrl:         "https://omada.example.com",
+			includeSites:       true,
+			omadaResponseError: true,
+			responseCode:       http.StatusBadGateway,
+		},
+		{
+			description:  "site is missing in omada response",
+			requestUrl:   "https://omada.example.com",
+			includeSites: false,
+			responseCode: http.StatusBadGateway,
+		},
+	}
+
+	assert := assert.New(t)
+
+	for _, testData := range testsData {
+		t.Logf("tesing %s", testData.description)
+
+		controller := NewControllerWithParams(
+			NewConfigSafe(StrPtr("8080"), StrPtr("1"), StrPtr("123"), nil, nil, nil, StrPtr(testData.requestUrl), nil, nil),
+			&MockOmadaApi{
+				MockGetControllerId: func() (*OmadaResponse, error) {
+					return &OmadaResponse{
+						ErrorCode: 0,
+						Msg:       StrPtr("test"),
+						Result: &Result{
+							OmadacId: StrPtr("omada_cid"),
+						},
+					}, nil
+				},
+				MockLogin: func(omadaControllerId *string) (*OmadaResponse, error) {
+					resp := &OmadaResponse{
+						ErrorCode: 0,
+						Msg:       StrPtr("test"),
+						Result: &Result{
+							Token: StrPtr("login_token"),
+						},
+					}
+
+					return resp, nil
+				},
+				MockGetSites: func(omadaControllerId *string, loginToken *string) (*OmadaResponse, error) {
+					if testData.omadaResponseError {
+						return nil, errors.New("test")
+					}
+
+					var res *Result
+					if testData.includeSites {
+						res = &Result{
+							Data: &[]Data{{Id: StrPtr("site_id"), Name: StrPtr("site_name")}},
+						}
+					}
+
+					resp := &OmadaResponse{
+						ErrorCode: 0,
+						Msg:       StrPtr("test"),
+						Result:    res,
 					}
 
 					return resp, nil

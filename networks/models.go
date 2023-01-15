@@ -2,14 +2,20 @@ package networks
 
 // nested within sbserver response
 type OmadaResponse struct {
-	ErrorCode int    `json:"errorCode"`
-	Msg       string `json:"msg"`
-	Result    Result `json:"result"`
+	ErrorCode int     `json:"errorCode"`
+	Msg       *string `json:"msg,omitempty"`
+	Result    *Result `json:"result,omitempty"`
 }
 
 type Result struct {
 	OmadacId *string `json:"omadacId,omitempty"`
 	Token    *string `json:"token,omitempty"`
+	Data     *[]Data `json:"data,omitempty"`
+}
+
+type Data struct {
+	Id   *string `json:"id,omitempty"`
+	Name *string `json:"name,omitempty"`
 }
 
 type NetworksResponse struct {

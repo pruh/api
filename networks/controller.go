@@ -72,11 +72,16 @@ func (c *controller) UpdateWifi(w http.ResponseWriter, r *http.Request) {
 
 	glog.Infof("Omada login token %s", *omadaLoginResp.Result.Token)
 
-	// login
-	// GET https://omada.naboo.space/{omadaId.Result.OmadacId}/api/v2/login
+	omadaSitesResp, err := c.repository.GetSites(omadaIdResp.Result.OmadacId,
+		omadaLoginResp.Result.Token)
+	if err != nil || omadaIdResp.ErrorCode != 0 || omadaSitesResp.Result == nil ||
+		omadaSitesResp.Result.Data == nil || len(*omadaSitesResp.Result.Data) == 0 {
+		errorMessage := fmt.Sprintf("Omada Sites Query Error: %+v", err)
+		c.writeResponse(w, http.StatusBadGateway, false, &errorMessage)
+		return
+	}
 
-	// obtain login token
-	// {"errorCode":0,"msg":"Log in successfully.","result":{"roleType":0,"token":"e748110534154561ba8f154cf0ce1c77"}}
+	glog.Infof("Omada sites %+v", (*omadaSitesResp.Result.Data)[0])
 
 	// get site id
 	// and use the first one

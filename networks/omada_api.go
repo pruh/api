@@ -22,6 +22,7 @@ type omadaApi struct {
 type OmadaApi interface {
 	GetControllerId() (*OmadaResponse, error)
 	Login(omadaControllerId *string) (*OmadaResponse, error)
+	GetSites(omadaControllerId *string, loginToken *string) (*OmadaResponse, error)
 }
 
 // NewOmadaApi creates new omada api
@@ -111,13 +112,41 @@ func (oa *omadaApi) Login(omadaControllerId *string) (*OmadaResponse, error) {
 	return &omadaResponse, nil
 }
 
-// func (oa *OmadaApi) Login() string {
-// 	return nil
-// }
+func (oa *omadaApi) GetSites(omadaControllerId *string, loginToken *string) (*OmadaResponse, error) {
+	url := fmt.Sprintf("%s/%s/api/v2/sites?currentPageSize=1&currentPage=1", *oa.config.OmadaUrl, *omadaControllerId)
+	req, err := http.NewRequest(http.MethodGet, url, nil)
+	if err != nil {
+		glog.Errorf("Failed to create HTTP request: %s", err)
+		return nil, err
+	}
+	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("Csrf-token", *loginToken)
 
-// func (oa *OmadaApi) GetSiteId() string {
-// 	return nil
-// }
+	glog.Infof("sending GetSites request")
+
+	resp, err := oa.httpClient.Do(req)
+	if err != nil {
+		glog.Errorf("Error querying omada sites: %s", err)
+		return nil, err
+	}
+
+	defer resp.Body.Close()
+
+	body, err := ioutil.ReadAll(io.LimitReader(resp.Body, 1024*1024))
+	if err != nil {
+		glog.Errorf("Error reading omada sites response: %s", err)
+		return nil, err
+	}
+
+	var omadaResponse OmadaResponse
+	err = json.Unmarshal(body, &omadaResponse)
+	if err != nil {
+		glog.Errorf("Error parsing omada sites: %s", err)
+		return nil, err
+	}
+
+	return &omadaResponse, nil
+}
 
 // func (oa *OmadaApi) GetWlanId(siteId *string) string {
 // 	return nil

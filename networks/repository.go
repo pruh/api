@@ -19,3 +19,7 @@ func (r *Repository) GetControllerId() (*OmadaResponse, error) {
 func (r *Repository) Login(omadaControllerId *string) (*OmadaResponse, error) {
 	return r.omadaApi.Login(omadaControllerId)
 }
+
+func (r *Repository) GetSites(omadaControllerId *string, loginToken *string) (*OmadaResponse, error) {
+	return r.omadaApi.GetSites(omadaControllerId, loginToken)
+}
