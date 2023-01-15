@@ -17,20 +17,23 @@ import (
 	. "github.com/pruh/api/networks/tests"
 )
 
-func TestUpdateWifis(t *testing.T) {
+func TestUpdateWifis_ControllerId(t *testing.T) {
 	testsData := []struct {
 		description        string
 		requestUrl         string
 		ssidParam          *string
 		omadaResponseError bool
 		omadaControllerId  *string
+		loginToken         *string
 		responseCode       int
 	}{
 		{
-			description:  "happy path",
-			requestUrl:   "https://omada.example.com/networks/ssid",
-			ssidParam:    StrPtr("my_ssid"),
-			responseCode: http.StatusOK,
+			description:       "happy path",
+			requestUrl:        "https://omada.example.com/networks/ssid",
+			ssidParam:         StrPtr("my_ssid"),
+			omadaControllerId: StrPtr("c_id"),
+			loginToken:        StrPtr("login_token"),
+			responseCode:      http.StatusOK,
 		},
 		{
 			description:  "ssid missing in the request params",
@@ -42,13 +45,14 @@ func TestUpdateWifis(t *testing.T) {
 			requestUrl:         "https://omada.example.com",
 			ssidParam:          StrPtr("my_ssid"),
 			omadaResponseError: true,
+			omadaControllerId:  StrPtr("c_id"),
 			responseCode:       http.StatusBadGateway,
 		},
 		{
 			description:       "controller id is missing in omada response",
 			requestUrl:        "https://omada.example.com",
 			ssidParam:         StrPtr("my_ssid"),
-			omadaControllerId: StrPtr(""),
+			omadaControllerId: nil,
 			responseCode:      http.StatusBadGateway,
 		},
 	}
@@ -61,23 +65,27 @@ func TestUpdateWifis(t *testing.T) {
 		controller := NewControllerWithParams(
 			NewConfigSafe(StrPtr("8080"), StrPtr("1"), StrPtr("123"), nil, nil, nil, StrPtr(testData.requestUrl), nil, nil),
 			&MockOmadaApi{
-				MockGetControllerId: func() (*ControllerIdResponse, error) {
+				MockGetControllerId: func() (*OmadaResponse, error) {
 					if testData.omadaResponseError {
 						return nil, errors.New("test")
 					}
 
-					var cId string
-					if testData.omadaControllerId != nil {
-						cId = *testData.omadaControllerId
-					} else {
-						cId = "some_id"
-					}
-
-					resp := &ControllerIdResponse{
+					resp := &OmadaResponse{
 						ErrorCode: 0,
 						Msg:       "test",
-						Result: ControllerIdResult{
-							OmadacId: cId,
+						Result: Result{
+							OmadacId: testData.omadaControllerId,
+						},
+					}
+
+					return resp, nil
+				},
+				MockLogin: func(omadaControllerId *string) (*OmadaResponse, error) {
+					resp := &OmadaResponse{
+						ErrorCode: 0,
+						Msg:       "test",
+						Result: Result{
+							Token: testData.loginToken,
 						},
 					}
 
@@ -97,7 +105,93 @@ func TestUpdateWifis(t *testing.T) {
 			req = mux.SetURLVars(req, vars)
 		}
 
-		controller.UpdateWifis(w, req)
+		controller.UpdateWifi(w, req)
+
+		netsResponse := readResponse(w)
+
+		assert.Equal(testData.responseCode, w.Code, "Response code is not correct")
+		if testData.responseCode == http.StatusOK {
+			assert.True(netsResponse.Data.Updated, "Response success body missing updated flag")
+		} else {
+			assert.True(len(netsResponse.Error.Message) > 0, "Response error message is missing")
+		}
+	}
+}
+
+func TestUpdateWifis_Login(t *testing.T) {
+	testsData := []struct {
+		description        string
+		requestUrl         string
+		omadaResponseError bool
+		loginToken         *string
+		responseCode       int
+	}{
+		{
+			description:  "happy path",
+			requestUrl:   "https://omada.example.com/networks/ssid",
+			loginToken:   StrPtr("login_token"),
+			responseCode: http.StatusOK,
+		},
+		{
+			description:        "omada controller id response error",
+			requestUrl:         "https://omada.example.com",
+			loginToken:         StrPtr("login_token"),
+			omadaResponseError: true,
+			responseCode:       http.StatusBadGateway,
+		},
+		{
+			description:  "controller id is missing in omada response",
+			requestUrl:   "https://omada.example.com",
+			loginToken:   nil,
+			responseCode: http.StatusBadGateway,
+		},
+	}
+
+	assert := assert.New(t)
+
+	for _, testData := range testsData {
+		t.Logf("tesing %s", testData.description)
+
+		controller := NewControllerWithParams(
+			NewConfigSafe(StrPtr("8080"), StrPtr("1"), StrPtr("123"), nil, nil, nil, StrPtr(testData.requestUrl), nil, nil),
+			&MockOmadaApi{
+				MockGetControllerId: func() (*OmadaResponse, error) {
+					return &OmadaResponse{
+						ErrorCode: 0,
+						Msg:       "test",
+						Result: Result{
+							OmadacId: StrPtr("omada_cid"),
+						},
+					}, nil
+				},
+				MockLogin: func(omadaControllerId *string) (*OmadaResponse, error) {
+					if testData.omadaResponseError {
+						return nil, errors.New("test")
+					}
+
+					resp := &OmadaResponse{
+						ErrorCode: 0,
+						Msg:       "test",
+						Result: Result{
+							Token: testData.loginToken,
+						},
+					}
+
+					return resp, nil
+				},
+			},
+		)
+
+		w := httptest.NewRecorder()
+		req := httptest.NewRequest(http.MethodPost, "http://example.com/foo", nil)
+
+		// setting mux vars for testing
+		vars := map[string]string{
+			"ssid": "some_ssid",
+		}
+		req = mux.SetURLVars(req, vars)
+
+		controller.UpdateWifi(w, req)
 
 		netsResponse := readResponse(w)
 

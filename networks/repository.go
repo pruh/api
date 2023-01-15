@@ -2,16 +2,20 @@ package networks
 
 // Repository to interact with networks data providers
 type Repository struct {
-	OmadaApi OmadaApi
+	omadaApi OmadaApi
 }
 
 // NewRepository creates new networks repository
 func NewRepository(omadaApi OmadaApi) Repository {
 	return Repository{
-		OmadaApi: omadaApi,
+		omadaApi: omadaApi,
 	}
 }
 
-func (r *Repository) GetControllerId() (*ControllerIdResponse, error) {
-	return r.OmadaApi.GetControllerId()
+func (r *Repository) GetControllerId() (*OmadaResponse, error) {
+	return r.omadaApi.GetControllerId()
+}
+
+func (r *Repository) Login(omadaControllerId *string) (*OmadaResponse, error) {
+	return r.omadaApi.Login(omadaControllerId)
 }

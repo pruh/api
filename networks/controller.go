@@ -21,12 +21,12 @@ const (
 
 // Controller handles all network related requests
 type controller struct {
-	Config     *config.Configuration
-	Repository Repository
+	config     *config.Configuration
+	repository Repository
 }
 
 type Controller interface {
-	UpdateWifis(w http.ResponseWriter, r *http.Request)
+	UpdateWifi(w http.ResponseWriter, r *http.Request)
 }
 
 // NewController creates new networks controller
@@ -38,12 +38,12 @@ func NewController(config *config.Configuration) Controller {
 // Creates a new controller with additional dependencies for tests
 func NewControllerWithParams(config *config.Configuration, omadaApi OmadaApi) Controller {
 	return &controller{
-		Config:     config,
-		Repository: NewRepository(omadaApi),
+		config:     config,
+		repository: NewRepository(omadaApi),
 	}
 }
 
-func (c *controller) UpdateWifis(w http.ResponseWriter, r *http.Request) {
+func (c *controller) UpdateWifi(w http.ResponseWriter, r *http.Request) {
 	// verify ssid is present
 	params := mux.Vars(r)
 	ssid := params["ssid"]
@@ -54,30 +54,44 @@ func (c *controller) UpdateWifis(w http.ResponseWriter, r *http.Request) {
 	}
 
 	//controller id
-	omadaId, err := c.Repository.OmadaApi.GetControllerId()
-	if err != nil || omadaId.ErrorCode != 0 || len(omadaId.Result.OmadacId) == 0 {
+	omadaIdResp, err := c.repository.GetControllerId()
+	if err != nil || omadaIdResp.ErrorCode != 0 || omadaIdResp.Result.OmadacId == nil {
 		errorMessage := fmt.Sprintf("Omada Controller Id Query Error: %+v", err)
 		c.writeResponse(w, http.StatusBadGateway, false, &errorMessage)
 		return
 	}
 
-	glog.Infof("Omada controller id %s", omadaId.Result.OmadacId)
+	glog.Infof("Omada controller id %s", *omadaIdResp.Result.OmadacId)
+
+	omadaLoginResp, err := c.repository.Login(omadaIdResp.Result.OmadacId)
+	if err != nil || omadaIdResp.ErrorCode != 0 || omadaLoginResp.Result.Token == nil {
+		errorMessage := fmt.Sprintf("Omada Controller Id Query Error: %+v", err)
+		c.writeResponse(w, http.StatusBadGateway, false, &errorMessage)
+		return
+	}
+
+	glog.Infof("Omada login token %s", *omadaLoginResp.Result.Token)
 
 	// login
+	// GET https://omada.naboo.space/{omadaId.Result.OmadacId}/api/v2/login
 
 	// obtain login token
+	// {"errorCode":0,"msg":"Log in successfully.","result":{"roleType":0,"token":"e748110534154561ba8f154cf0ce1c77"}}
 
 	// get site id
+	// and use the first one
+	// GET /{omadacId}/api/v2/sites
 
 	// get wlan id
+	// and use the frist one
+	// GET /{omadacId}/api/v2/sites/{siteId}/setting/wlans
 
-	// get ssidid
+	// get list of all ssids
+	// find ssid that matches passed ssid
+	// GET /{omadacId}/api/v2/sites/{siteId}/setting/wlans/{wlanId}/ssids
 
 	// call patch
-
-	//req.Header.Add("Content-Type", "application/x-www-form-urlencoded")
-
-	// c.Config.OmadaUrl
+	// PATCH /{omadacId}/api/v2/sites/{siteId}/setting/wlans/{wlanId}/ssids/{ssidId}
 
 	c.writeResponse(w, http.StatusOK, true, nil)
 

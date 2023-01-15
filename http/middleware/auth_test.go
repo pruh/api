@@ -179,7 +179,7 @@ func TestBasicAuth(t *testing.T) {
 	assert := assert.New(t)
 
 	for _, testData := range testsData {
-		t.Logf("testing %+v", testData)
+		t.Logf("testing %s", testData.description)
 
 		w := httptest.NewRecorder()
 		req := httptest.NewRequest(http.MethodPost, "http://example.com/foo", testData.requestBody)

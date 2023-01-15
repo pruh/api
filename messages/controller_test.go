@@ -127,7 +127,7 @@ func TestTelegramControllerSendMessage(t *testing.T) {
 	assert := assert.New(t)
 
 	for _, testData := range testsData {
-		t.Logf("tesing %+v", testData)
+		t.Logf("tesing %s", testData.description)
 
 		controller := Controller{
 			Config: NewConfigSafe(strPtr("8080"), strPtr("1"), testData.defaultChatID, nil, nil, nil, nil, nil, nil),
