@@ -83,13 +83,19 @@ func (c *controller) UpdateWifi(w http.ResponseWriter, r *http.Request) {
 
 	glog.Infof("Omada sites %+v", (*omadaSitesResp.Result.Data)[0])
 
-	// get site id
-	// and use the first one
-	// GET /{omadacId}/api/v2/sites
-
 	// get wlan id
 	// and use the frist one
 	// GET /{omadacId}/api/v2/sites/{siteId}/setting/wlans
+	omadaWlansResp, err := c.repository.GetWlans(omadaIdResp.Result.OmadacId,
+		omadaLoginResp.Result.Token, (*omadaSitesResp.Result.Data)[0].Id)
+	if err != nil || omadaIdResp.ErrorCode != 0 || omadaWlansResp.Result == nil ||
+		omadaWlansResp.Result.Data == nil || len(*omadaWlansResp.Result.Data) == 0 {
+		errorMessage := fmt.Sprintf("Omada Wlans Query Error: %+v", err)
+		c.writeResponse(w, http.StatusBadGateway, false, &errorMessage)
+		return
+	}
+
+	glog.Infof("Omada wlans %+v", (*omadaWlansResp.Result.Data)[0])
 
 	// get list of all ssids
 	// find ssid that matches passed ssid

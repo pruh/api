@@ -93,5 +93,35 @@ func TestRepoGetSites(t *testing.T) {
 
 	assert.True(mockCalled, "mock is not called")
 	assert.Equal(Data{Id: StrPtr("site_id"), Name: StrPtr("site_name")},
-		(*controllerId.Result.Data)[0], "login token is not as expected")
+		(*controllerId.Result.Data)[0], "sites are not as expected")
+}
+
+func TestRepoGetWlans(t *testing.T) {
+	var mockCalled = false
+
+	mockOmadaApi := MockOmadaApi{
+		MockGetWlans: func(omadaControllerId *string, loginToken *string, siteId *string) (*OmadaResponse, error) {
+			resp := &OmadaResponse{
+				ErrorCode: 0,
+				Msg:       StrPtr("Success."),
+				Result: &Result{
+					Data: &[]Data{{Id: StrPtr("wlan_id"), Name: StrPtr("wlan_name")}},
+				},
+			}
+
+			mockCalled = true
+
+			return resp, nil
+		},
+	}
+
+	repo := NewRepository(&mockOmadaApi)
+
+	assert := assert.New(t)
+
+	controllerId, _ := repo.GetWlans(nil, nil, nil)
+
+	assert.True(mockCalled, "mock is not called")
+	assert.Equal(Data{Id: StrPtr("wlan_id"), Name: StrPtr("wlan_name")},
+		(*controllerId.Result.Data)[0], "wlans are not as expected")
 }

@@ -23,3 +23,7 @@ func (r *Repository) Login(omadaControllerId *string) (*OmadaResponse, error) {
 func (r *Repository) GetSites(omadaControllerId *string, loginToken *string) (*OmadaResponse, error) {
 	return r.omadaApi.GetSites(omadaControllerId, loginToken)
 }
+
+func (r *Repository) GetWlans(omadaControllerId *string, loginToken *string, siteId *string) (*OmadaResponse, error) {
+	return r.omadaApi.GetWlans(omadaControllerId, loginToken, siteId)
+}
