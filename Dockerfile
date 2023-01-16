@@ -17,4 +17,4 @@ RUN apk update \
 WORKDIR /app
 COPY --from=build-env /go/src/github.com/pruh/api/api /app/
 
-CMD ["/app/api;"]
+CMD ["/app/api"]
