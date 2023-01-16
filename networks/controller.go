@@ -105,6 +105,20 @@ func (c *controller) UpdateWifi(w http.ResponseWriter, r *http.Request) {
 
 	glog.Infof("Omada ssids %+v", (*omadaSsidsResp.Result.Data)[0])
 
+	var ssidId *string
+	for _, ssidData := range *omadaSsidsResp.Result.Data {
+		if *ssidData.Name == ssid {
+			ssidId = ssidData.Id
+			break
+		}
+	}
+
+	if ssidId == nil {
+		errorMessage := "ssid with given name not found in configured networks"
+		c.writeResponse(w, http.StatusNotFound, false, &errorMessage)
+		return
+	}
+
 	// call patch
 	// PATCH /{omadacId}/api/v2/sites/{siteId}/setting/wlans/{wlanId}/ssids/{ssidId}
 

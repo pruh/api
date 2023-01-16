@@ -133,7 +133,7 @@ func TestUpdateWifis_ControllerId(t *testing.T) {
 							Data: &[]Data{
 								{
 									Id:   StrPtr("ssid_id"),
-									Name: StrPtr("ssid_name"),
+									Name: StrPtr("my_ssid"),
 								},
 							},
 						},
@@ -265,7 +265,7 @@ func TestUpdateWifis_Login(t *testing.T) {
 							Data: &[]Data{
 								{
 									Id:   StrPtr("ssid_id"),
-									Name: StrPtr("ssid_name"),
+									Name: StrPtr("my_ssid"),
 								},
 							},
 						},
@@ -281,7 +281,7 @@ func TestUpdateWifis_Login(t *testing.T) {
 
 		// setting mux vars for testing
 		vars := map[string]string{
-			"ssid": "some_ssid",
+			"ssid": "my_ssid",
 		}
 		req = mux.SetURLVars(req, vars)
 
@@ -400,7 +400,7 @@ func TestUpdateWifis_GetSites(t *testing.T) {
 							Data: &[]Data{
 								{
 									Id:   StrPtr("ssid_id"),
-									Name: StrPtr("ssid_name"),
+									Name: StrPtr("my_ssid"),
 								},
 							},
 						},
@@ -416,7 +416,7 @@ func TestUpdateWifis_GetSites(t *testing.T) {
 
 		// setting mux vars for testing
 		vars := map[string]string{
-			"ssid": "some_ssid",
+			"ssid": "my_ssid",
 		}
 		req = mux.SetURLVars(req, vars)
 
@@ -526,7 +526,7 @@ func TestUpdateWifis_GetWlans(t *testing.T) {
 							Data: &[]Data{
 								{
 									Id:   StrPtr("ssid_id"),
-									Name: StrPtr("ssid_name"),
+									Name: StrPtr("my_ssid"),
 								},
 							},
 						},
@@ -542,7 +542,7 @@ func TestUpdateWifis_GetWlans(t *testing.T) {
 
 		// setting mux vars for testing
 		vars := map[string]string{
-			"ssid": "some_ssid",
+			"ssid": "my_ssid",
 		}
 		req = mux.SetURLVars(req, vars)
 
@@ -648,7 +648,7 @@ func TestUpdateWifis_GetSsids(t *testing.T) {
 					var res *Result
 					if testData.includeSsids {
 						res = &Result{
-							Data: &[]Data{{Id: StrPtr("ssid_id"), Name: StrPtr("ssid_name")}},
+							Data: &[]Data{{Id: StrPtr("ssid_id"), Name: StrPtr("my_ssid")}},
 						}
 					}
 
@@ -668,7 +668,7 @@ func TestUpdateWifis_GetSsids(t *testing.T) {
 
 		// setting mux vars for testing
 		vars := map[string]string{
-			"ssid": "some_ssid",
+			"ssid": "my_ssid",
 		}
 		req = mux.SetURLVars(req, vars)
 
