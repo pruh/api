@@ -18,6 +18,17 @@ type Data struct {
 	Name *string `json:"name,omitempty"`
 }
 
+type OmadaLoginData struct {
+	Username string `json:"username,omitempty"`
+	Password string `json:"password,omitempty"`
+}
+
+type OmadaSsidUpdateData struct {
+	WlanScheduleEnable *bool   `json:"wlanScheduleEnable,omitempty"`
+	Action             *int    `json:"action,omitempty"`
+	ScheduleId         *string `json:"scheduleId,omitempty"`
+}
+
 type NetworksResponse struct {
 	Data  *NetworksResponseSuccess `json:"data,omitempty"`
 	Error *NetworksResponseError   `json:"error,omitempty"`
@@ -32,7 +43,14 @@ type NetworksResponseError struct {
 	Message string `json:"message,omitempty"`
 }
 
-type LoginData struct {
-	Username string `json:"username,omitempty"`
-	Password string `json:"password,omitempty"`
+func NewStr(str string) *string {
+	return &str
+}
+
+func NewInt(num int) *int {
+	return &num
+}
+
+func NewBool(b bool) *bool {
+	return &b
 }

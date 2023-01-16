@@ -119,8 +119,19 @@ func (c *controller) UpdateWifi(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// call patch
-	// PATCH /{omadacId}/api/v2/sites/{siteId}/setting/wlans/{wlanId}/ssids/{ssidId}
+	glog.Infof("Omada ssid id %s", *ssidId)
+
+	// todo get scheduleId
+	scheduleId := "1"
+
+	omadaUpdateSsidResp, err := c.repository.UpdateSsid(omadaIdResp.Result.OmadacId,
+		omadaLoginResp.Result.Token, (*omadaSitesResp.Result.Data)[0].Id,
+		(*omadaWlansResp.Result.Data)[0].Id, &ssid, &scheduleId)
+	if err != nil || omadaUpdateSsidResp.ErrorCode != 0 {
+		errorMessage := fmt.Sprintf("Can not update ssid: %+v", err)
+		c.writeResponse(w, http.StatusBadGateway, false, &errorMessage)
+		return
+	}
 
 	c.writeResponse(w, http.StatusOK, true, nil)
 
