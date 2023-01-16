@@ -29,7 +29,7 @@ func TestGetControllerId(t *testing.T) {
 			omadaUrl:       "https://omada.example.com",
 			expectError:    false,
 			responseCode:   http.StatusOK,
-			responseBody:   "{\"errorCode\": 0,\"msg\": \"Success.\",\"result\": {\"apiVer\": \"23\",\"type\": 1,\"omadacId\": \"someId\"}}",
+			responseBody:   `{"errorCode": 0,"msg": "Success.","result": {"apiVer": "23","type": 1,"omadacId": "someId"}}`,
 			omadaErrorCode: 0,
 			omadacId:       "someId",
 		}, {
@@ -37,7 +37,7 @@ func TestGetControllerId(t *testing.T) {
 			omadaUrl:       "https://omada.example.com",
 			expectError:    true,
 			responseCode:   http.StatusInternalServerError,
-			responseBody:   "{}",
+			responseBody:   `{}`,
 			omadaErrorCode: 0,
 			omadacId:       "someId",
 		},
@@ -101,7 +101,7 @@ func TestLogin(t *testing.T) {
 			omadacId:       NewStr("omada_cid"),
 			expectError:    false,
 			responseCode:   http.StatusOK,
-			responseBody:   "{\"errorCode\": 0,\"msg\": \"Success.\",\"result\": {\"apiVer\": \"23\",\"type\": 1,\"token\": \"login_token\"}}",
+			responseBody:   `{"errorCode": 0,"msg": "Success.","result": {"apiVer": "23","type": 1,"token": "login_token"}}`,
 			omadaErrorCode: 0,
 			loginToken:     "login_token",
 		},
@@ -113,7 +113,7 @@ func TestLogin(t *testing.T) {
 			omadacId:       NewStr("omada_cid"),
 			expectError:    true,
 			responseCode:   http.StatusInternalServerError,
-			responseBody:   "{\"errorCode\": 0,\"msg\": \"Success.\",\"result\": {\"apiVer\": \"23\",\"type\": 1,\"token\": \"login_token\"}}",
+			responseBody:   `{"errorCode": 0,"msg": "Success.","result": {"apiVer": "23","type": 1,"token": "login_token"}}`,
 			omadaErrorCode: 0,
 			loginToken:     "login_token",
 		},
@@ -186,7 +186,7 @@ func TestGetSites(t *testing.T) {
 			loginToken:     NewStr("login_token"),
 			expectError:    false,
 			responseCode:   http.StatusOK,
-			responseBody:   "{\"errorCode\": 0,\"msg\": \"Success.\",\"result\": {\"data\": [{\"name\": \"site_name\", \"id\": \"site_id\"}]}}",
+			responseBody:   `{"errorCode": 0,"msg": "Success.","result": {"data": [{"name": "site_name", "id": "site_id"}]}}`,
 			omadaErrorCode: 0,
 		},
 		{
@@ -196,7 +196,7 @@ func TestGetSites(t *testing.T) {
 			loginToken:     NewStr("login_token"),
 			expectError:    true,
 			responseCode:   http.StatusInternalServerError,
-			responseBody:   "{\"errorCode\": 0,\"msg\": \"Success.\",\"result\": {\"data\": [{\"name\": \"site_name\", \"id\": \"site_id\"}]}}",
+			responseBody:   `{"errorCode": 0,"msg": "Success.","result": {"data": [{"name": "site_name", "id": "site_id"}]}}`,
 			omadaErrorCode: 0,
 		},
 	}
@@ -264,7 +264,7 @@ func TestGetWlans(t *testing.T) {
 			siteId:         NewStr("site_id"),
 			expectError:    false,
 			responseCode:   http.StatusOK,
-			responseBody:   "{\"errorCode\": 0,\"msg\": \"Success.\",\"result\": {\"data\": [{\"name\": \"wlan_name\", \"id\": \"wlan_id\"}]}}",
+			responseBody:   `{"errorCode": 0,"msg": "Success.","result": {"data": [{"name": "wlan_name", "id": "wlan_id"}]}}`,
 			omadaErrorCode: 0,
 		},
 		{
@@ -275,7 +275,7 @@ func TestGetWlans(t *testing.T) {
 			siteId:         NewStr("site_id"),
 			expectError:    true,
 			responseCode:   http.StatusInternalServerError,
-			responseBody:   "{\"errorCode\": 0,\"msg\": \"Success.\",\"result\": {\"data\": [{\"name\": \"wlan_name\", \"id\": \"wlan_id\"}]}}",
+			responseBody:   `{"errorCode": 0,"msg": "Success.","result": {"data": [{"name": "wlan_name", "id": "wlan_id"}]}}`,
 			omadaErrorCode: 0,
 		},
 	}
@@ -345,7 +345,7 @@ func TestGetSsids(t *testing.T) {
 			wlanId:         NewStr("wlan_id"),
 			expectError:    false,
 			responseCode:   http.StatusOK,
-			responseBody:   "{\"errorCode\": 0,\"msg\": \"Success.\",\"result\": {\"data\": [{\"name\": \"ssid_name\", \"id\": \"ssid_id\"}]}}",
+			responseBody:   `{"errorCode": 0,"msg": "Success.","result": {"data": [{"name": "ssid_name", "id": "ssid_id"}]}}`,
 			omadaErrorCode: 0,
 		},
 		{
@@ -357,7 +357,7 @@ func TestGetSsids(t *testing.T) {
 			wlanId:         NewStr("wlan_id"),
 			expectError:    true,
 			responseCode:   http.StatusInternalServerError,
-			responseBody:   "{\"errorCode\": 0,\"msg\": \"Success.\",\"result\": {\"data\": [{\"name\": \"ssid_name\", \"id\": \"ssid_id\"}]}}",
+			responseBody:   `{"errorCode": 0,"msg": "Success.","result": {"data": [{"name": "ssid_name", "id": "ssid_id"}]}}`,
 			omadaErrorCode: 0,
 		},
 	}
@@ -432,7 +432,7 @@ func TestUpdateSsid(t *testing.T) {
 			scheduleId:     NewStr("schedule_id"),
 			expectError:    false,
 			responseCode:   http.StatusOK,
-			responseBody:   "{\"errorCode\": 0,\"msg\": \"Success.\"}",
+			responseBody:   `{"errorCode": 0,"msg": "Success."}`,
 			omadaErrorCode: 0,
 		},
 		{
@@ -446,7 +446,7 @@ func TestUpdateSsid(t *testing.T) {
 			scheduleId:     NewStr("schedule_id"),
 			expectError:    true,
 			responseCode:   http.StatusInternalServerError,
-			responseBody:   "{\"errorCode\": 0,\"msg\": \"Success.\"}",
+			responseBody:   `{"errorCode": 0,"msg": "Success."}`,
 			omadaErrorCode: 0,
 		},
 	}
@@ -503,5 +503,117 @@ func TestUpdateSsid(t *testing.T) {
 		}
 
 		assert.Equal(testData.omadaErrorCode, wlansResp.ErrorCode, "Error code is not correct")
+	}
+}
+
+func TestGetTimeRanges(t *testing.T) {
+	testsData := []struct {
+		description    string
+		omadaUrl       string
+		omadacId       *string
+		loginToken     *string
+		siteId         *string
+		scheduleId     *string
+		expectError    bool
+		responseCode   int
+		responseBody   string
+		omadaErrorCode int
+	}{
+		{
+			description:  "happy path",
+			omadaUrl:     "https://omada.example.com",
+			omadacId:     NewStr("omada_cid"),
+			loginToken:   NewStr("login_token"),
+			siteId:       NewStr("site_id"),
+			scheduleId:   NewStr("schedule_id"),
+			expectError:  false,
+			responseCode: http.StatusOK,
+			responseBody: `{
+				"errorCode": 0,"msg": "Success.","result": {
+					"data": [{
+						"name": "tr_name", "id": "tr_id", "daymode": 1, "timelist": [{
+							"startTimeH": 1, "startTimeM": 22, "endTimeH": 2, "endTimeM": 55
+						}]
+					}]
+				}
+			}`,
+			omadaErrorCode: 0,
+		},
+		{
+			description:  "upstream error",
+			omadaUrl:     "https://omada.example.com",
+			omadacId:     NewStr("omada_cid"),
+			loginToken:   NewStr("login_token"),
+			siteId:       NewStr("site_id"),
+			scheduleId:   NewStr("schedule_id"),
+			expectError:  true,
+			responseCode: http.StatusInternalServerError,
+			responseBody: `{
+				"errorCode": 0,"msg": "Success.","result": {
+					"data": [{
+						"name": "tr_name", "id": "tr_id", "daymode": 1, "timelist": [{
+							"startTimeH": 1, "startTimeM": 22, "endTimeH": 2, "endTimeM": 55
+						}]
+					}]
+				}
+			}`,
+			omadaErrorCode: 0,
+		},
+	}
+
+	assert := assert.New(t)
+
+	for _, testData := range testsData {
+		t.Logf("tesing %+v", testData.description)
+
+		mockHttpClient := MockHTTPClient{
+			MockDo: func(req *http.Request) (*http.Response, error) {
+				assert.Equal(fmt.Sprintf("%s/%s/api/v2/sites/%s/setting/profiles/timeranges",
+					testData.omadaUrl, *testData.omadacId, *testData.siteId),
+					req.URL.String(), "Omada request url is not correct")
+
+				assert.Equal(*testData.loginToken, req.Header.Get("Csrf-token"), "Login token is missing")
+
+				var respErr error
+				if testData.responseCode != http.StatusOK {
+					respErr = errors.New("test error")
+				}
+
+				w := httptest.NewRecorder()
+				w.WriteHeader(testData.responseCode)
+				w.WriteString(testData.responseBody)
+
+				return w.Result(), respErr
+			},
+		}
+
+		omadaApi := NewOmadaApi(
+			NewConfigSafe(NewStr("8080"), NewStr("1"), NewStr("123"), nil, nil, nil,
+				NewStr(testData.omadaUrl), nil, nil),
+			&mockHttpClient)
+
+		trResp, err := omadaApi.GetTimeRanges(testData.omadacId, testData.loginToken,
+			testData.siteId)
+		if testData.expectError {
+			assert.True(err != nil, "should return error")
+			continue
+		}
+
+		println(fmt.Sprintf("trResp %+v", trResp))
+
+		assert.Equal(testData.omadaErrorCode, trResp.ErrorCode, "Error code is not correct")
+		assert.Equal(Data{
+			Id:      NewStr("tr_id"),
+			Name:    NewStr("tr_name"),
+			DayMode: NewInt(1),
+			TimeList: &[]TimeList{
+				{
+					StartTimeH: NewInt(1),
+					StartTimeM: NewInt(22),
+					EndTimeH:   NewInt(2),
+					EndTimeM:   NewInt(55),
+				},
+			},
+		}, (*trResp.Result.Data)[0], "Error code is not correct")
 	}
 }

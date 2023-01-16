@@ -121,6 +121,16 @@ func (c *controller) UpdateWifi(w http.ResponseWriter, r *http.Request) {
 
 	glog.Infof("Omada ssid id %s", *ssidId)
 
+	omadaTimeRangesResp, err := c.repository.GetTimeRanges(omadaIdResp.Result.OmadacId,
+		omadaLoginResp.Result.Token, (*omadaSitesResp.Result.Data)[0].Id)
+	if err != nil || omadaTimeRangesResp.ErrorCode != 0 {
+		errorMessage := fmt.Sprintf("Omada time ranges query error: %+v", err)
+		c.writeResponse(w, http.StatusBadGateway, false, &errorMessage)
+		return
+	}
+
+	glog.Infof("Omada ssids %+v", (*omadaSsidsResp.Result.Data)[0])
+
 	// todo get scheduleId
 	scheduleId := "1"
 

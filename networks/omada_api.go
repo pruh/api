@@ -29,6 +29,8 @@ type OmadaApi interface {
 		siteId *string, wlanId *string) (*OmadaResponse, error)
 	UpdateSsid(omadaControllerId *string, loginToken *string,
 		siteId *string, wlanId *string, ssidId *string, scheduleId *string) (*OmadaResponse, error)
+	GetTimeRanges(omadaControllerId *string, loginToken *string,
+		siteId *string) (*OmadaResponse, error)
 }
 
 // NewOmadaApi creates new omada api
@@ -271,6 +273,44 @@ func (oa *omadaApi) UpdateSsid(omadaControllerId *string, loginToken *string,
 	err = json.Unmarshal(body, &omadaResponse)
 	if err != nil {
 		glog.Errorf("Error parsing omada ssids: %s", err)
+		return nil, err
+	}
+
+	return &omadaResponse, nil
+}
+
+func (oa *omadaApi) GetTimeRanges(omadaControllerId *string, loginToken *string,
+	siteId *string) (*OmadaResponse, error) {
+	url := fmt.Sprintf("%s/%s/api/v2/sites/%s/setting/profiles/timeranges",
+		*oa.config.OmadaUrl, *omadaControllerId, *siteId)
+	req, err := http.NewRequest(http.MethodGet, url, nil)
+	if err != nil {
+		glog.Errorf("Failed to create HTTP request: %s", err)
+		return nil, err
+	}
+	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("Csrf-token", *loginToken)
+
+	glog.Infof("sending GetTimeRanges request")
+
+	resp, err := oa.httpClient.Do(req)
+	if err != nil {
+		glog.Errorf("Error querying omada time ranges: %s", err)
+		return nil, err
+	}
+
+	defer resp.Body.Close()
+
+	body, err := ioutil.ReadAll(io.LimitReader(resp.Body, 1024*1024))
+	if err != nil {
+		glog.Errorf("Error reading omada time ranges response: %s", err)
+		return nil, err
+	}
+
+	var omadaResponse OmadaResponse
+	err = json.Unmarshal(body, &omadaResponse)
+	if err != nil {
+		glog.Errorf("Error parsing omada time ranges: %s", err)
 		return nil, err
 	}
 

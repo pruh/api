@@ -14,8 +14,17 @@ type Result struct {
 }
 
 type Data struct {
-	Id   *string `json:"id,omitempty"`
-	Name *string `json:"name,omitempty"`
+	Id       *string     `json:"id,omitempty"`
+	Name     *string     `json:"name,omitempty"`
+	DayMode  *int        `json:"dayMode,omitempty"`
+	TimeList *[]TimeList `json:"timeList,omitempty"`
+}
+
+type TimeList struct {
+	StartTimeH *int `json:"startTimeH,omitempty"`
+	StartTimeM *int `json:"startTimeM,omitempty"`
+	EndTimeH   *int `json:"endTimeH,omitempty"`
+	EndTimeM   *int `json:"endTimeM,omitempty"`
 }
 
 type OmadaLoginData struct {

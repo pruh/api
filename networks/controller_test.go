@@ -149,6 +149,15 @@ func TestUpdateWifis_ControllerId(t *testing.T) {
 						Msg:       NewStr("test"),
 					}, nil
 				},
+				MockGetTimeRanges: func(omadaControllerId *string, loginToken *string,
+					siteId *string) (*OmadaResponse, error) {
+					resp := &OmadaResponse{
+						ErrorCode: 0,
+						Msg:       NewStr("test"),
+					}
+
+					return resp, nil
+				},
 			},
 		)
 
@@ -288,6 +297,15 @@ func TestUpdateWifis_Login(t *testing.T) {
 						ErrorCode: 0,
 						Msg:       NewStr("test"),
 					}, nil
+				},
+				MockGetTimeRanges: func(omadaControllerId *string, loginToken *string,
+					siteId *string) (*OmadaResponse, error) {
+					resp := &OmadaResponse{
+						ErrorCode: 0,
+						Msg:       NewStr("test"),
+					}
+
+					return resp, nil
 				},
 			},
 		)
@@ -432,6 +450,15 @@ func TestUpdateWifis_GetSites(t *testing.T) {
 						Msg:       NewStr("test"),
 					}, nil
 				},
+				MockGetTimeRanges: func(omadaControllerId *string, loginToken *string,
+					siteId *string) (*OmadaResponse, error) {
+					resp := &OmadaResponse{
+						ErrorCode: 0,
+						Msg:       NewStr("test"),
+					}
+
+					return resp, nil
+				},
 			},
 		)
 
@@ -565,6 +592,15 @@ func TestUpdateWifis_GetWlans(t *testing.T) {
 						ErrorCode: 0,
 						Msg:       NewStr("test"),
 					}, nil
+				},
+				MockGetTimeRanges: func(omadaControllerId *string, loginToken *string,
+					siteId *string) (*OmadaResponse, error) {
+					resp := &OmadaResponse{
+						ErrorCode: 0,
+						Msg:       NewStr("test"),
+					}
+
+					return resp, nil
 				},
 			},
 		)
@@ -700,6 +736,15 @@ func TestUpdateWifis_GetSsids(t *testing.T) {
 						Msg:       NewStr("test"),
 					}, nil
 				},
+				MockGetTimeRanges: func(omadaControllerId *string, loginToken *string,
+					siteId *string) (*OmadaResponse, error) {
+					resp := &OmadaResponse{
+						ErrorCode: 0,
+						Msg:       NewStr("test"),
+					}
+
+					return resp, nil
+				},
 			},
 		)
 
@@ -824,6 +869,146 @@ func TestUpdateWifis_UpdateSsid(t *testing.T) {
 						ErrorCode: 0,
 						Msg:       NewStr("test"),
 					}, nil
+				},
+				MockGetTimeRanges: func(omadaControllerId *string, loginToken *string,
+					siteId *string) (*OmadaResponse, error) {
+					resp := &OmadaResponse{
+						ErrorCode: 0,
+						Msg:       NewStr("test"),
+					}
+
+					return resp, nil
+				},
+			},
+		)
+
+		w := httptest.NewRecorder()
+		req := httptest.NewRequest(http.MethodPost, "http://example.com/foo", nil)
+
+		// setting mux vars for testing
+		vars := map[string]string{
+			"ssid": "my_ssid",
+		}
+		req = mux.SetURLVars(req, vars)
+
+		controller.UpdateWifi(w, req)
+
+		netsResponse := readResponse(w)
+
+		assert.Equal(testData.responseCode, w.Code, "Response code is not correct")
+		if testData.responseCode == http.StatusOK {
+			assert.True(netsResponse.Data.Updated, "Response success body missing updated flag")
+		} else {
+			assert.True(len(netsResponse.Error.Message) > 0, "Response error message is missing")
+		}
+	}
+}
+
+func TestUpdateWifis_GetTimeRanges(t *testing.T) {
+	testsData := []struct {
+		description        string
+		omadaResponseError bool
+		responseCode       int
+	}{
+		{
+			description:  "happy path",
+			responseCode: http.StatusOK,
+		},
+		{
+			description:        "omada get time range response error",
+			omadaResponseError: true,
+			responseCode:       http.StatusBadGateway,
+		},
+	}
+
+	assert := assert.New(t)
+
+	for _, testData := range testsData {
+		t.Logf("tesing %s", testData.description)
+
+		controller := NewControllerWithParams(
+			NewConfigSafe(NewStr("8080"), NewStr("1"), NewStr("123"), nil, nil, nil, nil, nil, nil),
+			&MockOmadaApi{
+				MockGetControllerId: func() (*OmadaResponse, error) {
+					return &OmadaResponse{
+						ErrorCode: 0,
+						Msg:       NewStr("test"),
+						Result: &Result{
+							OmadacId: NewStr("omada_cid"),
+						},
+					}, nil
+				},
+				MockLogin: func(omadaControllerId *string) (*OmadaResponse, error) {
+					resp := &OmadaResponse{
+						ErrorCode: 0,
+						Msg:       NewStr("test"),
+						Result: &Result{
+							Token: NewStr("login_token"),
+						},
+					}
+
+					return resp, nil
+				},
+				MockGetSites: func(omadaControllerId *string, loginToken *string) (*OmadaResponse, error) {
+					resp := &OmadaResponse{
+						ErrorCode: 0,
+						Msg:       NewStr("test"),
+						Result: &Result{
+							Data: &[]Data{{Id: NewStr("site_id"), Name: NewStr("site_name")}},
+						},
+					}
+
+					return resp, nil
+				},
+				MockGetWlans: func(omadaControllerId *string, loginToken *string, siteId *string) (*OmadaResponse, error) {
+					resp := &OmadaResponse{
+						ErrorCode: 0,
+						Msg:       NewStr("test"),
+						Result: &Result{
+							Data: &[]Data{
+								{
+									Id:   NewStr("wlan_id"),
+									Name: NewStr("wlan_name"),
+								},
+							},
+						},
+					}
+
+					return resp, nil
+				},
+				MockGetSsids: func(omadaControllerId *string, loginToken *string,
+					siteId *string, wlanId *string) (*OmadaResponse, error) {
+					resp := &OmadaResponse{
+						ErrorCode: 0,
+						Msg:       NewStr("test"),
+						Result: &Result{
+							Data: &[]Data{{Id: NewStr("ssid_id"), Name: NewStr("my_ssid")}},
+						},
+					}
+
+					return resp, nil
+				},
+				MockUpdateSsid: func(omadaControllerId *string, loginToken *string,
+					siteId *string, wlanId *string, ssidId *string,
+					scheduleId *string) (*OmadaResponse, error) {
+					return &OmadaResponse{
+						ErrorCode: 0,
+						Msg:       NewStr("test"),
+					}, nil
+				},
+				MockGetTimeRanges: func(omadaControllerId *string, loginToken *string,
+					siteId *string) (*OmadaResponse, error) {
+
+					if testData.omadaResponseError {
+						return nil, errors.New("test")
+					}
+
+					resp := &OmadaResponse{
+						ErrorCode: 0,
+						Msg:       NewStr("test"),
+					}
+
+					return resp, nil
 				},
 			},
 		)
