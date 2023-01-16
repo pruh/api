@@ -1,5 +1,5 @@
 # Build stage
-FROM golang:1.18-alpine AS build-env
+FROM golang:1.19-alpine AS build-env
 
 ADD . /go/src/github.com/pruh/api/
 
@@ -16,3 +16,5 @@ RUN apk update \
     && apk add ca-certificates
 WORKDIR /app
 COPY --from=build-env /go/src/github.com/pruh/api/api /app/
+
+CMD ["/app/api;"]
