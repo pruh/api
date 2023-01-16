@@ -56,7 +56,8 @@ func (c *controller) UpdateWifi(w http.ResponseWriter, r *http.Request) {
 	//controller id
 	omadaIdResp, err := c.repository.GetControllerId()
 	if err != nil || omadaIdResp.ErrorCode != 0 || omadaIdResp.Result.OmadacId == nil {
-		errorMessage := fmt.Sprintf("Omada Controller Id Query Error: %+v", err)
+		errorMessage := fmt.Sprintf("Omada Controller Id Query Message: %s, Error: %+v",
+			*omadaLoginResp.Msg, err)
 		c.writeResponse(w, http.StatusBadGateway, false, &errorMessage)
 		return
 	}
@@ -78,7 +79,8 @@ func (c *controller) UpdateWifi(w http.ResponseWriter, r *http.Request) {
 		omadaLoginResp.Result.Token)
 	if err != nil || omadaIdResp.ErrorCode != 0 || omadaSitesResp.Result == nil ||
 		omadaSitesResp.Result.Data == nil || len(*omadaSitesResp.Result.Data) == 0 {
-		errorMessage := fmt.Sprintf("Omada Sites Query Error: %+v", err)
+		errorMessage := fmt.Sprintf("Omada Sites Query Message: %s, Error: %+v",
+			*omadaLoginResp.Msg, err)
 		c.writeResponse(w, http.StatusBadGateway, false, &errorMessage)
 		return
 	}
@@ -89,7 +91,8 @@ func (c *controller) UpdateWifi(w http.ResponseWriter, r *http.Request) {
 		omadaLoginResp.Result.Token, (*omadaSitesResp.Result.Data)[0].Id)
 	if err != nil || omadaIdResp.ErrorCode != 0 || omadaWlansResp.Result == nil ||
 		omadaWlansResp.Result.Data == nil || len(*omadaWlansResp.Result.Data) == 0 {
-		errorMessage := fmt.Sprintf("Omada Wlans Query Error: %+v", err)
+		errorMessage := fmt.Sprintf("Omada Wlans Query Message: %s, Error: %+v",
+			*omadaLoginResp.Msg, err)
 		c.writeResponse(w, http.StatusBadGateway, false, &errorMessage)
 		return
 	}
@@ -100,7 +103,8 @@ func (c *controller) UpdateWifi(w http.ResponseWriter, r *http.Request) {
 		omadaLoginResp.Result.Token, (*omadaSitesResp.Result.Data)[0].Id, (*omadaWlansResp.Result.Data)[0].Id)
 	if err != nil || omadaIdResp.ErrorCode != 0 || omadaSsidsResp.Result == nil ||
 		omadaSsidsResp.Result.Data == nil || len(*omadaSsidsResp.Result.Data) == 0 {
-		errorMessage := fmt.Sprintf("Omada ssids query error: %+v", err)
+		errorMessage := fmt.Sprintf("Omada ssids query Message: %s, Error: %+v",
+			*omadaLoginResp.Msg, err)
 		c.writeResponse(w, http.StatusBadGateway, false, &errorMessage)
 		return
 	}
@@ -126,7 +130,8 @@ func (c *controller) UpdateWifi(w http.ResponseWriter, r *http.Request) {
 	omadaTimeRangesResp, err := c.repository.GetTimeRanges(omadaIdResp.Result.OmadacId,
 		omadaLoginResp.Result.Token, (*omadaSitesResp.Result.Data)[0].Id)
 	if err != nil || omadaTimeRangesResp.ErrorCode != 0 {
-		errorMessage := fmt.Sprintf("Omada time ranges query error: %+v", err)
+		errorMessage := fmt.Sprintf("Omada time ranges query Message: %s, Error: %+v",
+			*omadaLoginResp.Msg, err)
 		c.writeResponse(w, http.StatusBadGateway, false, &errorMessage)
 		return
 	}
@@ -193,7 +198,8 @@ func (c *controller) UpdateWifi(w http.ResponseWriter, r *http.Request) {
 			ScheduleId:         scheduleId,
 		})
 	if err != nil || omadaUpdateSsidResp.ErrorCode != 0 {
-		errorMessage := fmt.Sprintf("Can not update ssid: %+v", err)
+		errorMessage := fmt.Sprintf("Can not update ssid: Message: %s, Error: %+v",
+			*omadaLoginResp.Msg, err)
 		c.writeResponse(w, http.StatusBadGateway, false, &errorMessage)
 		return
 	}
