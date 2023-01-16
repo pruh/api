@@ -65,7 +65,7 @@ func (c *controller) UpdateWifi(w http.ResponseWriter, r *http.Request) {
 	glog.Infof("Omada controller id %s", *omadaIdResp.Result.OmadacId)
 
 	omadaLoginResp, err := c.repository.Login(omadaIdResp.Result.OmadacId)
-	if err != nil || omadaIdResp == nil || omadaLoginResp.ErrorCode != 0 ||
+	if err != nil || omadaLoginResp == nil || omadaLoginResp.ErrorCode != 0 ||
 		omadaLoginResp.Result == nil || omadaLoginResp.Result.Token == nil {
 		errorMessage := fmt.Sprintf("Omada Login Query Message: %s, Error: %+v",
 			*omadaLoginResp.Msg, err)
@@ -77,7 +77,7 @@ func (c *controller) UpdateWifi(w http.ResponseWriter, r *http.Request) {
 
 	omadaSitesResp, err := c.repository.GetSites(omadaIdResp.Result.OmadacId,
 		omadaLoginResp.Result.Token)
-	if err != nil || omadaIdResp.ErrorCode != 0 || omadaSitesResp.Result == nil ||
+	if err != nil || omadaSitesResp.ErrorCode != 0 || omadaSitesResp.Result == nil ||
 		omadaSitesResp.Result.Data == nil || len(*omadaSitesResp.Result.Data) == 0 {
 		errorMessage := fmt.Sprintf("Omada Sites Query Message: %s, Error: %+v",
 			*omadaSitesResp.Msg, err)
@@ -89,7 +89,7 @@ func (c *controller) UpdateWifi(w http.ResponseWriter, r *http.Request) {
 
 	omadaWlansResp, err := c.repository.GetWlans(omadaIdResp.Result.OmadacId,
 		omadaLoginResp.Result.Token, (*omadaSitesResp.Result.Data)[0].Id)
-	if err != nil || omadaIdResp.ErrorCode != 0 || omadaWlansResp.Result == nil ||
+	if err != nil || omadaWlansResp.ErrorCode != 0 || omadaWlansResp.Result == nil ||
 		omadaWlansResp.Result.Data == nil || len(*omadaWlansResp.Result.Data) == 0 {
 		errorMessage := fmt.Sprintf("Omada Wlans Query Message: %s, Error: %+v",
 			*omadaWlansResp.Msg, err)
@@ -101,7 +101,7 @@ func (c *controller) UpdateWifi(w http.ResponseWriter, r *http.Request) {
 
 	omadaSsidsResp, err := c.repository.GetSsids(omadaIdResp.Result.OmadacId,
 		omadaLoginResp.Result.Token, (*omadaSitesResp.Result.Data)[0].Id, (*omadaWlansResp.Result.Data)[0].Id)
-	if err != nil || omadaIdResp.ErrorCode != 0 || omadaSsidsResp.Result == nil ||
+	if err != nil || omadaSsidsResp.ErrorCode != 0 || omadaSsidsResp.Result == nil ||
 		omadaSsidsResp.Result.Data == nil || len(*omadaSsidsResp.Result.Data) == 0 {
 		errorMessage := fmt.Sprintf("Omada ssids query Message: %s, Error: %+v",
 			*omadaSsidsResp.Msg, err)
