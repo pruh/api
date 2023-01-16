@@ -12,11 +12,15 @@ services:
       - mongo
 
   mongo:
-    image: mongo:4.2.2-bionic
+    image: mongo
     container_name: mongo
     restart: unless-stopped
+    user: "${UID}:${GID}"
     ports:
       - 27017:27017
     volumes:
       - ./volumes/mongo:/data/db
     env_file: api.env
+    env:
+      - UID: 1000
+      - GID: 1000
