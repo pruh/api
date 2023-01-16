@@ -36,11 +36,18 @@ func (r *Repository) GetSsids(omadaControllerId *string, loginToken *string,
 }
 
 func (r *Repository) UpdateSsid(omadaControllerId *string, loginToken *string,
-	siteId *string, wlanId *string, ssidId *string, scheduleId *string) (*OmadaResponse, error) {
-	return r.omadaApi.UpdateSsid(omadaControllerId, loginToken, siteId, wlanId, ssidId, scheduleId)
+	siteId *string, wlanId *string, ssidId *string,
+	ssidUpdateData *OmadaSsidUpdateData) (*OmadaResponse, error) {
+	return r.omadaApi.UpdateSsid(omadaControllerId, loginToken, siteId, wlanId, ssidId,
+		ssidUpdateData)
 }
 
 func (r *Repository) GetTimeRanges(omadaControllerId *string, loginToken *string,
 	siteId *string) (*OmadaResponse, error) {
 	return r.omadaApi.GetTimeRanges(omadaControllerId, loginToken, siteId)
+}
+
+func (r *Repository) CreateTimeRange(omadaControllerId *string, loginToken *string,
+	siteId *string, timeRangeData *Data) (*OmadaResponse, error) {
+	return r.omadaApi.CreateTimeRange(omadaControllerId, loginToken, siteId, timeRangeData)
 }

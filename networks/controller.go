@@ -129,14 +129,67 @@ func (c *controller) UpdateWifi(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	glog.Infof("Omada ssids %+v", (*omadaSsidsResp.Result.Data)[0])
+	var timeRangeData *Data
+	if omadaTimeRangesResp.Result.Data != nil {
+		for _, tr := range *omadaTimeRangesResp.Result.Data {
+			if tr.DayMode != nil && *tr.DayMode == 0 && tr.TimeList != nil && len(*tr.TimeList) > 0 {
+				for _, tl := range *tr.TimeList {
+					if *tl.StartTimeH == 0 && *tl.StartTimeM == 0 && *tl.EndTimeH == 24 && *tl.EndTimeM == 0 {
+						timeRangeData = &tr
+						break
+					}
+				}
+			}
+		}
+	}
 
-	// todo get scheduleId
-	scheduleId := "1"
+	var scheduleId *string
+	if timeRangeData != nil {
+		glog.Infof("time range already exists: %+v", *timeRangeData)
+		scheduleId = timeRangeData.Id
+	} else {
+		glog.Info("time range not available, creating one")
+
+		omadaTrCreateResp, err := c.repository.CreateTimeRange(omadaIdResp.Result.OmadacId,
+			omadaLoginResp.Result.Token, (*omadaSitesResp.Result.Data)[0].Id,
+			&Data{
+				Name:    NewStr("Night and Day"),
+				DayMode: NewInt(0),
+				DayMon:  NewBool(true),
+				DayTue:  NewBool(true),
+				DayWed:  NewBool(true),
+				DayThu:  NewBool(true),
+				DayFri:  NewBool(true),
+				DaySat:  NewBool(true),
+				DaySun:  NewBool(true),
+				TimeList: &[]TimeList{
+					{
+						DayType:    NewInt(0),
+						StartTimeH: NewInt(0),
+						StartTimeM: NewInt(0),
+						EndTimeH:   NewInt(24),
+						EndTimeM:   NewInt(0),
+					},
+				},
+			})
+
+		if err != nil || omadaTrCreateResp.ErrorCode != 0 ||
+			omadaTrCreateResp.Result.ProfileId == nil {
+			errorMessage := fmt.Sprintf("Can not create time range: %+v", err)
+			c.writeResponse(w, http.StatusBadGateway, false, &errorMessage)
+			return
+		}
+
+		scheduleId = omadaTrCreateResp.Result.ProfileId
+	}
 
 	omadaUpdateSsidResp, err := c.repository.UpdateSsid(omadaIdResp.Result.OmadacId,
 		omadaLoginResp.Result.Token, (*omadaSitesResp.Result.Data)[0].Id,
-		(*omadaWlansResp.Result.Data)[0].Id, &ssid, &scheduleId)
+		(*omadaWlansResp.Result.Data)[0].Id, &ssid, &OmadaSsidUpdateData{
+			WlanScheduleEnable: NewBool(true),
+			Action:             NewInt(0),
+			ScheduleId:         scheduleId,
+		})
 	if err != nil || omadaUpdateSsidResp.ErrorCode != 0 {
 		errorMessage := fmt.Sprintf("Can not update ssid: %+v", err)
 		c.writeResponse(w, http.StatusBadGateway, false, &errorMessage)

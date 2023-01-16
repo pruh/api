@@ -163,7 +163,7 @@ func TestRepoUpdateSsid(t *testing.T) {
 	mockOmadaApi := MockOmadaApi{
 		MockUpdateSsid: func(omadaControllerId *string, loginToken *string,
 			siteId *string, wlanId *string, ssidId *string,
-			scheduleId *string) (*OmadaResponse, error) {
+			ssidUpdateData *OmadaSsidUpdateData) (*OmadaResponse, error) {
 			resp := &OmadaResponse{
 				ErrorCode: 0,
 				Msg:       NewStr("Success."),
@@ -207,6 +207,33 @@ func TestRepoGetTimeRanges(t *testing.T) {
 	assert := assert.New(t)
 
 	controllerId, _ := repo.GetTimeRanges(nil, nil, nil)
+
+	assert.True(mockCalled, "mock is not called")
+	assert.Equal(0, controllerId.ErrorCode, "wrong response data")
+}
+
+func TestRepoCreateTimeRanges(t *testing.T) {
+	var mockCalled = false
+
+	mockOmadaApi := MockOmadaApi{
+		MockCreateTimeRange: func(omadaControllerId *string, loginToken *string,
+			siteId *string, timeRangeData *Data) (*OmadaResponse, error) {
+			resp := &OmadaResponse{
+				ErrorCode: 0,
+				Msg:       NewStr("Success."),
+			}
+
+			mockCalled = true
+
+			return resp, nil
+		},
+	}
+
+	repo := NewRepository(&mockOmadaApi)
+
+	assert := assert.New(t)
+
+	controllerId, _ := repo.CreateTimeRange(nil, nil, nil, nil)
 
 	assert.True(mockCalled, "mock is not called")
 	assert.Equal(0, controllerId.ErrorCode, "wrong response data")
