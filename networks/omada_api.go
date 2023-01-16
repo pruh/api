@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"net/http"
 
 	"github.com/golang/glog"
@@ -62,7 +61,7 @@ func (oa *omadaApi) GetControllerId() (*OmadaResponse, error) {
 
 	defer resp.Body.Close()
 
-	body, err := ioutil.ReadAll(io.LimitReader(resp.Body, 1024*1024))
+	body, err := io.ReadAll(io.LimitReader(resp.Body, 1024*1024))
 	if err != nil {
 		glog.Errorf("Error reading omada response: %s", err)
 		return nil, err
@@ -107,7 +106,7 @@ func (oa *omadaApi) Login(omadaControllerId *string) (*OmadaResponse, error) {
 
 	defer resp.Body.Close()
 
-	body, err := ioutil.ReadAll(io.LimitReader(resp.Body, 1024*1024))
+	body, err := io.ReadAll(io.LimitReader(resp.Body, 1024*1024))
 	if err != nil {
 		glog.Errorf("Error reading omada response: %s", err)
 		return nil, err
@@ -143,7 +142,7 @@ func (oa *omadaApi) GetSites(omadaControllerId *string, loginToken *string) (*Om
 
 	defer resp.Body.Close()
 
-	body, err := ioutil.ReadAll(io.LimitReader(resp.Body, 1024*1024))
+	body, err := io.ReadAll(io.LimitReader(resp.Body, 1024*1024))
 	if err != nil {
 		glog.Errorf("Error reading omada sites response: %s", err)
 		return nil, err
@@ -179,7 +178,7 @@ func (oa *omadaApi) GetWlans(omadaControllerId *string, loginToken *string, site
 
 	defer resp.Body.Close()
 
-	body, err := ioutil.ReadAll(io.LimitReader(resp.Body, 1024*1024))
+	body, err := io.ReadAll(io.LimitReader(resp.Body, 1024*1024))
 	if err != nil {
 		glog.Errorf("Error reading omada wlans response: %s", err)
 		return nil, err
@@ -217,7 +216,7 @@ func (oa *omadaApi) GetSsids(omadaControllerId *string, loginToken *string,
 
 	defer resp.Body.Close()
 
-	body, err := ioutil.ReadAll(io.LimitReader(resp.Body, 1024*1024))
+	body, err := io.ReadAll(io.LimitReader(resp.Body, 1024*1024))
 	if err != nil {
 		glog.Errorf("Error reading omada ssids response: %s", err)
 		return nil, err
@@ -262,7 +261,7 @@ func (oa *omadaApi) UpdateSsid(omadaControllerId *string, loginToken *string,
 
 	defer resp.Body.Close()
 
-	body, err := ioutil.ReadAll(io.LimitReader(resp.Body, 1024*1024))
+	body, err := io.ReadAll(io.LimitReader(resp.Body, 1024*1024))
 	if err != nil {
 		glog.Errorf("Error reading omada ssids response: %s", err)
 		return nil, err
@@ -300,7 +299,7 @@ func (oa *omadaApi) GetTimeRanges(omadaControllerId *string, loginToken *string,
 
 	defer resp.Body.Close()
 
-	body, err := ioutil.ReadAll(io.LimitReader(resp.Body, 1024*1024))
+	body, err := io.ReadAll(io.LimitReader(resp.Body, 1024*1024))
 	if err != nil {
 		glog.Errorf("Error reading omada time ranges response: %s", err)
 		return nil, err
@@ -344,7 +343,7 @@ func (oa *omadaApi) CreateTimeRange(omadaControllerId *string, loginToken *strin
 
 	defer resp.Body.Close()
 
-	body, err := ioutil.ReadAll(io.LimitReader(resp.Body, 1024*1024))
+	body, err := io.ReadAll(io.LimitReader(resp.Body, 1024*1024))
 	if err != nil {
 		glog.Errorf("Error reading omada time range create response: %s", err)
 		return nil, err

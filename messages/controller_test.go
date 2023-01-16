@@ -5,7 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -167,7 +167,7 @@ func TestTelegramControllerSendMessage(t *testing.T) {
 }
 
 func formatBody(w *httptest.ResponseRecorder) string {
-	bodyBytes, err := ioutil.ReadAll(w.Body)
+	bodyBytes, err := io.ReadAll(w.Body)
 	if err != nil {
 		panic(fmt.Sprintf("Error while reading body: %s", err))
 	}

@@ -5,7 +5,6 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"net/http"
 	"strings"
 
@@ -110,7 +109,7 @@ func (c *Controller) Get(w http.ResponseWriter, r *http.Request) {
 // Create creates a new provider.
 func (c *Controller) Create(w http.ResponseWriter, r *http.Request) {
 	var provider Provider
-	body, err := ioutil.ReadAll(io.LimitReader(r.Body, 1024*1024))
+	body, err := io.ReadAll(io.LimitReader(r.Body, 1024*1024))
 	if err != nil {
 		glog.Errorf("Error reading request. %s", err)
 		http.Error(w, "Error reading request.", http.StatusInternalServerError)

@@ -1,7 +1,7 @@
 package http_test
 
 import (
-	"io/ioutil"
+	"io"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -45,7 +45,7 @@ func TestHTTPClient(t *testing.T) {
 		}
 
 		assert.Equal(testData.responseCode, resp.StatusCode)
-		respBody, err := ioutil.ReadAll(resp.Body)
+		respBody, err := io.ReadAll(resp.Body)
 		if err != nil {
 			t.Fatal(err)
 		}

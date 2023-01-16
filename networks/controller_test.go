@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -1329,7 +1329,7 @@ func TestUpdateWifis_CreateTimeRanges(t *testing.T) {
 }
 
 func readResponse(w *httptest.ResponseRecorder) NetworksResponse {
-	bodyBytes, err := ioutil.ReadAll(w.Body)
+	bodyBytes, err := io.ReadAll(w.Body)
 	if err != nil {
 		panic(fmt.Sprintf("Error while reading body: %s", err))
 	}
