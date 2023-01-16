@@ -93,6 +93,7 @@ func TestLogin(t *testing.T) {
 		responseCode   int
 		responseBody   string
 		omadaErrorCode int
+		setCookie      http.Cookie
 		loginToken     string
 	}{
 		{
@@ -105,6 +106,7 @@ func TestLogin(t *testing.T) {
 			responseCode:   http.StatusOK,
 			responseBody:   `{"errorCode": 0,"msg": "Success.","result": {"apiVer": "23","type": 1,"token": "login_token"}}`,
 			omadaErrorCode: 0,
+			setCookie:      http.Cookie{Name: "rememberMe", Value: "deleteMe", Path: "/", MaxAge: 0},
 			loginToken:     "login_token",
 		},
 		{
@@ -117,6 +119,7 @@ func TestLogin(t *testing.T) {
 			responseCode:   http.StatusInternalServerError,
 			responseBody:   `{"errorCode": 0,"msg": "Success.","result": {"apiVer": "23","type": 1,"token": "login_token"}}`,
 			omadaErrorCode: 0,
+			setCookie:      http.Cookie{Name: "rememberMe", Value: "deleteMe", Path: "/", MaxAge: 0},
 			loginToken:     "login_token",
 		},
 	}
@@ -141,18 +144,18 @@ func TestLogin(t *testing.T) {
 				assert.Equal(*testData.omadaLogin, loginData.Username, "omada username is not correct")
 				assert.Equal(*testData.omadaPassword, loginData.Password, "omada password is not correct")
 
-				var respErr error
 				if testData.responseCode != http.StatusOK {
-					respErr = errors.New("test error")
+					return nil, errors.New("test error")
 				}
 
 				w := httptest.NewRecorder()
-				w.WriteHeader(testData.responseCode)
+				w.Header().Add("Set-Cookie", testData.setCookie.String())
 				if _, err := w.WriteString(testData.responseBody); err != nil {
 					panic(fmt.Sprintf("Error writing body: %s", err))
 				}
+				w.WriteHeader(testData.responseCode)
 
-				return w.Result(), respErr
+				return w.Result(), nil
 			},
 		}
 
@@ -161,14 +164,17 @@ func TestLogin(t *testing.T) {
 				NewStr(testData.omadaUrl), testData.omadaLogin, testData.omadaPassword),
 			&mockHttpClient)
 
-		omadaControllerId, err := omadaApi.Login(testData.omadacId)
+		o, cookies, err := omadaApi.Login(testData.omadacId)
 		if testData.expectError {
 			assert.True(err != nil, "should return error")
 			continue
 		}
 
-		assert.Equal(testData.omadaErrorCode, omadaControllerId.ErrorCode, "Error code is not correct")
-		assert.Equal(testData.loginToken, *omadaControllerId.Result.Token, "Login token is not correct")
+		assert.Equal(testData.omadaErrorCode, o.ErrorCode, "Error code is not correct")
+		assert.Equal(testData.loginToken, *o.Result.Token, "Login token is not correct")
+
+		assert.True(len(cookies) == 1, "cookies are not correct")
+		assert.Equal(testData.setCookie.String(), cookies[0].String(), "cookies are not correct")
 	}
 }
 
@@ -178,26 +184,39 @@ func TestGetSites(t *testing.T) {
 		omadaUrl       string
 		omadacId       *string
 		loginToken     *string
+		cookies        []*http.Cookie
 		expectError    bool
 		responseCode   int
 		responseBody   string
 		omadaErrorCode int
 	}{
 		{
-			description:    "happy path",
-			omadaUrl:       "https://omada.example.com",
-			omadacId:       NewStr("omada_cid"),
-			loginToken:     NewStr("login_token"),
+			description: "happy path",
+			omadaUrl:    "https://omada.example.com",
+			omadacId:    NewStr("omada_cid"),
+			loginToken:  NewStr("login_token"),
+			cookies: []*http.Cookie{
+				{
+					Name:  "cookie_name",
+					Value: "cookie_value",
+				},
+			},
 			expectError:    false,
 			responseCode:   http.StatusOK,
 			responseBody:   `{"errorCode": 0,"msg": "Success.","result": {"data": [{"name": "site_name", "id": "site_id"}]}}`,
 			omadaErrorCode: 0,
 		},
 		{
-			description:    "upstream error",
-			omadaUrl:       "https://omada.example.com",
-			omadacId:       NewStr("omada_cid"),
-			loginToken:     NewStr("login_token"),
+			description: "upstream error",
+			omadaUrl:    "https://omada.example.com",
+			omadacId:    NewStr("omada_cid"),
+			loginToken:  NewStr("login_token"),
+			cookies: []*http.Cookie{
+				{
+					Name:  "cookie_name",
+					Value: "cookie_value",
+				},
+			},
 			expectError:    true,
 			responseCode:   http.StatusInternalServerError,
 			responseBody:   `{"errorCode": 0,"msg": "Success.","result": {"data": [{"name": "site_name", "id": "site_id"}]}}`,
@@ -216,6 +235,7 @@ func TestGetSites(t *testing.T) {
 					testData.omadaUrl, *testData.omadacId),
 					req.URL.String(), "Omada request url is not correct")
 
+				assert.Equal(testData.cookies, req.Cookies(), "cookie is missing")
 				assert.Equal(*testData.loginToken, req.Header.Get("Csrf-token"), "Login token is missing")
 
 				var respErr error
@@ -238,7 +258,7 @@ func TestGetSites(t *testing.T) {
 				NewStr(testData.omadaUrl), nil, nil),
 			&mockHttpClient)
 
-		sitesResp, err := omadaApi.GetSites(testData.omadacId, testData.loginToken)
+		sitesResp, err := omadaApi.GetSites(testData.omadacId, testData.cookies, testData.loginToken)
 		if testData.expectError {
 			assert.True(err != nil, "should return error")
 			continue
@@ -256,6 +276,7 @@ func TestGetWlans(t *testing.T) {
 		omadaUrl       string
 		omadacId       *string
 		loginToken     *string
+		cookies        []*http.Cookie
 		siteId         *string
 		expectError    bool
 		responseCode   int
@@ -263,10 +284,16 @@ func TestGetWlans(t *testing.T) {
 		omadaErrorCode int
 	}{
 		{
-			description:    "happy path",
-			omadaUrl:       "https://omada.example.com",
-			omadacId:       NewStr("omada_cid"),
-			loginToken:     NewStr("login_token"),
+			description: "happy path",
+			omadaUrl:    "https://omada.example.com",
+			omadacId:    NewStr("omada_cid"),
+			loginToken:  NewStr("login_token"),
+			cookies: []*http.Cookie{
+				{
+					Name:  "cookie_name",
+					Value: "cookie_value",
+				},
+			},
 			siteId:         NewStr("site_id"),
 			expectError:    false,
 			responseCode:   http.StatusOK,
@@ -274,10 +301,16 @@ func TestGetWlans(t *testing.T) {
 			omadaErrorCode: 0,
 		},
 		{
-			description:    "upstream error",
-			omadaUrl:       "https://omada.example.com",
-			omadacId:       NewStr("omada_cid"),
-			loginToken:     NewStr("login_token"),
+			description: "upstream error",
+			omadaUrl:    "https://omada.example.com",
+			omadacId:    NewStr("omada_cid"),
+			loginToken:  NewStr("login_token"),
+			cookies: []*http.Cookie{
+				{
+					Name:  "cookie_name",
+					Value: "cookie_value",
+				},
+			},
 			siteId:         NewStr("site_id"),
 			expectError:    true,
 			responseCode:   http.StatusInternalServerError,
@@ -297,6 +330,7 @@ func TestGetWlans(t *testing.T) {
 					testData.omadaUrl, *testData.omadacId, *testData.siteId),
 					req.URL.String(), "Omada request url is not correct")
 
+				assert.Equal(testData.cookies, req.Cookies(), "cookie is missing")
 				assert.Equal(*testData.loginToken, req.Header.Get("Csrf-token"), "Login token is missing")
 
 				var respErr error
@@ -319,7 +353,7 @@ func TestGetWlans(t *testing.T) {
 				NewStr(testData.omadaUrl), nil, nil),
 			&mockHttpClient)
 
-		wlansResp, err := omadaApi.GetWlans(testData.omadacId, testData.loginToken, testData.siteId)
+		wlansResp, err := omadaApi.GetWlans(testData.omadacId, testData.cookies, testData.loginToken, testData.siteId)
 		if testData.expectError {
 			assert.True(err != nil, "should return error")
 			continue
@@ -337,6 +371,7 @@ func TestGetSsids(t *testing.T) {
 		omadaUrl       string
 		omadacId       *string
 		loginToken     *string
+		cookies        []*http.Cookie
 		siteId         *string
 		wlanId         *string
 		expectError    bool
@@ -345,10 +380,16 @@ func TestGetSsids(t *testing.T) {
 		omadaErrorCode int
 	}{
 		{
-			description:    "happy path",
-			omadaUrl:       "https://omada.example.com",
-			omadacId:       NewStr("omada_cid"),
-			loginToken:     NewStr("login_token"),
+			description: "happy path",
+			omadaUrl:    "https://omada.example.com",
+			omadacId:    NewStr("omada_cid"),
+			loginToken:  NewStr("login_token"),
+			cookies: []*http.Cookie{
+				{
+					Name:  "cookie_name",
+					Value: "cookie_value",
+				},
+			},
 			siteId:         NewStr("site_id"),
 			wlanId:         NewStr("wlan_id"),
 			expectError:    false,
@@ -357,10 +398,16 @@ func TestGetSsids(t *testing.T) {
 			omadaErrorCode: 0,
 		},
 		{
-			description:    "upstream error",
-			omadaUrl:       "https://omada.example.com",
-			omadacId:       NewStr("omada_cid"),
-			loginToken:     NewStr("login_token"),
+			description: "upstream error",
+			omadaUrl:    "https://omada.example.com",
+			omadacId:    NewStr("omada_cid"),
+			loginToken:  NewStr("login_token"),
+			cookies: []*http.Cookie{
+				{
+					Name:  "cookie_name",
+					Value: "cookie_value",
+				},
+			},
 			siteId:         NewStr("site_id"),
 			wlanId:         NewStr("wlan_id"),
 			expectError:    true,
@@ -381,6 +428,7 @@ func TestGetSsids(t *testing.T) {
 					testData.omadaUrl, *testData.omadacId, *testData.siteId, *testData.wlanId),
 					req.URL.String(), "Omada request url is not correct")
 
+				assert.Equal(testData.cookies, req.Cookies(), "cookie is missing")
 				assert.Equal(*testData.loginToken, req.Header.Get("Csrf-token"), "Login token is missing")
 
 				var respErr error
@@ -403,7 +451,7 @@ func TestGetSsids(t *testing.T) {
 				NewStr(testData.omadaUrl), nil, nil),
 			&mockHttpClient)
 
-		wlansResp, err := omadaApi.GetSsids(testData.omadacId, testData.loginToken, testData.siteId, testData.wlanId)
+		wlansResp, err := omadaApi.GetSsids(testData.omadacId, testData.cookies, testData.loginToken, testData.siteId, testData.wlanId)
 		if testData.expectError {
 			assert.True(err != nil, "should return error")
 			continue
@@ -422,6 +470,7 @@ func TestUpdateSsid(t *testing.T) {
 		omadaUrl       string
 		omadacId       *string
 		loginToken     *string
+		cookies        []*http.Cookie
 		siteId         *string
 		wlanId         *string
 		ssidId         *string
@@ -432,10 +481,16 @@ func TestUpdateSsid(t *testing.T) {
 		omadaErrorCode int
 	}{
 		{
-			description:    "happy path",
-			omadaUrl:       "https://omada.example.com",
-			omadacId:       NewStr("omada_cid"),
-			loginToken:     NewStr("login_token"),
+			description: "happy path",
+			omadaUrl:    "https://omada.example.com",
+			omadacId:    NewStr("omada_cid"),
+			loginToken:  NewStr("login_token"),
+			cookies: []*http.Cookie{
+				{
+					Name:  "cookie_name",
+					Value: "cookie_value",
+				},
+			},
 			siteId:         NewStr("site_id"),
 			wlanId:         NewStr("wlan_id"),
 			ssidId:         NewStr("ssid_id"),
@@ -446,10 +501,16 @@ func TestUpdateSsid(t *testing.T) {
 			omadaErrorCode: 0,
 		},
 		{
-			description:    "upstream error",
-			omadaUrl:       "https://omada.example.com",
-			omadacId:       NewStr("omada_cid"),
-			loginToken:     NewStr("login_token"),
+			description: "upstream error",
+			omadaUrl:    "https://omada.example.com",
+			omadacId:    NewStr("omada_cid"),
+			loginToken:  NewStr("login_token"),
+			cookies: []*http.Cookie{
+				{
+					Name:  "cookie_name",
+					Value: "cookie_value",
+				},
+			},
 			siteId:         NewStr("site_id"),
 			wlanId:         NewStr("wlan_id"),
 			ssidId:         NewStr("ssid_id"),
@@ -472,6 +533,7 @@ func TestUpdateSsid(t *testing.T) {
 					testData.omadaUrl, *testData.omadacId, *testData.siteId, *testData.wlanId, *testData.ssidId),
 					req.URL.String(), "Omada request url is not correct")
 
+				assert.Equal(testData.cookies, req.Cookies(), "cookie is missing")
 				assert.Equal(*testData.loginToken, req.Header.Get("Csrf-token"), "Login token is missing")
 
 				updateData := OmadaSsidUpdateData{}
@@ -507,7 +569,7 @@ func TestUpdateSsid(t *testing.T) {
 				NewStr(testData.omadaUrl), nil, nil),
 			&mockHttpClient)
 
-		wlansResp, err := omadaApi.UpdateSsid(testData.omadacId, testData.loginToken,
+		wlansResp, err := omadaApi.UpdateSsid(testData.omadacId, testData.cookies, testData.loginToken,
 			testData.siteId, testData.wlanId, testData.ssidId, testData.ssidUpdateData)
 		if testData.expectError {
 			assert.True(err != nil, "should return error")
@@ -524,6 +586,7 @@ func TestGetTimeRanges(t *testing.T) {
 		omadaUrl       string
 		omadacId       *string
 		loginToken     *string
+		cookies        []*http.Cookie
 		siteId         *string
 		expectError    bool
 		responseCode   int
@@ -531,10 +594,16 @@ func TestGetTimeRanges(t *testing.T) {
 		omadaErrorCode int
 	}{
 		{
-			description:  "happy path",
-			omadaUrl:     "https://omada.example.com",
-			omadacId:     NewStr("omada_cid"),
-			loginToken:   NewStr("login_token"),
+			description: "happy path",
+			omadaUrl:    "https://omada.example.com",
+			omadacId:    NewStr("omada_cid"),
+			loginToken:  NewStr("login_token"),
+			cookies: []*http.Cookie{
+				{
+					Name:  "cookie_name",
+					Value: "cookie_value",
+				},
+			},
 			siteId:       NewStr("site_id"),
 			expectError:  false,
 			responseCode: http.StatusOK,
@@ -550,10 +619,16 @@ func TestGetTimeRanges(t *testing.T) {
 			omadaErrorCode: 0,
 		},
 		{
-			description:  "upstream error",
-			omadaUrl:     "https://omada.example.com",
-			omadacId:     NewStr("omada_cid"),
-			loginToken:   NewStr("login_token"),
+			description: "upstream error",
+			omadaUrl:    "https://omada.example.com",
+			omadacId:    NewStr("omada_cid"),
+			loginToken:  NewStr("login_token"),
+			cookies: []*http.Cookie{
+				{
+					Name:  "cookie_name",
+					Value: "cookie_value",
+				},
+			},
 			siteId:       NewStr("site_id"),
 			expectError:  true,
 			responseCode: http.StatusInternalServerError,
@@ -581,6 +656,7 @@ func TestGetTimeRanges(t *testing.T) {
 					testData.omadaUrl, *testData.omadacId, *testData.siteId),
 					req.URL.String(), "Omada request url is not correct")
 
+				assert.Equal(testData.cookies, req.Cookies(), "cookie is missing")
 				assert.Equal(*testData.loginToken, req.Header.Get("Csrf-token"), "Login token is missing")
 
 				var respErr error
@@ -603,7 +679,7 @@ func TestGetTimeRanges(t *testing.T) {
 				NewStr(testData.omadaUrl), nil, nil),
 			&mockHttpClient)
 
-		trResp, err := omadaApi.GetTimeRanges(testData.omadacId, testData.loginToken,
+		trResp, err := omadaApi.GetTimeRanges(testData.omadacId, testData.cookies, testData.loginToken,
 			testData.siteId)
 		if testData.expectError {
 			assert.True(err != nil, "should return error")
@@ -633,6 +709,7 @@ func TestCreateTimeRange(t *testing.T) {
 		omadaUrl       string
 		omadacId       *string
 		loginToken     *string
+		cookies        []*http.Cookie
 		siteId         *string
 		timeRangeData  *Data
 		expectError    bool
@@ -645,7 +722,13 @@ func TestCreateTimeRange(t *testing.T) {
 			omadaUrl:    "https://omada.example.com",
 			omadacId:    NewStr("omada_cid"),
 			loginToken:  NewStr("login_token"),
-			siteId:      NewStr("site_id"),
+			cookies: []*http.Cookie{
+				{
+					Name:  "cookie_name",
+					Value: "cookie_value",
+				},
+			},
+			siteId: NewStr("site_id"),
 			timeRangeData: &Data{
 				Name:    NewStr("Night and Day"),
 				DayMode: NewInt(0),
@@ -683,7 +766,13 @@ func TestCreateTimeRange(t *testing.T) {
 			omadaUrl:    "https://omada.example.com",
 			omadacId:    NewStr("omada_cid"),
 			loginToken:  NewStr("login_token"),
-			siteId:      NewStr("site_id"),
+			cookies: []*http.Cookie{
+				{
+					Name:  "cookie_name",
+					Value: "cookie_value",
+				},
+			},
+			siteId: NewStr("site_id"),
 			timeRangeData: &Data{
 				Name:    NewStr("Night and Day"),
 				DayMode: NewInt(0),
@@ -729,6 +818,7 @@ func TestCreateTimeRange(t *testing.T) {
 					testData.omadaUrl, *testData.omadacId, *testData.siteId),
 					req.URL.String(), "Omada request url is not correct")
 
+				assert.Equal(testData.cookies, req.Cookies(), "cookie is missing")
 				assert.Equal(*testData.loginToken, req.Header.Get("Csrf-token"), "Login token is missing")
 
 				var respErr error
@@ -751,7 +841,7 @@ func TestCreateTimeRange(t *testing.T) {
 				NewStr(testData.omadaUrl), nil, nil),
 			&mockHttpClient)
 
-		trResp, err := omadaApi.CreateTimeRange(testData.omadacId, testData.loginToken,
+		trResp, err := omadaApi.CreateTimeRange(testData.omadacId, testData.cookies, testData.loginToken,
 			testData.siteId, testData.timeRangeData)
 		if testData.expectError {
 			assert.True(err != nil, "should return error")

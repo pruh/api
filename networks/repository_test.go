@@ -1,6 +1,7 @@
 package networks_test
 
 import (
+	"net/http"
 	"testing"
 
 	. "github.com/pruh/api/networks"
@@ -41,7 +42,7 @@ func TestRepoLogin(t *testing.T) {
 	var mockCalled = false
 
 	mockOmadaApi := MockOmadaApi{
-		MockLogin: func(omadaControllerId *string) (*OmadaResponse, error) {
+		MockLogin: func(omadaControllerId *string) (*OmadaResponse, []*http.Cookie, error) {
 			resp := &OmadaResponse{
 				ErrorCode: 0,
 				Msg:       NewStr("Success."),
@@ -50,9 +51,16 @@ func TestRepoLogin(t *testing.T) {
 				},
 			}
 
+			cookies := []*http.Cookie{
+				&http.Cookie{
+					Name:  "cookie_name",
+					Value: "cookie_value",
+				},
+			}
+
 			mockCalled = true
 
-			return resp, nil
+			return resp, cookies, nil
 		},
 	}
 
@@ -60,9 +68,11 @@ func TestRepoLogin(t *testing.T) {
 
 	assert := assert.New(t)
 
-	controllerId, _ := repo.Login(nil)
+	controllerId, cookies, _ := repo.Login(nil)
 
 	assert.True(mockCalled, "mock is not called")
+	assert.Equal("cookie_name", cookies[0].Name, "login token is not as expected")
+	assert.Equal("cookie_value", cookies[0].Value, "login token is not as expected")
 	assert.Equal("login_token", *controllerId.Result.Token, "login token is not as expected")
 }
 
@@ -70,7 +80,7 @@ func TestRepoGetSites(t *testing.T) {
 	var mockCalled = false
 
 	mockOmadaApi := MockOmadaApi{
-		MockGetSites: func(omadaControllerId *string, loginToken *string) (*OmadaResponse, error) {
+		MockGetSites: func(omadaControllerId *string, cookies []*http.Cookie, loginToken *string) (*OmadaResponse, error) {
 			resp := &OmadaResponse{
 				ErrorCode: 0,
 				Msg:       NewStr("Success."),
@@ -89,7 +99,7 @@ func TestRepoGetSites(t *testing.T) {
 
 	assert := assert.New(t)
 
-	controllerId, _ := repo.GetSites(nil, nil)
+	controllerId, _ := repo.GetSites(nil, nil, nil)
 
 	assert.True(mockCalled, "mock is not called")
 	assert.Equal(Data{Id: NewStr("site_id"), Name: NewStr("site_name")},
@@ -100,7 +110,8 @@ func TestRepoGetWlans(t *testing.T) {
 	var mockCalled = false
 
 	mockOmadaApi := MockOmadaApi{
-		MockGetWlans: func(omadaControllerId *string, loginToken *string, siteId *string) (*OmadaResponse, error) {
+		MockGetWlans: func(omadaControllerId *string, cookies []*http.Cookie,
+			loginToken *string, siteId *string) (*OmadaResponse, error) {
 			resp := &OmadaResponse{
 				ErrorCode: 0,
 				Msg:       NewStr("Success."),
@@ -119,7 +130,7 @@ func TestRepoGetWlans(t *testing.T) {
 
 	assert := assert.New(t)
 
-	controllerId, _ := repo.GetWlans(nil, nil, nil)
+	controllerId, _ := repo.GetWlans(nil, nil, nil, nil)
 
 	assert.True(mockCalled, "mock is not called")
 	assert.Equal(Data{Id: NewStr("wlan_id"), Name: NewStr("wlan_name")},
@@ -130,7 +141,7 @@ func TestRepoGetSsids(t *testing.T) {
 	var mockCalled = false
 
 	mockOmadaApi := MockOmadaApi{
-		MockGetSsids: func(omadaControllerId *string, loginToken *string,
+		MockGetSsids: func(omadaControllerId *string, cookies []*http.Cookie, loginToken *string,
 			siteId *string, wlanId *string) (*OmadaResponse, error) {
 			resp := &OmadaResponse{
 				ErrorCode: 0,
@@ -150,7 +161,7 @@ func TestRepoGetSsids(t *testing.T) {
 
 	assert := assert.New(t)
 
-	controllerId, _ := repo.GetSsids(nil, nil, nil, nil)
+	controllerId, _ := repo.GetSsids(nil, nil, nil, nil, nil)
 
 	assert.True(mockCalled, "mock is not called")
 	assert.Equal(Data{Id: NewStr("ssid_id"), Name: NewStr("ssid_name")},
@@ -161,7 +172,7 @@ func TestRepoUpdateSsid(t *testing.T) {
 	var mockCalled = false
 
 	mockOmadaApi := MockOmadaApi{
-		MockUpdateSsid: func(omadaControllerId *string, loginToken *string,
+		MockUpdateSsid: func(omadaControllerId *string, cookies []*http.Cookie, loginToken *string,
 			siteId *string, wlanId *string, ssidId *string,
 			ssidUpdateData *OmadaSsidUpdateData) (*OmadaResponse, error) {
 			resp := &OmadaResponse{
@@ -179,7 +190,7 @@ func TestRepoUpdateSsid(t *testing.T) {
 
 	assert := assert.New(t)
 
-	controllerId, _ := repo.UpdateSsid(nil, nil, nil, nil, nil, nil)
+	controllerId, _ := repo.UpdateSsid(nil, nil, nil, nil, nil, nil, nil)
 
 	assert.True(mockCalled, "mock is not called")
 	assert.Equal(0, controllerId.ErrorCode, "wrong response data")
@@ -189,7 +200,7 @@ func TestRepoGetTimeRanges(t *testing.T) {
 	var mockCalled = false
 
 	mockOmadaApi := MockOmadaApi{
-		MockGetTimeRanges: func(omadaControllerId *string, loginToken *string,
+		MockGetTimeRanges: func(omadaControllerId *string, cookies []*http.Cookie, loginToken *string,
 			siteId *string) (*OmadaResponse, error) {
 			resp := &OmadaResponse{
 				ErrorCode: 0,
@@ -206,7 +217,7 @@ func TestRepoGetTimeRanges(t *testing.T) {
 
 	assert := assert.New(t)
 
-	controllerId, _ := repo.GetTimeRanges(nil, nil, nil)
+	controllerId, _ := repo.GetTimeRanges(nil, nil, nil, nil)
 
 	assert.True(mockCalled, "mock is not called")
 	assert.Equal(0, controllerId.ErrorCode, "wrong response data")
@@ -216,7 +227,7 @@ func TestRepoCreateTimeRanges(t *testing.T) {
 	var mockCalled = false
 
 	mockOmadaApi := MockOmadaApi{
-		MockCreateTimeRange: func(omadaControllerId *string, loginToken *string,
+		MockCreateTimeRange: func(omadaControllerId *string, cookies []*http.Cookie, loginToken *string,
 			siteId *string, timeRangeData *Data) (*OmadaResponse, error) {
 			resp := &OmadaResponse{
 				ErrorCode: 0,
@@ -233,7 +244,7 @@ func TestRepoCreateTimeRanges(t *testing.T) {
 
 	assert := assert.New(t)
 
-	controllerId, _ := repo.CreateTimeRange(nil, nil, nil, nil)
+	controllerId, _ := repo.CreateTimeRange(nil, nil, nil, nil, nil)
 
 	assert.True(mockCalled, "mock is not called")
 	assert.Equal(0, controllerId.ErrorCode, "wrong response data")
