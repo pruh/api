@@ -322,3 +322,86 @@ func TestGetWlans(t *testing.T) {
 		assert.Equal(Data{Id: StrPtr("wlan_id"), Name: StrPtr("wlan_name")}, (*wlansResp.Result.Data)[0], "omada id parsing is not correct")
 	}
 }
+
+func TestGetSsids(t *testing.T) {
+	testsData := []struct {
+		description    string
+		omadaUrl       string
+		omadacId       *string
+		loginToken     *string
+		siteId         *string
+		wlanId         *string
+		expectError    bool
+		responseCode   int
+		responseBody   string
+		omadaErrorCode int
+	}{
+		{
+			description:    "happy path",
+			omadaUrl:       "https://omada.example.com",
+			omadacId:       StrPtr("omada_cid"),
+			loginToken:     StrPtr("login_token"),
+			siteId:         StrPtr("site_id"),
+			wlanId:         StrPtr("wlan_id"),
+			expectError:    false,
+			responseCode:   http.StatusOK,
+			responseBody:   "{\"errorCode\": 0,\"msg\": \"Success.\",\"result\": {\"data\": [{\"name\": \"ssid_name\", \"id\": \"ssid_id\"}]}}",
+			omadaErrorCode: 0,
+		},
+		{
+			description:    "upstream error",
+			omadaUrl:       "https://omada.example.com",
+			omadacId:       StrPtr("omada_cid"),
+			loginToken:     StrPtr("login_token"),
+			siteId:         StrPtr("site_id"),
+			wlanId:         StrPtr("wlan_id"),
+			expectError:    true,
+			responseCode:   http.StatusInternalServerError,
+			responseBody:   "{\"errorCode\": 0,\"msg\": \"Success.\",\"result\": {\"data\": [{\"name\": \"ssid_name\", \"id\": \"ssid_id\"}]}}",
+			omadaErrorCode: 0,
+		},
+	}
+
+	assert := assert.New(t)
+
+	for _, testData := range testsData {
+		t.Logf("tesing %+v", testData.description)
+
+		mockHttpClient := MockHTTPClient{
+			MockDo: func(req *http.Request) (*http.Response, error) {
+				assert.Equal(fmt.Sprintf("%s/%s/api/v2/sites/%s/setting/wlans/%s/ssids",
+					testData.omadaUrl, *testData.omadacId, *testData.siteId, *testData.wlanId),
+					req.URL.String(), "Omada request url is not correct")
+
+				assert.Equal(*testData.loginToken, req.Header.Get("Csrf-token"), "Login token is missing")
+
+				var respErr error
+				if testData.responseCode != http.StatusOK {
+					respErr = errors.New("test error")
+				}
+
+				w := httptest.NewRecorder()
+				w.WriteHeader(testData.responseCode)
+				w.WriteString(testData.responseBody)
+
+				return w.Result(), respErr
+			},
+		}
+
+		omadaApi := NewOmadaApi(
+			NewConfigSafe(StrPtr("8080"), StrPtr("1"), StrPtr("123"), nil, nil, nil,
+				StrPtr(testData.omadaUrl), nil, nil),
+			&mockHttpClient)
+
+		wlansResp, err := omadaApi.GetSsids(testData.omadacId, testData.loginToken, testData.siteId, testData.wlanId)
+		if testData.expectError {
+			assert.True(err != nil, "should return error")
+			continue
+		}
+
+		assert.Equal(testData.omadaErrorCode, wlansResp.ErrorCode, "Error code is not correct")
+		assert.Equal(1, len(*wlansResp.Result.Data), "ssids resp is not correct")
+		assert.Equal(Data{Id: StrPtr("ssid_id"), Name: StrPtr("ssid_name")},
+			(*wlansResp.Result.Data)[0], "omada id parsing is not correct")
+	}
+}

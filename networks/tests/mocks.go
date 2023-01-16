@@ -19,6 +19,7 @@ type MockOmadaApi struct {
 	MockLogin           func(omadaControllerId *string) (*OmadaResponse, error)
 	MockGetSites        func(omadaControllerId *string, loginToken *string) (*OmadaResponse, error)
 	MockGetWlans        func(omadaControllerId *string, loginToken *string, siteId *string) (*OmadaResponse, error)
+	MockGetSsids        func(omadaControllerId *string, loginToken *string, siteId *string, wlanId *string) (*OmadaResponse, error)
 }
 
 func (oa *MockOmadaApi) GetControllerId() (*OmadaResponse, error) {
@@ -33,8 +34,14 @@ func (oa *MockOmadaApi) GetSites(omadaControllerId *string, loginToken *string) 
 	return oa.MockGetSites(omadaControllerId, loginToken)
 }
 
-func (oa *MockOmadaApi) GetWlans(omadaControllerId *string, loginToken *string, siteId *string) (*OmadaResponse, error) {
+func (oa *MockOmadaApi) GetWlans(omadaControllerId *string, loginToken *string,
+	siteId *string) (*OmadaResponse, error) {
 	return oa.MockGetWlans(omadaControllerId, loginToken, siteId)
+}
+
+func (oa *MockOmadaApi) GetSsids(omadaControllerId *string, loginToken *string,
+	siteId *string, wlanId *string) (*OmadaResponse, error) {
+	return oa.MockGetSsids(omadaControllerId, loginToken, siteId, wlanId)
 }
 
 func StrPtr(str string) *string {

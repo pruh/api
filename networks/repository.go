@@ -27,3 +27,7 @@ func (r *Repository) GetSites(omadaControllerId *string, loginToken *string) (*O
 func (r *Repository) GetWlans(omadaControllerId *string, loginToken *string, siteId *string) (*OmadaResponse, error) {
 	return r.omadaApi.GetWlans(omadaControllerId, loginToken, siteId)
 }
+
+func (r *Repository) GetSsids(omadaControllerId *string, loginToken *string, siteId *string, wlanId *string) (*OmadaResponse, error) {
+	return r.omadaApi.GetSsids(omadaControllerId, loginToken, siteId, wlanId)
+}
