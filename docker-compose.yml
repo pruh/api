@@ -18,5 +18,5 @@ services:
     ports:
       - 27017:27017
     volumes:
-      - ./volmes/mongo:/data/db
+      - ./volumes/mongo:/data/db
     env_file: api.env

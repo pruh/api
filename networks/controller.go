@@ -64,8 +64,10 @@ func (c *controller) UpdateWifi(w http.ResponseWriter, r *http.Request) {
 	glog.Infof("Omada controller id %s", *omadaIdResp.Result.OmadacId)
 
 	omadaLoginResp, err := c.repository.Login(omadaIdResp.Result.OmadacId)
-	if err != nil || omadaIdResp.ErrorCode != 0 || omadaLoginResp.Result.Token == nil {
-		errorMessage := fmt.Sprintf("Omada Controller Id Query Error: %+v", err)
+	if err != nil || omadaIdResp == nil || omadaLoginResp.ErrorCode != 0 ||
+		omadaLoginResp.Result == nil || omadaLoginResp.Result.Token == nil {
+		errorMessage := fmt.Sprintf("Omada Login Query Message: %s, Error: %+v",
+			*omadaLoginResp.Msg, err)
 		c.writeResponse(w, http.StatusBadGateway, false, &errorMessage)
 		return
 	}
