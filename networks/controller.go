@@ -64,8 +64,8 @@ func (c *controller) UpdateWifi(w http.ResponseWriter, r *http.Request) {
 
 	glog.Infof("Omada controller id %s", *omadaIdResp.Result.OmadacId)
 
-	omadaLoginResp, err := c.repository.Login(omadaIdResp.Result.OmadacId)
-	if err != nil || omadaLoginResp == nil || omadaLoginResp.ErrorCode != 0 ||
+	omadaLoginResp, cookies, err := c.repository.Login(omadaIdResp.Result.OmadacId)
+	if err != nil || omadaLoginResp == nil || omadaLoginResp.ErrorCode != 0 || cookies == nil ||
 		omadaLoginResp.Result == nil || omadaLoginResp.Result.Token == nil {
 		errorMessage := fmt.Sprintf("Omada Login Query Message: %s, Error: %+v",
 			*omadaLoginResp.Msg, err)
@@ -75,7 +75,7 @@ func (c *controller) UpdateWifi(w http.ResponseWriter, r *http.Request) {
 
 	glog.Infof("Omada login token %s", *omadaLoginResp.Result.Token)
 
-	omadaSitesResp, err := c.repository.GetSites(omadaIdResp.Result.OmadacId,
+	omadaSitesResp, err := c.repository.GetSites(omadaIdResp.Result.OmadacId, cookies,
 		omadaLoginResp.Result.Token)
 	if err != nil || omadaSitesResp.ErrorCode != 0 || omadaSitesResp.Result == nil ||
 		omadaSitesResp.Result.Data == nil || len(*omadaSitesResp.Result.Data) == 0 {
@@ -87,7 +87,7 @@ func (c *controller) UpdateWifi(w http.ResponseWriter, r *http.Request) {
 
 	glog.Infof("Omada sites %+v", (*omadaSitesResp.Result.Data)[0])
 
-	omadaWlansResp, err := c.repository.GetWlans(omadaIdResp.Result.OmadacId,
+	omadaWlansResp, err := c.repository.GetWlans(omadaIdResp.Result.OmadacId, cookies,
 		omadaLoginResp.Result.Token, (*omadaSitesResp.Result.Data)[0].Id)
 	if err != nil || omadaWlansResp.ErrorCode != 0 || omadaWlansResp.Result == nil ||
 		omadaWlansResp.Result.Data == nil || len(*omadaWlansResp.Result.Data) == 0 {
@@ -99,7 +99,7 @@ func (c *controller) UpdateWifi(w http.ResponseWriter, r *http.Request) {
 
 	glog.Infof("Omada wlans %+v", (*omadaWlansResp.Result.Data)[0])
 
-	omadaSsidsResp, err := c.repository.GetSsids(omadaIdResp.Result.OmadacId,
+	omadaSsidsResp, err := c.repository.GetSsids(omadaIdResp.Result.OmadacId, cookies,
 		omadaLoginResp.Result.Token, (*omadaSitesResp.Result.Data)[0].Id, (*omadaWlansResp.Result.Data)[0].Id)
 	if err != nil || omadaSsidsResp.ErrorCode != 0 || omadaSsidsResp.Result == nil ||
 		omadaSsidsResp.Result.Data == nil || len(*omadaSsidsResp.Result.Data) == 0 {
@@ -127,7 +127,7 @@ func (c *controller) UpdateWifi(w http.ResponseWriter, r *http.Request) {
 
 	glog.Infof("Omada ssid id %s", *ssidId)
 
-	omadaTimeRangesResp, err := c.repository.GetTimeRanges(omadaIdResp.Result.OmadacId,
+	omadaTimeRangesResp, err := c.repository.GetTimeRanges(omadaIdResp.Result.OmadacId, cookies,
 		omadaLoginResp.Result.Token, (*omadaSitesResp.Result.Data)[0].Id)
 	if err != nil || omadaTimeRangesResp.ErrorCode != 0 {
 		errorMessage := fmt.Sprintf("Omada time ranges query Message: %s, Error: %+v",
@@ -157,7 +157,7 @@ func (c *controller) UpdateWifi(w http.ResponseWriter, r *http.Request) {
 	} else {
 		glog.Info("time range not available, creating one")
 
-		omadaTrCreateResp, err := c.repository.CreateTimeRange(omadaIdResp.Result.OmadacId,
+		omadaTrCreateResp, err := c.repository.CreateTimeRange(omadaIdResp.Result.OmadacId, cookies,
 			omadaLoginResp.Result.Token, (*omadaSitesResp.Result.Data)[0].Id,
 			&Data{
 				Name:    NewStr("Night and Day"),
@@ -190,7 +190,7 @@ func (c *controller) UpdateWifi(w http.ResponseWriter, r *http.Request) {
 		scheduleId = omadaTrCreateResp.Result.ProfileId
 	}
 
-	omadaUpdateSsidResp, err := c.repository.UpdateSsid(omadaIdResp.Result.OmadacId,
+	omadaUpdateSsidResp, err := c.repository.UpdateSsid(omadaIdResp.Result.OmadacId, cookies,
 		omadaLoginResp.Result.Token, (*omadaSitesResp.Result.Data)[0].Id,
 		(*omadaWlansResp.Result.Data)[0].Id, &ssid, &OmadaSsidUpdateData{
 			WlanScheduleEnable: NewBool(true),

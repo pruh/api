@@ -20,18 +20,19 @@ type omadaApi struct {
 
 type OmadaApi interface {
 	GetControllerId() (*OmadaResponse, error)
-	Login(omadaControllerId *string) (*OmadaResponse, error)
-	GetSites(omadaControllerId *string, loginToken *string) (*OmadaResponse, error)
-	GetWlans(omadaControllerId *string, loginToken *string,
+	Login(omadaControllerId *string) (*OmadaResponse, []*http.Cookie, error)
+	GetSites(omadaControllerId *string, cookies []*http.Cookie,
+		loginToken *string) (*OmadaResponse, error)
+	GetWlans(omadaControllerId *string, cookies []*http.Cookie, loginToken *string,
 		siteId *string) (*OmadaResponse, error)
-	GetSsids(omadaControllerId *string, loginToken *string,
+	GetSsids(omadaControllerId *string, cookies []*http.Cookie, loginToken *string,
 		siteId *string, wlanId *string) (*OmadaResponse, error)
-	UpdateSsid(omadaControllerId *string, loginToken *string,
+	UpdateSsid(omadaControllerId *string, cookies []*http.Cookie, loginToken *string,
 		siteId *string, wlanId *string, ssidId *string,
 		ssidUpdateData *OmadaSsidUpdateData) (*OmadaResponse, error)
-	GetTimeRanges(omadaControllerId *string, loginToken *string,
+	GetTimeRanges(omadaControllerId *string, cookies []*http.Cookie, loginToken *string,
 		siteId *string) (*OmadaResponse, error)
-	CreateTimeRange(omadaControllerId *string, loginToken *string,
+	CreateTimeRange(omadaControllerId *string, cookies []*http.Cookie, loginToken *string,
 		siteId *string, trData *Data) (*OmadaResponse, error)
 }
 
@@ -78,7 +79,7 @@ func (oa *omadaApi) GetControllerId() (*OmadaResponse, error) {
 	return &omadaResponse, nil
 }
 
-func (oa *omadaApi) Login(omadaControllerId *string) (*OmadaResponse, error) {
+func (oa *omadaApi) Login(omadaControllerId *string) (*OmadaResponse, []*http.Cookie, error) {
 	l := OmadaLoginData{
 		Username: *oa.config.OmadaUsername,
 		Password: *oa.config.OmadaPassword,
@@ -86,14 +87,14 @@ func (oa *omadaApi) Login(omadaControllerId *string) (*OmadaResponse, error) {
 
 	jsonStr, err := json.Marshal(l)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 
 	url := fmt.Sprintf("%s/%s/api/v2/login", *oa.config.OmadaUrl, *omadaControllerId)
 	req, err := http.NewRequest(http.MethodPost, url, bytes.NewBuffer(jsonStr))
 	if err != nil {
 		glog.Errorf("Failed to create HTTP request: %s", err)
-		return nil, err
+		return nil, nil, err
 	}
 	req.Header.Set("Content-Type", "application/json")
 
@@ -102,7 +103,7 @@ func (oa *omadaApi) Login(omadaControllerId *string) (*OmadaResponse, error) {
 	resp, err := oa.httpClient.Do(req)
 	if err != nil {
 		glog.Errorf("Error logging in: %s", err)
-		return nil, err
+		return nil, nil, err
 	}
 
 	defer resp.Body.Close()
@@ -110,21 +111,23 @@ func (oa *omadaApi) Login(omadaControllerId *string) (*OmadaResponse, error) {
 	body, err := io.ReadAll(io.LimitReader(resp.Body, 1024*1024))
 	if err != nil {
 		glog.Errorf("Error reading omada response: %s", err)
-		return nil, err
+		return nil, nil, err
 	}
 
 	var omadaResponse OmadaResponse
 	err = json.Unmarshal(body, &omadaResponse)
 	if err != nil {
 		glog.Errorf("Error parsing login: %s", err)
-		return nil, err
+		return nil, nil, err
 	}
 
-	return &omadaResponse, nil
+	return &omadaResponse, resp.Cookies(), nil
 }
 
-func (oa *omadaApi) GetSites(omadaControllerId *string, loginToken *string) (*OmadaResponse, error) {
-	url := fmt.Sprintf("%s/%s/api/v2/sites?currentPageSize=1&currentPage=1", *oa.config.OmadaUrl, *omadaControllerId)
+func (oa *omadaApi) GetSites(omadaControllerId *string, cookies []*http.Cookie,
+	loginToken *string) (*OmadaResponse, error) {
+	url := fmt.Sprintf("%s/%s/api/v2/sites?currentPageSize=1&currentPage=1",
+		*oa.config.OmadaUrl, *omadaControllerId)
 	req, err := http.NewRequest(http.MethodGet, url, nil)
 	if err != nil {
 		glog.Errorf("Failed to create HTTP request: %s", err)
@@ -132,8 +135,12 @@ func (oa *omadaApi) GetSites(omadaControllerId *string, loginToken *string) (*Om
 	}
 	req.Header.Set("Content-Type", "application/json")
 	req.Header.Set("Csrf-token", *loginToken)
+	for _, cookie := range cookies {
+		req.AddCookie(cookie)
+	}
 
 	glog.Infof("sending GetSites request to %s", url)
+	glog.Infof("sending GetSites request Headers %+v", req.Header)
 
 	resp, err := oa.httpClient.Do(req)
 	if err != nil {
@@ -159,7 +166,8 @@ func (oa *omadaApi) GetSites(omadaControllerId *string, loginToken *string) (*Om
 	return &omadaResponse, nil
 }
 
-func (oa *omadaApi) GetWlans(omadaControllerId *string, loginToken *string, siteId *string) (*OmadaResponse, error) {
+func (oa *omadaApi) GetWlans(omadaControllerId *string, cookies []*http.Cookie,
+	loginToken *string, siteId *string) (*OmadaResponse, error) {
 	url := fmt.Sprintf("%s/%s/api/v2/sites/%s/setting/wlans", *oa.config.OmadaUrl, *omadaControllerId, *siteId)
 	req, err := http.NewRequest(http.MethodGet, url, nil)
 	if err != nil {
@@ -168,6 +176,9 @@ func (oa *omadaApi) GetWlans(omadaControllerId *string, loginToken *string, site
 	}
 	req.Header.Set("Content-Type", "application/json")
 	req.Header.Set("Csrf-token", *loginToken)
+	for _, cookie := range cookies {
+		req.AddCookie(cookie)
+	}
 
 	glog.Infof("sending GetWlans request to %s", url)
 
@@ -195,7 +206,7 @@ func (oa *omadaApi) GetWlans(omadaControllerId *string, loginToken *string, site
 	return &omadaResponse, nil
 }
 
-func (oa *omadaApi) GetSsids(omadaControllerId *string, loginToken *string,
+func (oa *omadaApi) GetSsids(omadaControllerId *string, cookies []*http.Cookie, loginToken *string,
 	siteId *string, wlanId *string) (*OmadaResponse, error) {
 	url := fmt.Sprintf("%s/%s/api/v2/sites/%s/setting/wlans/%s/ssids",
 		*oa.config.OmadaUrl, *omadaControllerId, *siteId, *wlanId)
@@ -206,6 +217,9 @@ func (oa *omadaApi) GetSsids(omadaControllerId *string, loginToken *string,
 	}
 	req.Header.Set("Content-Type", "application/json")
 	req.Header.Set("Csrf-token", *loginToken)
+	for _, cookie := range cookies {
+		req.AddCookie(cookie)
+	}
 
 	glog.Infof("sending GetSsids request to %s", url)
 
@@ -233,8 +247,8 @@ func (oa *omadaApi) GetSsids(omadaControllerId *string, loginToken *string,
 	return &omadaResponse, nil
 }
 
-func (oa *omadaApi) UpdateSsid(omadaControllerId *string, loginToken *string,
-	siteId *string, wlanId *string, ssidId *string,
+func (oa *omadaApi) UpdateSsid(omadaControllerId *string, cookies []*http.Cookie,
+	loginToken *string, siteId *string, wlanId *string, ssidId *string,
 	ssidUpdateData *OmadaSsidUpdateData) (*OmadaResponse, error) {
 	url := fmt.Sprintf("%s/%s/api/v2/sites/%s/setting/wlans/%s/ssids/%s",
 		*oa.config.OmadaUrl, *omadaControllerId, *siteId, *wlanId, *ssidId)
@@ -254,6 +268,9 @@ func (oa *omadaApi) UpdateSsid(omadaControllerId *string, loginToken *string,
 	}
 	req.Header.Set("Content-Type", "application/json")
 	req.Header.Set("Csrf-token", *loginToken)
+	for _, cookie := range cookies {
+		req.AddCookie(cookie)
+	}
 
 	resp, err := oa.httpClient.Do(req)
 	if err != nil {
@@ -279,8 +296,8 @@ func (oa *omadaApi) UpdateSsid(omadaControllerId *string, loginToken *string,
 	return &omadaResponse, nil
 }
 
-func (oa *omadaApi) GetTimeRanges(omadaControllerId *string, loginToken *string,
-	siteId *string) (*OmadaResponse, error) {
+func (oa *omadaApi) GetTimeRanges(omadaControllerId *string, cookies []*http.Cookie,
+	loginToken *string, siteId *string) (*OmadaResponse, error) {
 	url := fmt.Sprintf("%s/%s/api/v2/sites/%s/setting/profiles/timeranges",
 		*oa.config.OmadaUrl, *omadaControllerId, *siteId)
 	req, err := http.NewRequest(http.MethodGet, url, nil)
@@ -290,6 +307,9 @@ func (oa *omadaApi) GetTimeRanges(omadaControllerId *string, loginToken *string,
 	}
 	req.Header.Set("Content-Type", "application/json")
 	req.Header.Set("Csrf-token", *loginToken)
+	for _, cookie := range cookies {
+		req.AddCookie(cookie)
+	}
 
 	glog.Infof("sending GetTimeRanges request to %s", url)
 
@@ -317,8 +337,8 @@ func (oa *omadaApi) GetTimeRanges(omadaControllerId *string, loginToken *string,
 	return &omadaResponse, nil
 }
 
-func (oa *omadaApi) CreateTimeRange(omadaControllerId *string, loginToken *string,
-	siteId *string, trData *Data) (*OmadaResponse, error) {
+func (oa *omadaApi) CreateTimeRange(omadaControllerId *string, cookies []*http.Cookie,
+	loginToken *string, siteId *string, trData *Data) (*OmadaResponse, error) {
 	url := fmt.Sprintf("%s/%s/api/v2/sites/%s/setting/profiles/timeranges",
 		*oa.config.OmadaUrl, *omadaControllerId, *siteId)
 
@@ -337,6 +357,9 @@ func (oa *omadaApi) CreateTimeRange(omadaControllerId *string, loginToken *strin
 	}
 	req.Header.Set("Content-Type", "application/json")
 	req.Header.Set("Csrf-token", *loginToken)
+	for _, cookie := range cookies {
+		req.AddCookie(cookie)
+	}
 
 	resp, err := oa.httpClient.Do(req)
 	if err != nil {
