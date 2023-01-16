@@ -59,7 +59,9 @@ func TestGetControllerId(t *testing.T) {
 
 				w := httptest.NewRecorder()
 				w.WriteHeader(testData.responseCode)
-				w.WriteString(testData.responseBody)
+				if _, err := w.WriteString(testData.responseBody); err != nil {
+					panic(fmt.Sprintf("Error writing body: %s", err))
+				}
 
 				return w.Result(), respErr
 			},
@@ -146,7 +148,9 @@ func TestLogin(t *testing.T) {
 
 				w := httptest.NewRecorder()
 				w.WriteHeader(testData.responseCode)
-				w.WriteString(testData.responseBody)
+				if _, err := w.WriteString(testData.responseBody); err != nil {
+					panic(fmt.Sprintf("Error writing body: %s", err))
+				}
 
 				return w.Result(), respErr
 			},
@@ -221,7 +225,9 @@ func TestGetSites(t *testing.T) {
 
 				w := httptest.NewRecorder()
 				w.WriteHeader(testData.responseCode)
-				w.WriteString(testData.responseBody)
+				if _, err := w.WriteString(testData.responseBody); err != nil {
+					panic(fmt.Sprintf("Error writing body: %s", err))
+				}
 
 				return w.Result(), respErr
 			},
@@ -300,7 +306,9 @@ func TestGetWlans(t *testing.T) {
 
 				w := httptest.NewRecorder()
 				w.WriteHeader(testData.responseCode)
-				w.WriteString(testData.responseBody)
+				if _, err := w.WriteString(testData.responseBody); err != nil {
+					panic(fmt.Sprintf("Error writing body: %s", err))
+				}
 
 				return w.Result(), respErr
 			},
@@ -382,7 +390,9 @@ func TestGetSsids(t *testing.T) {
 
 				w := httptest.NewRecorder()
 				w.WriteHeader(testData.responseCode)
-				w.WriteString(testData.responseBody)
+				if _, err := w.WriteString(testData.responseBody); err != nil {
+					panic(fmt.Sprintf("Error writing body: %s", err))
+				}
 
 				return w.Result(), respErr
 			},
@@ -484,7 +494,9 @@ func TestUpdateSsid(t *testing.T) {
 
 				w := httptest.NewRecorder()
 				w.WriteHeader(testData.responseCode)
-				w.WriteString(testData.responseBody)
+				if _, err := w.WriteString(testData.responseBody); err != nil {
+					panic(fmt.Sprintf("Error writing body: %s", err))
+				}
 
 				return w.Result(), respErr
 			},
@@ -578,7 +590,9 @@ func TestGetTimeRanges(t *testing.T) {
 
 				w := httptest.NewRecorder()
 				w.WriteHeader(testData.responseCode)
-				w.WriteString(testData.responseBody)
+				if _, err := w.WriteString(testData.responseBody); err != nil {
+					panic(fmt.Sprintf("Error writing body: %s", err))
+				}
 
 				return w.Result(), respErr
 			},
@@ -724,7 +738,9 @@ func TestCreateTimeRange(t *testing.T) {
 
 				w := httptest.NewRecorder()
 				w.WriteHeader(testData.responseCode)
-				w.WriteString(testData.responseBody)
+				if _, err := w.WriteString(testData.responseBody); err != nil {
+					panic(fmt.Sprintf("Error writing body: %s", err))
+				}
 
 				return w.Result(), respErr
 			},

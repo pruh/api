@@ -1335,6 +1335,10 @@ func readResponse(w *httptest.ResponseRecorder) NetworksResponse {
 	}
 
 	var netsResponse NetworksResponse
-	json.Unmarshal(bodyBytes, &netsResponse)
+	err = json.Unmarshal(bodyBytes, &netsResponse)
+	if err != nil {
+		panic(fmt.Sprintf("Error while parsing body: %s", err))
+	}
+
 	return netsResponse
 }
