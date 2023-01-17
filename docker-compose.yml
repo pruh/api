@@ -7,6 +7,8 @@ services:
     restart: unless-stopped
     ports:
       - 8081:8080
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
     env_file: api.env
     depends_on:
       - mongo
@@ -20,5 +22,6 @@ services:
       - 27017:27017
     volumes:
       - ./volumes/mongo:/data/db
+      - /etc/localtime:/etc/localtime:ro
     env_file: api.env
 
