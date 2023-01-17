@@ -105,18 +105,30 @@ type NetworksSsidRequest struct {
 	RadioOff *bool `json:"radioOff,omitempty"`
 }
 
+// type NetworksWifiUpdateResponse struct {
+// 	Data  *NetworksWifiUpdateResponseSuccess `json:"data,omitempty"`
+// 	Error *NetworksResponseError             `json:"error,omitempty"`
+// }
+
+// type NetworksWifiUpdateResponseSuccess struct {
+// 	Updated bool `json:"updated,omitempty"`
+// }
+
+// type NetworksWifiQueryResponse struct {
+// 	Data  *NetworksWifiQueryResponseSuccess `json:"data,omitempty"`
+// 	Error *NetworksResponseError            `json:"error,omitempty"`
+// }
+
+// type NetworksWifiQueryResponseSuccess struct {
+// 	Ssid     *string `json:"ssid,omitempty"`
+// 	RadioOff *bool   `json:"radioOff,omitempty"`
+// }
+
 type NetworksResponse struct {
-	Data  *NetworksResponseSuccess `json:"data,omitempty"`
-	Error *NetworksResponseError   `json:"error,omitempty"`
-}
-
-type NetworksResponseSuccess struct {
-	Updated bool `json:"updated,omitempty"`
-}
-
-type NetworksResponseError struct {
-	Code    int    `json:"code,omitempty"`
-	Message string `json:"message,omitempty"`
+	Ssid         *string `json:"ssid,omitempty"`
+	RadioOff     *bool   `json:"radioOff,omitempty"`
+	Updated      *bool   `json:"updated,omitempty"`
+	ErrorMessage *string `json:"errorMessage,omitempty"`
 }
 
 func NewStr(str string) *string {

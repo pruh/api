@@ -209,9 +209,9 @@ func TestUpdateWifis_ControllerId(t *testing.T) {
 
 		assert.Equal(testData.responseCode, w.Code, "Response code is not correct")
 		if testData.responseCode == http.StatusOK {
-			assert.True(netsResponse.Data.Updated, "Response success body missing updated flag")
+			assert.True(*netsResponse.Updated, "Response success body missing updated flag")
 		} else {
-			assert.True(len(netsResponse.Error.Message) > 0, "Response error message is missing")
+			assert.True(len(*netsResponse.ErrorMessage) > 0, "Response error message is missing")
 		}
 	}
 }
@@ -380,9 +380,9 @@ func TestUpdateWifis_Login(t *testing.T) {
 
 		assert.Equal(testData.responseCode, w.Code, "Response code is not correct")
 		if testData.responseCode == http.StatusOK {
-			assert.True(netsResponse.Data.Updated, "Response success body missing updated flag")
+			assert.True(*netsResponse.Updated, "Response success body missing updated flag")
 		} else {
-			assert.True(len(netsResponse.Error.Message) > 0, "Response error message is missing")
+			assert.True(len(*netsResponse.ErrorMessage) > 0, "Response error message is missing")
 		}
 	}
 }
@@ -556,9 +556,9 @@ func TestUpdateWifis_GetSites(t *testing.T) {
 
 		assert.Equal(testData.responseCode, w.Code, "Response code is not correct")
 		if testData.responseCode == http.StatusOK {
-			assert.True(netsResponse.Data.Updated, "Response success body missing updated flag")
+			assert.True(*netsResponse.Updated, "Response success body missing updated flag")
 		} else {
-			assert.True(len(netsResponse.Error.Message) > 0, "Response error message is missing")
+			assert.True(len(*netsResponse.ErrorMessage) > 0, "Response error message is missing")
 		}
 	}
 }
@@ -723,9 +723,9 @@ func TestUpdateWifis_GetWlans(t *testing.T) {
 
 		assert.Equal(testData.responseCode, w.Code, "Response code is not correct")
 		if testData.responseCode == http.StatusOK {
-			assert.True(netsResponse.Data.Updated, "Response success body missing updated flag")
+			assert.True(*netsResponse.Updated, "Response success body missing updated flag")
 		} else {
-			assert.True(len(netsResponse.Error.Message) > 0, "Response error message is missing")
+			assert.True(len(*netsResponse.ErrorMessage) > 0, "Response error message is missing")
 		}
 	}
 }
@@ -893,9 +893,9 @@ func TestUpdateWifis_GetSsids(t *testing.T) {
 
 		assert.Equal(testData.responseCode, w.Code, "Response code is not correct")
 		if testData.responseCode == http.StatusOK {
-			assert.True(netsResponse.Data.Updated, "Response success body missing updated flag")
+			assert.True(*netsResponse.Updated, "Response success body missing updated flag")
 		} else {
-			assert.True(len(netsResponse.Error.Message) > 0, "Response error message is missing")
+			assert.True(len(*netsResponse.ErrorMessage) > 0, "Response error message is missing")
 		}
 	}
 }
@@ -1054,9 +1054,9 @@ func TestUpdateWifis_UpdateSsid(t *testing.T) {
 
 		assert.Equal(testData.responseCode, w.Code, "Response code is not correct")
 		if testData.responseCode == http.StatusOK {
-			assert.True(netsResponse.Data.Updated, "Response success body missing updated flag")
+			assert.True(*netsResponse.Updated, "Response success body missing updated flag")
 		} else {
-			assert.True(len(netsResponse.Error.Message) > 0, "Response error message is missing")
+			assert.True(len(*netsResponse.ErrorMessage) > 0, "Response error message is missing")
 		}
 	}
 }
@@ -1214,9 +1214,9 @@ func TestUpdateWifis_GetTimeRanges(t *testing.T) {
 
 		assert.Equal(testData.responseCode, w.Code, "Response code is not correct")
 		if testData.responseCode == http.StatusOK {
-			assert.True(netsResponse.Data.Updated, "Response success body missing updated flag")
+			assert.True(*netsResponse.Updated, "Response success body missing updated flag")
 		} else {
-			assert.True(len(netsResponse.Error.Message) > 0, "Response error message is missing")
+			assert.True(len(*netsResponse.ErrorMessage) > 0, "Response error message is missing")
 		}
 	}
 }
@@ -1416,9 +1416,9 @@ func TestUpdateWifis_CreateTimeRanges(t *testing.T) {
 
 		assert.Equal(testData.responseCode, w.Code, "Response code is not correct")
 		if testData.responseCode == http.StatusOK {
-			assert.True(r.Data.Updated, "Response success body missing updated flag")
+			assert.True(*r.Updated, "Response success body missing updated flag")
 		} else {
-			assert.True(len(r.Error.Message) > 0, "Response error message is missing")
+			assert.True(len(*r.ErrorMessage) > 0, "Response error message is missing")
 		}
 	}
 }

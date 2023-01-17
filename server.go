@@ -92,6 +92,7 @@ func main() {
 	// networks controller
 	if config.OmadaUrl != nil {
 		networksController := networks.NewController(config)
+		apiV1Router.HandleFunc(networks.Wifis, networksController.GetWifi).Methods(http.MethodGet)
 		apiV1Router.HandleFunc(networks.Wifis, networksController.UpdateWifi).Methods(http.MethodPatch)
 	}
 
