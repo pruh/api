@@ -32,13 +32,10 @@ jobs:
         echo go env: $(go env GOPATH) 
         echo cache: $(ls $RUNNER_TOOL_CACHE/go)
 
-    - name: Run lint
-      shell: bash
+    - name: Run gofmt
       run: |
-        echo 'fail if a .go file has not been formatted with gofmt'
-        gofmt -d .; test -z $(gofmt -l -s -w .)
-        echo 'go vet is the official Go static analyzer'
-        go vet ./...
+        gofmt -d .
+        test -z $(gofmt -l .)
 
     - name: golangci-lint
       uses: golangci/golangci-lint-action@v3
