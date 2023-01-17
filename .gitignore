@@ -18,3 +18,6 @@
 
 # Env variables
 api.env
+
+# Docker volumes
+volumes

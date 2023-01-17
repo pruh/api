@@ -1,12 +1,10 @@
-version: '3.7'
+version: '3.8'
 
 services:
   api:
     build: .
     container_name: api
-    restart: always
-    working_dir: /app
-    command: ./api
+    restart: unless-stopped
     ports:
       - 8081:8080
     env_file: api.env
@@ -14,13 +12,13 @@ services:
       - mongo
 
   mongo:
-    image: mongo:4.2.2-bionic
+    image: mongo
     container_name: mongo
+    restart: unless-stopped
+    user: "${UID}:${GID}"
     ports:
       - 27017:27017
     volumes:
-      - mongodata:/data/db
+      - ./volumes/mongo:/data/db
     env_file: api.env
 
-volumes:
-  mongodata:

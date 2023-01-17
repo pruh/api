@@ -12,18 +12,14 @@ on:
 jobs:
   testing:
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        go:
-          - '1.18'
         
     steps:
     - uses: actions/checkout@v3
 
     - name: Set up Go
-      uses: actions/setup-go@v3
+      uses: actions/setup-go@v3.5.0
       with:
-        go-version: ${{ matrix.go }}
+        go-version-file: 'go.mod'
 
     - name: Verify dependencies
       run: go mod verify
@@ -36,14 +32,10 @@ jobs:
         echo go env: $(go env GOPATH) 
         echo cache: $(ls $RUNNER_TOOL_CACHE/go)
 
-    - name: Run lint
-      shell: bash
+    - name: Run gofmt
       run: |
-        GO_FILES=$(find . -iname '*.go' -type f)
-        echo 'fail if a .go file has not been formatted with gofmt'
-        test -z $(gofmt -s -l $GO_FILES)
-        echo 'go vet is the official Go static analyzer'
-        go vet ./...
+        gofmt -d .
+        test -z $(gofmt -l .)
 
     - name: golangci-lint
       uses: golangci/golangci-lint-action@v3
