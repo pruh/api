@@ -18,6 +18,208 @@ import (
 	. "github.com/pruh/api/networks/tests"
 )
 
+func TestGetWifi(t *testing.T) {
+	testsData := []struct {
+		description string
+		requestUrl  string
+		ssidParam   *string
+		cidError    bool
+		loginError  bool
+		siteError   bool
+		wlanError   bool
+		ssidError   bool
+
+		responseCode int
+	}{
+		{
+			description:  "ControllerId happy path",
+			requestUrl:   "https://omada.example.com/networks/ssid",
+			ssidParam:    NewStr("my_ssid"),
+			responseCode: http.StatusOK,
+		},
+		{
+			description:  "ssid missing in the request params",
+			requestUrl:   "https://omada.example.com",
+			responseCode: http.StatusBadRequest,
+		},
+		{
+			description: "omada controller id response error",
+			requestUrl:  "https://omada.example.com",
+			ssidParam:   NewStr("my_ssid"),
+			cidError:    true,
+
+			responseCode: http.StatusBadGateway,
+		},
+		{
+			description: "omada login query error",
+			requestUrl:  "https://omada.example.com",
+			ssidParam:   NewStr("my_ssid"),
+			loginError:  true,
+
+			responseCode: http.StatusBadGateway,
+		},
+		{
+			description: "omada site response error",
+			requestUrl:  "https://omada.example.com",
+			ssidParam:   NewStr("my_ssid"),
+			siteError:   true,
+
+			responseCode: http.StatusBadGateway,
+		},
+		{
+			description: "omada wlan response error",
+			requestUrl:  "https://omada.example.com",
+			ssidParam:   NewStr("my_ssid"),
+			wlanError:   true,
+
+			responseCode: http.StatusBadGateway,
+		},
+		{
+			description: "omada ssid response error",
+			requestUrl:  "https://omada.example.com",
+			ssidParam:   NewStr("my_ssid"),
+			ssidError:   true,
+
+			responseCode: http.StatusBadGateway,
+		},
+	}
+
+	assert := assert.New(t)
+
+	for _, testData := range testsData {
+		t.Logf("tesing %s", testData.description)
+
+		controller := NewControllerWithParams(
+			NewConfigSafe(NewStr("8080"), NewStr("1"), NewStr("123"), nil, nil, nil,
+				NewStr(testData.requestUrl), nil, nil),
+			&MockOmadaApi{
+				MockGetControllerId: func() (*OmadaResponse, error) {
+					if testData.cidError {
+						return nil, errors.New("test")
+					}
+
+					resp := &OmadaResponse{
+						ErrorCode: 0,
+						Msg:       NewStr("test"),
+						Result: &Result{
+							OmadacId: NewStr("oc_id"),
+						},
+					}
+
+					return resp, nil
+				},
+				MockLogin: func(omadaControllerId *string) (*OmadaResponse, []*http.Cookie, error) {
+					if testData.loginError {
+						return nil, nil, errors.New("test")
+					}
+
+					resp := &OmadaResponse{
+						ErrorCode: 0,
+						Msg:       NewStr("test"),
+						Result: &Result{
+							Token: NewStr("login_token"),
+						},
+					}
+
+					cookies := []*http.Cookie{
+						{
+							Name:  "cookie_name",
+							Value: "cookie_value",
+						},
+					}
+					return resp, cookies, nil
+				},
+				MockGetSites: func(omadaControllerId *string, cookies []*http.Cookie,
+					loginToken *string) (*OmadaResponse, error) {
+					if testData.siteError {
+						return nil, errors.New("test")
+					}
+
+					resp := &OmadaResponse{
+						ErrorCode: 0,
+						Msg:       NewStr("test"),
+						Result: &Result{
+							Data: &[]Data{
+								{
+									Id:   NewStr("site_id"),
+									Name: NewStr("site_name"),
+								},
+							},
+						},
+					}
+
+					return resp, nil
+				},
+				MockGetWlans: func(omadaControllerId *string, cookies []*http.Cookie,
+					loginToken *string, siteId *string) (*OmadaResponse, error) {
+					if testData.wlanError {
+						return nil, errors.New("test")
+					}
+
+					resp := &OmadaResponse{
+						ErrorCode: 0,
+						Msg:       NewStr("test"),
+						Result: &Result{
+							Data: &[]Data{
+								{
+									Id:   NewStr("wlan_id"),
+									Name: NewStr("wlan_name"),
+								},
+							},
+						},
+					}
+
+					return resp, nil
+				},
+				MockGetSsids: func(omadaControllerId *string, cookies []*http.Cookie, loginToken *string,
+					siteId *string, wlanId *string) (*OmadaResponse, error) {
+					if testData.ssidError {
+						return nil, errors.New("test")
+					}
+
+					resp := &OmadaResponse{
+						ErrorCode: 0,
+						Msg:       NewStr("test"),
+						Result: &Result{
+							Data: &[]Data{
+								{
+									Id:                 NewStr("ssid_id"),
+									Name:               NewStr("my_ssid"),
+									WlanScheduleEnable: NewBool(false),
+								},
+							},
+						},
+					}
+
+					return resp, nil
+				},
+			},
+		)
+
+		w := httptest.NewRecorder()
+		req := httptest.NewRequest(http.MethodGet, "http://example.com/foo", nil)
+
+		// setting mux vars for testing
+		if testData.ssidParam != nil {
+			vars := map[string]string{
+				"ssid": *testData.ssidParam,
+			}
+			req = mux.SetURLVars(req, vars)
+		}
+
+		controller.GetWifi(w, req)
+
+		netsResponse := readResponse(w)
+
+		assert.Equal(testData.responseCode, w.Code, "Response code is not correct")
+		if testData.responseCode == http.StatusOK {
+			assert.True(*netsResponse.Updated, "Response success body missing updated flag")
+		} else {
+			assert.True(len(*netsResponse.ErrorMessage) > 0, "Response error message is missing")
+		}
+	}
+}
+
 func TestUpdateWifis_ControllerId(t *testing.T) {
 	testsData := []struct {
 		description        string
