@@ -1,6 +1,7 @@
 package networks_test
 
 import (
+	"bytes"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -21,6 +22,7 @@ func TestUpdateWifis_ControllerId(t *testing.T) {
 	testsData := []struct {
 		description        string
 		requestUrl         string
+		requestData        *string
 		ssidParam          *string
 		omadaResponseError bool
 		omadaControllerId  *string
@@ -28,8 +30,9 @@ func TestUpdateWifis_ControllerId(t *testing.T) {
 		responseCode       int
 	}{
 		{
-			description:       "happy path",
+			description:       "ControllerId happy path",
 			requestUrl:        "https://omada.example.com/networks/ssid",
+			requestData:       NewStr(`{"enable":true}`),
 			ssidParam:         NewStr("my_ssid"),
 			omadaControllerId: NewStr("c_id"),
 			loginToken:        NewStr("login_token"),
@@ -38,22 +41,25 @@ func TestUpdateWifis_ControllerId(t *testing.T) {
 		{
 			description:  "ssid missing in the request params",
 			requestUrl:   "https://omada.example.com",
+			requestData:  NewStr(`{"enable":true}`),
 			responseCode: http.StatusBadRequest,
 		},
 		{
 			description:        "omada controller id response error",
 			requestUrl:         "https://omada.example.com",
+			requestData:        NewStr(`{"enable":true}`),
 			ssidParam:          NewStr("my_ssid"),
 			omadaResponseError: true,
 			omadaControllerId:  NewStr("c_id"),
 			responseCode:       http.StatusBadGateway,
 		},
 		{
-			description:       "controller id is missing in omada response",
+			description:       "request json malformed",
 			requestUrl:        "https://omada.example.com",
+			requestData:       NewStr(`{}`),
 			ssidParam:         NewStr("my_ssid"),
 			omadaControllerId: nil,
-			responseCode:      http.StatusBadGateway,
+			responseCode:      http.StatusBadRequest,
 		},
 	}
 
@@ -91,7 +97,7 @@ func TestUpdateWifis_ControllerId(t *testing.T) {
 					}
 
 					cookies := []*http.Cookie{
-						&http.Cookie{
+						{
 							Name:  "cookie_name",
 							Value: "cookie_value",
 						},
@@ -139,8 +145,9 @@ func TestUpdateWifis_ControllerId(t *testing.T) {
 						Result: &Result{
 							Data: &[]Data{
 								{
-									Id:   NewStr("ssid_id"),
-									Name: NewStr("my_ssid"),
+									Id:                 NewStr("ssid_id"),
+									Name:               NewStr("my_ssid"),
+									WlanScheduleEnable: NewBool(false),
 								},
 							},
 						},
@@ -149,8 +156,7 @@ func TestUpdateWifis_ControllerId(t *testing.T) {
 					return resp, nil
 				},
 				MockUpdateSsid: func(omadaControllerId *string, cookies []*http.Cookie, loginToken *string,
-					siteId *string, wlanId *string, ssidId *string,
-					ssidUpdateData *OmadaSsidUpdateData) (*OmadaResponse, error) {
+					siteId *string, wlanId *string, ssidUpdateData *Data) (*OmadaResponse, error) {
 					return &OmadaResponse{
 						ErrorCode: 0,
 						Msg:       NewStr("test"),
@@ -162,7 +168,8 @@ func TestUpdateWifis_ControllerId(t *testing.T) {
 						ErrorCode: 0,
 						Msg:       NewStr("test"),
 						Result: &Result{
-							Data: &[]Data{{Id: NewStr("time_range_id"), Name: NewStr("time_range_id")}},
+							ProfileId: NewStr("profile_id"),
+							Data:      &[]Data{{Id: NewStr("time_range_id"), Name: NewStr("time_range_id")}},
 						},
 					}
 
@@ -184,7 +191,9 @@ func TestUpdateWifis_ControllerId(t *testing.T) {
 		)
 
 		w := httptest.NewRecorder()
-		req := httptest.NewRequest(http.MethodGet, "http://example.com/foo", nil)
+
+		req := httptest.NewRequest(http.MethodGet, "http://example.com/foo",
+			bytes.NewBuffer([]byte(*testData.requestData)))
 
 		// setting mux vars for testing
 		if testData.ssidParam != nil {
@@ -216,7 +225,7 @@ func TestUpdateWifis_Login(t *testing.T) {
 		responseCode       int
 	}{
 		{
-			description:  "happy path",
+			description:  "Login happy path",
 			requestUrl:   "https://omada.example.com/networks/ssid",
 			loginToken:   NewStr("login_token"),
 			responseCode: http.StatusOK,
@@ -267,7 +276,7 @@ func TestUpdateWifis_Login(t *testing.T) {
 					}
 
 					cookies := []*http.Cookie{
-						&http.Cookie{
+						{
 							Name:  "cookie_name",
 							Value: "cookie_value",
 						},
@@ -310,8 +319,9 @@ func TestUpdateWifis_Login(t *testing.T) {
 						Result: &Result{
 							Data: &[]Data{
 								{
-									Id:   NewStr("ssid_id"),
-									Name: NewStr("my_ssid"),
+									Id:                 NewStr("ssid_id"),
+									Name:               NewStr("my_ssid"),
+									WlanScheduleEnable: NewBool(false),
 								},
 							},
 						},
@@ -320,8 +330,7 @@ func TestUpdateWifis_Login(t *testing.T) {
 					return resp, nil
 				},
 				MockUpdateSsid: func(omadaControllerId *string, cookies []*http.Cookie, loginToken *string,
-					siteId *string, wlanId *string, ssidId *string,
-					ssidUpdateData *OmadaSsidUpdateData) (*OmadaResponse, error) {
+					siteId *string, wlanId *string, ssidUpdateData *Data) (*OmadaResponse, error) {
 					return &OmadaResponse{
 						ErrorCode: 0,
 						Msg:       NewStr("test"),
@@ -333,7 +342,8 @@ func TestUpdateWifis_Login(t *testing.T) {
 						ErrorCode: 0,
 						Msg:       NewStr("test"),
 						Result: &Result{
-							Data: &[]Data{{Id: NewStr("time_range_id"), Name: NewStr("time_range_id")}},
+							ProfileId: NewStr("profile_id"),
+							Data:      &[]Data{{Id: NewStr("time_range_id"), Name: NewStr("time_range_id")}},
 						},
 					}
 
@@ -355,7 +365,8 @@ func TestUpdateWifis_Login(t *testing.T) {
 		)
 
 		w := httptest.NewRecorder()
-		req := httptest.NewRequest(http.MethodPost, "http://example.com/foo", nil)
+		req := httptest.NewRequest(http.MethodPost, "http://example.com/foo",
+			bytes.NewBuffer([]byte(`{"enable":true}`)))
 
 		// setting mux vars for testing
 		vars := map[string]string{
@@ -385,7 +396,7 @@ func TestUpdateWifis_GetSites(t *testing.T) {
 		responseCode       int
 	}{
 		{
-			description:  "happy path",
+			description:  "GetSites happy path",
 			requestUrl:   "https://omada.example.com/networks/ssid",
 			includeSites: true,
 			responseCode: http.StatusOK,
@@ -432,7 +443,7 @@ func TestUpdateWifis_GetSites(t *testing.T) {
 					}
 
 					cookies := []*http.Cookie{
-						&http.Cookie{
+						{
 							Name:  "cookie_name",
 							Value: "cookie_value",
 						},
@@ -484,8 +495,9 @@ func TestUpdateWifis_GetSites(t *testing.T) {
 						Result: &Result{
 							Data: &[]Data{
 								{
-									Id:   NewStr("ssid_id"),
-									Name: NewStr("my_ssid"),
+									Id:                 NewStr("ssid_id"),
+									Name:               NewStr("my_ssid"),
+									WlanScheduleEnable: NewBool(false),
 								},
 							},
 						},
@@ -494,8 +506,7 @@ func TestUpdateWifis_GetSites(t *testing.T) {
 					return resp, nil
 				},
 				MockUpdateSsid: func(omadaControllerId *string, cookies []*http.Cookie, loginToken *string,
-					siteId *string, wlanId *string, ssidId *string,
-					ssidUpdateData *OmadaSsidUpdateData) (*OmadaResponse, error) {
+					siteId *string, wlanId *string, ssidUpdateData *Data) (*OmadaResponse, error) {
 					return &OmadaResponse{
 						ErrorCode: 0,
 						Msg:       NewStr("test"),
@@ -507,7 +518,8 @@ func TestUpdateWifis_GetSites(t *testing.T) {
 						ErrorCode: 0,
 						Msg:       NewStr("test"),
 						Result: &Result{
-							Data: &[]Data{{Id: NewStr("time_range_id"), Name: NewStr("time_range_id")}},
+							ProfileId: NewStr("profile_id"),
+							Data:      &[]Data{{Id: NewStr("time_range_id"), Name: NewStr("time_range_id")}},
 						},
 					}
 
@@ -529,7 +541,8 @@ func TestUpdateWifis_GetSites(t *testing.T) {
 		)
 
 		w := httptest.NewRecorder()
-		req := httptest.NewRequest(http.MethodPost, "http://example.com/foo", nil)
+		req := httptest.NewRequest(http.MethodPost, "http://example.com/foo",
+			bytes.NewBuffer([]byte(`{"enable":true}`)))
 
 		// setting mux vars for testing
 		vars := map[string]string{
@@ -558,7 +571,7 @@ func TestUpdateWifis_GetWlans(t *testing.T) {
 		responseCode       int
 	}{
 		{
-			description:  "happy path",
+			description:  "GetWlans happy path",
 			includeWlans: true,
 			responseCode: http.StatusOK,
 		},
@@ -602,7 +615,7 @@ func TestUpdateWifis_GetWlans(t *testing.T) {
 					}
 
 					cookies := []*http.Cookie{
-						&http.Cookie{
+						{
 							Name:  "cookie_name",
 							Value: "cookie_value",
 						},
@@ -649,8 +662,9 @@ func TestUpdateWifis_GetWlans(t *testing.T) {
 						Result: &Result{
 							Data: &[]Data{
 								{
-									Id:   NewStr("ssid_id"),
-									Name: NewStr("my_ssid"),
+									Id:                 NewStr("ssid_id"),
+									Name:               NewStr("my_ssid"),
+									WlanScheduleEnable: NewBool(false),
 								},
 							},
 						},
@@ -659,8 +673,7 @@ func TestUpdateWifis_GetWlans(t *testing.T) {
 					return resp, nil
 				},
 				MockUpdateSsid: func(omadaControllerId *string, cookies []*http.Cookie, loginToken *string,
-					siteId *string, wlanId *string, ssidId *string,
-					ssidUpdateData *OmadaSsidUpdateData) (*OmadaResponse, error) {
+					siteId *string, wlanId *string, ssidUpdateData *Data) (*OmadaResponse, error) {
 					return &OmadaResponse{
 						ErrorCode: 0,
 						Msg:       NewStr("test"),
@@ -672,7 +685,8 @@ func TestUpdateWifis_GetWlans(t *testing.T) {
 						ErrorCode: 0,
 						Msg:       NewStr("test"),
 						Result: &Result{
-							Data: &[]Data{{Id: NewStr("time_range_id"), Name: NewStr("time_range_id")}},
+							ProfileId: NewStr("profile_id"),
+							Data:      &[]Data{{Id: NewStr("time_range_id"), Name: NewStr("time_range_id")}},
 						},
 					}
 
@@ -694,7 +708,8 @@ func TestUpdateWifis_GetWlans(t *testing.T) {
 		)
 
 		w := httptest.NewRecorder()
-		req := httptest.NewRequest(http.MethodPost, "http://example.com/foo", nil)
+		req := httptest.NewRequest(http.MethodPost, "http://example.com/foo",
+			bytes.NewBuffer([]byte(`{"enable":true}`)))
 
 		// setting mux vars for testing
 		vars := map[string]string{
@@ -723,7 +738,7 @@ func TestUpdateWifis_GetSsids(t *testing.T) {
 		responseCode       int
 	}{
 		{
-			description:  "happy path",
+			description:  "GetSsids happy path",
 			includeSsids: true,
 			responseCode: http.StatusOK,
 		},
@@ -767,7 +782,7 @@ func TestUpdateWifis_GetSsids(t *testing.T) {
 					}
 
 					cookies := []*http.Cookie{
-						&http.Cookie{
+						{
 							Name:  "cookie_name",
 							Value: "cookie_value",
 						},
@@ -811,7 +826,11 @@ func TestUpdateWifis_GetSsids(t *testing.T) {
 					var res *Result
 					if testData.includeSsids {
 						res = &Result{
-							Data: &[]Data{{Id: NewStr("ssid_id"), Name: NewStr("my_ssid")}},
+							Data: &[]Data{{
+								Id:                 NewStr("ssid_id"),
+								Name:               NewStr("my_ssid"),
+								WlanScheduleEnable: NewBool(false),
+							}},
 						}
 					}
 
@@ -824,8 +843,7 @@ func TestUpdateWifis_GetSsids(t *testing.T) {
 					return resp, nil
 				},
 				MockUpdateSsid: func(omadaControllerId *string, cookies []*http.Cookie, loginToken *string,
-					siteId *string, wlanId *string, ssidId *string,
-					ssidUpdateData *OmadaSsidUpdateData) (*OmadaResponse, error) {
+					siteId *string, wlanId *string, ssidUpdateData *Data) (*OmadaResponse, error) {
 					return &OmadaResponse{
 						ErrorCode: 0,
 						Msg:       NewStr("test"),
@@ -837,7 +855,8 @@ func TestUpdateWifis_GetSsids(t *testing.T) {
 						ErrorCode: 0,
 						Msg:       NewStr("test"),
 						Result: &Result{
-							Data: &[]Data{{Id: NewStr("time_range_id"), Name: NewStr("time_range_id")}},
+							ProfileId: NewStr("profile_id"),
+							Data:      &[]Data{{Id: NewStr("time_range_id"), Name: NewStr("time_range_id")}},
 						},
 					}
 
@@ -859,7 +878,8 @@ func TestUpdateWifis_GetSsids(t *testing.T) {
 		)
 
 		w := httptest.NewRecorder()
-		req := httptest.NewRequest(http.MethodPost, "http://example.com/foo", nil)
+		req := httptest.NewRequest(http.MethodPost, "http://example.com/foo",
+			bytes.NewBuffer([]byte(`{"enable":true}`)))
 
 		// setting mux vars for testing
 		vars := map[string]string{
@@ -888,7 +908,7 @@ func TestUpdateWifis_UpdateSsid(t *testing.T) {
 		responseCode       int
 	}{
 		{
-			description:  "happy path",
+			description:  "UpdateSsid happy path",
 			includeSsids: true,
 			responseCode: http.StatusOK,
 		},
@@ -927,7 +947,7 @@ func TestUpdateWifis_UpdateSsid(t *testing.T) {
 					}
 
 					cookies := []*http.Cookie{
-						&http.Cookie{
+						{
 							Name:  "cookie_name",
 							Value: "cookie_value",
 						},
@@ -968,15 +988,18 @@ func TestUpdateWifis_UpdateSsid(t *testing.T) {
 						ErrorCode: 0,
 						Msg:       NewStr("test"),
 						Result: &Result{
-							Data: &[]Data{{Id: NewStr("ssid_id"), Name: NewStr("my_ssid")}},
+							Data: &[]Data{{
+								Id:                 NewStr("ssid_id"),
+								Name:               NewStr("my_ssid"),
+								WlanScheduleEnable: NewBool(false),
+							}},
 						},
 					}
 
 					return resp, nil
 				},
 				MockUpdateSsid: func(omadaControllerId *string, cookies []*http.Cookie, loginToken *string,
-					siteId *string, wlanId *string, ssidId *string,
-					ssidUpdateData *OmadaSsidUpdateData) (*OmadaResponse, error) {
+					siteId *string, wlanId *string, ssidUpdateData *Data) (*OmadaResponse, error) {
 
 					if testData.omadaResponseError {
 						return nil, errors.New("test")
@@ -993,7 +1016,8 @@ func TestUpdateWifis_UpdateSsid(t *testing.T) {
 						ErrorCode: 0,
 						Msg:       NewStr("test"),
 						Result: &Result{
-							Data: &[]Data{{Id: NewStr("time_range_id"), Name: NewStr("time_range_id")}},
+							ProfileId: NewStr("profile_id"),
+							Data:      &[]Data{{Id: NewStr("time_range_id"), Name: NewStr("time_range_id")}},
 						},
 					}
 
@@ -1015,7 +1039,8 @@ func TestUpdateWifis_UpdateSsid(t *testing.T) {
 		)
 
 		w := httptest.NewRecorder()
-		req := httptest.NewRequest(http.MethodPost, "http://example.com/foo", nil)
+		req := httptest.NewRequest(http.MethodPost, "http://example.com/foo",
+			bytes.NewBuffer([]byte(`{"enable":true}`)))
 
 		// setting mux vars for testing
 		vars := map[string]string{
@@ -1043,7 +1068,7 @@ func TestUpdateWifis_GetTimeRanges(t *testing.T) {
 		responseCode       int
 	}{
 		{
-			description:  "happy path",
+			description:  "GetTimeRanges happy path",
 			responseCode: http.StatusOK,
 		},
 		{
@@ -1080,7 +1105,7 @@ func TestUpdateWifis_GetTimeRanges(t *testing.T) {
 					}
 
 					cookies := []*http.Cookie{
-						&http.Cookie{
+						{
 							Name:  "cookie_name",
 							Value: "cookie_value",
 						},
@@ -1088,7 +1113,8 @@ func TestUpdateWifis_GetTimeRanges(t *testing.T) {
 
 					return resp, cookies, nil
 				},
-				MockGetSites: func(omadaControllerId *string, cookies []*http.Cookie, loginToken *string) (*OmadaResponse, error) {
+				MockGetSites: func(omadaControllerId *string, cookies []*http.Cookie,
+					loginToken *string) (*OmadaResponse, error) {
 					resp := &OmadaResponse{
 						ErrorCode: 0,
 						Msg:       NewStr("test"),
@@ -1099,7 +1125,8 @@ func TestUpdateWifis_GetTimeRanges(t *testing.T) {
 
 					return resp, nil
 				},
-				MockGetWlans: func(omadaControllerId *string, cookies []*http.Cookie, loginToken *string, siteId *string) (*OmadaResponse, error) {
+				MockGetWlans: func(omadaControllerId *string, cookies []*http.Cookie,
+					loginToken *string, siteId *string) (*OmadaResponse, error) {
 					resp := &OmadaResponse{
 						ErrorCode: 0,
 						Msg:       NewStr("test"),
@@ -1121,15 +1148,18 @@ func TestUpdateWifis_GetTimeRanges(t *testing.T) {
 						ErrorCode: 0,
 						Msg:       NewStr("test"),
 						Result: &Result{
-							Data: &[]Data{{Id: NewStr("ssid_id"), Name: NewStr("my_ssid")}},
+							Data: &[]Data{{
+								Id:                 NewStr("ssid_id"),
+								Name:               NewStr("my_ssid"),
+								WlanScheduleEnable: NewBool(false),
+							}},
 						},
 					}
 
 					return resp, nil
 				},
 				MockUpdateSsid: func(omadaControllerId *string, cookies []*http.Cookie, loginToken *string,
-					siteId *string, wlanId *string, ssidId *string,
-					ssidUpdateData *OmadaSsidUpdateData) (*OmadaResponse, error) {
+					siteId *string, wlanId *string, ssidUpdateData *Data) (*OmadaResponse, error) {
 					return &OmadaResponse{
 						ErrorCode: 0,
 						Msg:       NewStr("test"),
@@ -1146,7 +1176,8 @@ func TestUpdateWifis_GetTimeRanges(t *testing.T) {
 						ErrorCode: 0,
 						Msg:       NewStr("test"),
 						Result: &Result{
-							Data: &[]Data{{Id: NewStr("time_range_id"), Name: NewStr("time_range_id")}},
+							ProfileId: NewStr("profile_id"),
+							Data:      &[]Data{{Id: NewStr("time_range_id"), Name: NewStr("time_range_id")}},
 						},
 					}
 
@@ -1168,7 +1199,8 @@ func TestUpdateWifis_GetTimeRanges(t *testing.T) {
 		)
 
 		w := httptest.NewRecorder()
-		req := httptest.NewRequest(http.MethodPost, "http://example.com/foo", nil)
+		req := httptest.NewRequest(http.MethodPost, "http://example.com/foo",
+			bytes.NewBuffer([]byte(`{"enable":true}`)))
 
 		// setting mux vars for testing
 		vars := map[string]string{
@@ -1198,8 +1230,9 @@ func TestUpdateWifis_CreateTimeRanges(t *testing.T) {
 		responseCode           int
 	}{
 		{
-			description:  "happy path",
-			responseCode: http.StatusOK,
+			description:            "CreateTimeRanges happy path",
+			returnCorrectTimeRange: true,
+			responseCode:           http.StatusOK,
 		},
 		{
 			description:        "omada get time range response error",
@@ -1245,7 +1278,7 @@ func TestUpdateWifis_CreateTimeRanges(t *testing.T) {
 					}
 
 					cookies := []*http.Cookie{
-						&http.Cookie{
+						{
 							Name:  "cookie_name",
 							Value: "cookie_value",
 						},
@@ -1253,7 +1286,8 @@ func TestUpdateWifis_CreateTimeRanges(t *testing.T) {
 
 					return resp, cookies, nil
 				},
-				MockGetSites: func(omadaControllerId *string, cookies []*http.Cookie, loginToken *string) (*OmadaResponse, error) {
+				MockGetSites: func(omadaControllerId *string, cookies []*http.Cookie,
+					loginToken *string) (*OmadaResponse, error) {
 					resp := &OmadaResponse{
 						ErrorCode: 0,
 						Msg:       NewStr("test"),
@@ -1264,7 +1298,8 @@ func TestUpdateWifis_CreateTimeRanges(t *testing.T) {
 
 					return resp, nil
 				},
-				MockGetWlans: func(omadaControllerId *string, cookies []*http.Cookie, loginToken *string, siteId *string) (*OmadaResponse, error) {
+				MockGetWlans: func(omadaControllerId *string, cookies []*http.Cookie,
+					loginToken *string, siteId *string) (*OmadaResponse, error) {
 					resp := &OmadaResponse{
 						ErrorCode: 0,
 						Msg:       NewStr("test"),
@@ -1286,15 +1321,18 @@ func TestUpdateWifis_CreateTimeRanges(t *testing.T) {
 						ErrorCode: 0,
 						Msg:       NewStr("test"),
 						Result: &Result{
-							Data: &[]Data{{Id: NewStr("ssid_id"), Name: NewStr("my_ssid")}},
+							Data: &[]Data{{
+								Id:                 NewStr("ssid_id"),
+								Name:               NewStr("my_ssid"),
+								WlanScheduleEnable: NewBool(false),
+							}},
 						},
 					}
 
 					return resp, nil
 				},
 				MockUpdateSsid: func(omadaControllerId *string, cookies []*http.Cookie, loginToken *string,
-					siteId *string, wlanId *string, ssidId *string,
-					ssidUpdateData *OmadaSsidUpdateData) (*OmadaResponse, error) {
+					siteId *string, wlanId *string, ssidUpdateData *Data) (*OmadaResponse, error) {
 					return &OmadaResponse{
 						ErrorCode: 0,
 						Msg:       NewStr("test"),
@@ -1312,6 +1350,7 @@ func TestUpdateWifis_CreateTimeRanges(t *testing.T) {
 							endTime = NewInt(24)
 						}
 						res = &Result{
+							ProfileId: NewStr("profile_id"),
 							Data: &[]Data{
 								{
 									Id:      NewStr("time_range_id"),
@@ -1362,7 +1401,8 @@ func TestUpdateWifis_CreateTimeRanges(t *testing.T) {
 		)
 
 		w := httptest.NewRecorder()
-		req := httptest.NewRequest(http.MethodPost, "http://example.com/foo", nil)
+		req := httptest.NewRequest(http.MethodPost, "http://example.com/foo",
+			bytes.NewBuffer([]byte(`{"enable":true}`)))
 
 		// setting mux vars for testing
 		vars := map[string]string{

@@ -24,8 +24,7 @@ type MockOmadaApi struct {
 	MockGetSsids func(omadaControllerId *string, cookies []*http.Cookie, loginToken *string,
 		siteId *string, wlanId *string) (*OmadaResponse, error)
 	MockUpdateSsid func(omadaControllerId *string, cookies []*http.Cookie, loginToken *string,
-		siteId *string, wlanId *string, ssidId *string,
-		ssidUpdateData *OmadaSsidUpdateData) (*OmadaResponse, error)
+		siteId *string, wlanId *string, ssidUpdateData *Data) (*OmadaResponse, error)
 	MockGetTimeRanges func(omadaControllerId *string, cookies []*http.Cookie, loginToken *string,
 		siteId *string) (*OmadaResponse, error)
 	MockCreateTimeRange func(omadaControllerId *string, cookies []*http.Cookie, loginToken *string,
@@ -56,9 +55,8 @@ func (oa *MockOmadaApi) GetSsids(omadaControllerId *string, cookies []*http.Cook
 }
 
 func (oa *MockOmadaApi) UpdateSsid(omadaControllerId *string, cookies []*http.Cookie, loginToken *string,
-	siteId *string, wlanId *string, ssidId *string,
-	ssidUpdateData *OmadaSsidUpdateData) (*OmadaResponse, error) {
-	return oa.MockUpdateSsid(omadaControllerId, cookies, loginToken, siteId, wlanId, ssidId, ssidUpdateData)
+	siteId *string, wlanId *string, ssidUpdateData *Data) (*OmadaResponse, error) {
+	return oa.MockUpdateSsid(omadaControllerId, cookies, loginToken, siteId, wlanId, ssidUpdateData)
 }
 
 func (oa *MockOmadaApi) GetTimeRanges(omadaControllerId *string, cookies []*http.Cookie, loginToken *string,

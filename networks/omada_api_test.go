@@ -474,7 +474,7 @@ func TestUpdateSsid(t *testing.T) {
 		siteId         *string
 		wlanId         *string
 		ssidId         *string
-		ssidUpdateData *OmadaSsidUpdateData
+		ssidUpdateData *Data
 		expectError    bool
 		responseCode   int
 		responseBody   string
@@ -494,7 +494,7 @@ func TestUpdateSsid(t *testing.T) {
 			siteId:         NewStr("site_id"),
 			wlanId:         NewStr("wlan_id"),
 			ssidId:         NewStr("ssid_id"),
-			ssidUpdateData: &OmadaSsidUpdateData{WlanScheduleEnable: NewBool(true), Action: NewInt(0), ScheduleId: NewStr("schedule_id")},
+			ssidUpdateData: &Data{Id: NewStr("ssid_id"), WlanScheduleEnable: NewBool(true), Action: NewInt(0), ScheduleId: NewStr("schedule_id")},
 			expectError:    false,
 			responseCode:   http.StatusOK,
 			responseBody:   `{"errorCode": 0,"msg": "Success."}`,
@@ -514,7 +514,7 @@ func TestUpdateSsid(t *testing.T) {
 			siteId:         NewStr("site_id"),
 			wlanId:         NewStr("wlan_id"),
 			ssidId:         NewStr("ssid_id"),
-			ssidUpdateData: &OmadaSsidUpdateData{WlanScheduleEnable: NewBool(true), Action: NewInt(0), ScheduleId: NewStr("schedule_id")},
+			ssidUpdateData: &Data{Id: NewStr("ssid_id"), WlanScheduleEnable: NewBool(true), Action: NewInt(0), ScheduleId: NewStr("schedule_id")},
 			expectError:    true,
 			responseCode:   http.StatusInternalServerError,
 			responseBody:   `{"errorCode": 0,"msg": "Success."}`,
@@ -536,14 +536,15 @@ func TestUpdateSsid(t *testing.T) {
 				assert.Equal(testData.cookies, req.Cookies(), "cookie is missing")
 				assert.Equal(*testData.loginToken, req.Header.Get("Csrf-token"), "Login token is missing")
 
-				updateData := OmadaSsidUpdateData{}
+				updateData := Data{}
 				if err := json.NewDecoder(req.Body).Decode(&updateData); err != nil {
 					panic(fmt.Sprintf("can not parse request body: %s", err))
 				}
 
 				defer req.Body.Close()
 
-				assert.Equal(OmadaSsidUpdateData{
+				assert.Equal(Data{
+					Id:                 NewStr("ssid_id"),
 					WlanScheduleEnable: NewBool(true),
 					Action:             NewInt(0),
 					ScheduleId:         NewStr("schedule_id"),
@@ -570,7 +571,7 @@ func TestUpdateSsid(t *testing.T) {
 			&mockHttpClient)
 
 		wlansResp, err := omadaApi.UpdateSsid(testData.omadacId, testData.cookies, testData.loginToken,
-			testData.siteId, testData.wlanId, testData.ssidId, testData.ssidUpdateData)
+			testData.siteId, testData.wlanId, testData.ssidUpdateData)
 		if testData.expectError {
 			assert.True(err != nil, "should return error")
 			continue

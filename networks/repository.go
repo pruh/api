@@ -38,9 +38,8 @@ func (r *Repository) GetSsids(omadaControllerId *string, cookies []*http.Cookie,
 }
 
 func (r *Repository) UpdateSsid(omadaControllerId *string, cookies []*http.Cookie, loginToken *string,
-	siteId *string, wlanId *string, ssidId *string,
-	ssidUpdateData *OmadaSsidUpdateData) (*OmadaResponse, error) {
-	return r.omadaApi.UpdateSsid(omadaControllerId, cookies, loginToken, siteId, wlanId, ssidId,
+	siteId *string, wlanId *string, ssidUpdateData *Data) (*OmadaResponse, error) {
+	return r.omadaApi.UpdateSsid(omadaControllerId, cookies, loginToken, siteId, wlanId,
 		ssidUpdateData)
 }
 

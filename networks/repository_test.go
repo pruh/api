@@ -173,8 +173,7 @@ func TestRepoUpdateSsid(t *testing.T) {
 
 	mockOmadaApi := MockOmadaApi{
 		MockUpdateSsid: func(omadaControllerId *string, cookies []*http.Cookie, loginToken *string,
-			siteId *string, wlanId *string, ssidId *string,
-			ssidUpdateData *OmadaSsidUpdateData) (*OmadaResponse, error) {
+			siteId *string, wlanId *string, ssidUpdateData *Data) (*OmadaResponse, error) {
 			resp := &OmadaResponse{
 				ErrorCode: 0,
 				Msg:       NewStr("Success."),
@@ -190,7 +189,7 @@ func TestRepoUpdateSsid(t *testing.T) {
 
 	assert := assert.New(t)
 
-	controllerId, _ := repo.UpdateSsid(nil, nil, nil, nil, nil, nil, nil)
+	controllerId, _ := repo.UpdateSsid(nil, nil, nil, nil, nil, nil)
 
 	assert.True(mockCalled, "mock is not called")
 	assert.Equal(0, controllerId.ErrorCode, "wrong response data")

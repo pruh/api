@@ -53,6 +53,14 @@ func (c *controller) UpdateWifi(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	var ssidRequest NetworksSsidRequest
+	err := json.NewDecoder(r.Body).Decode(&ssidRequest)
+	if err != nil || ssidRequest.Enable == nil {
+		c.writeResponse(w, http.StatusBadRequest, false,
+			NewStr("Request json is malformed"), nil, err)
+		return
+	}
+
 	//controller id
 	omadaIdResp, err := c.repository.GetControllerId()
 	if err != nil || omadaIdResp == nil ||
@@ -110,28 +118,65 @@ func (c *controller) UpdateWifi(w http.ResponseWriter, r *http.Request) {
 
 	glog.Infof("Omada ssids %+v", (*omadaSsidsResp.Result.Data)[0])
 
-	var ssidId *string
-	for _, ssidData := range *omadaSsidsResp.Result.Data {
-		if *ssidData.Name == ssid {
-			ssidId = ssidData.Id
+	var ssidData *Data
+	for _, sd := range *omadaSsidsResp.Result.Data {
+		if *sd.Name == ssid {
+			ssidData = &sd
 			break
 		}
 	}
 
-	if ssidId == nil {
+	if ssidData == nil {
 		c.writeResponse(w, http.StatusNotFound, false,
 			NewStr("ssid with given name not found in configured networks"), nil, nil)
 		return
 	}
 
-	glog.Infof("Omada ssid id %s", *ssidId)
+	glog.Infof("Omada ssid id %s", *ssidData.Id)
 
-	omadaTimeRangesResp, err := c.repository.GetTimeRanges(omadaIdResp.Result.OmadacId, cookies,
-		omadaLoginResp.Result.Token, (*omadaSitesResp.Result.Data)[0].Id)
-	if err != nil || omadaTimeRangesResp == nil || omadaTimeRangesResp.ErrorCode != 0 {
-		c.writeResponse(w, http.StatusBadGateway, false,
-			NewStr("Omada time ranges query error"), omadaSitesResp, err)
+	if *ssidData.WlanScheduleEnable == *ssidRequest.Enable {
+		glog.Info("no need to update ssid")
+		c.writeResponse(w, http.StatusOK, false, nil, nil, nil)
 		return
+	}
+
+	ssidData.WlanScheduleEnable = ssidRequest.Enable
+	if *ssidRequest.Enable {
+		glog.Infof("Looking for time range for ssid %s", *ssidData.Id)
+
+		scheduleId, err := c.getTimeRange(omadaIdResp, cookies, omadaLoginResp.Result.Token, omadaSitesResp)
+		if err != nil {
+			// passing empty error string to treat response like error
+			c.writeResponse(w, http.StatusBadGateway, false, NewStr(""), nil, err)
+			return
+		}
+
+		ssidData.Action = NewInt(0)
+		ssidData.ScheduleId = scheduleId
+	}
+
+	omadaUpdateSsidResp, err := c.repository.UpdateSsid(omadaIdResp.Result.OmadacId, cookies,
+		omadaLoginResp.Result.Token, (*omadaSitesResp.Result.Data)[0].Id,
+		(*omadaWlansResp.Result.Data)[0].Id, ssidData)
+
+	if err != nil || omadaUpdateSsidResp == nil || omadaUpdateSsidResp.ErrorCode != 0 {
+		c.writeResponse(w, http.StatusBadGateway, false,
+			NewStr("Can not update ssid"), omadaUpdateSsidResp, err)
+		return
+	}
+
+	c.writeResponse(w, http.StatusOK, true, nil, nil, nil)
+}
+
+func (c *controller) getTimeRange(omadaIdResp *OmadaResponse, cookies []*http.Cookie,
+	token *string, omadaSitesResp *OmadaResponse) (*string, error) {
+	omadaTimeRangesResp, err := c.repository.GetTimeRanges(omadaIdResp.Result.OmadacId, cookies,
+		token, (*omadaSitesResp.Result.Data)[0].Id)
+
+	if err != nil || omadaTimeRangesResp == nil {
+		return nil, fmt.Errorf("omada time ranges query error %v", err)
+	} else if omadaTimeRangesResp.ErrorCode != 0 || omadaTimeRangesResp.Result.ProfileId == nil {
+		return nil, fmt.Errorf("omada time ranges query error %s", *omadaTimeRangesResp.Msg)
 	}
 
 	var timeRangeData *Data
@@ -156,7 +201,7 @@ func (c *controller) UpdateWifi(w http.ResponseWriter, r *http.Request) {
 		glog.Info("time range not available, creating one")
 
 		omadaTrCreateResp, err := c.repository.CreateTimeRange(omadaIdResp.Result.OmadacId, cookies,
-			omadaLoginResp.Result.Token, (*omadaSitesResp.Result.Data)[0].Id,
+			token, (*omadaSitesResp.Result.Data)[0].Id,
 			&Data{
 				Name:    NewStr("Night and Day"),
 				DayMode: NewInt(0),
@@ -178,37 +223,22 @@ func (c *controller) UpdateWifi(w http.ResponseWriter, r *http.Request) {
 				},
 			})
 
-		if err != nil || omadaTrCreateResp == nil ||
-			omadaTrCreateResp.ErrorCode != 0 || omadaTrCreateResp.Result.ProfileId == nil {
-			c.writeResponse(w, http.StatusBadGateway, false,
-				NewStr("Can not create time range"), omadaTrCreateResp, err)
-			return
+		if err != nil || omadaTrCreateResp == nil {
+			return nil, fmt.Errorf("can not create time range %v", err)
+		} else if omadaTrCreateResp.ErrorCode != 0 || omadaTrCreateResp.Result.ProfileId == nil {
+			return nil, fmt.Errorf("can not create time range %s", *omadaTrCreateResp.Msg)
 		}
 
 		scheduleId = omadaTrCreateResp.Result.ProfileId
 	}
 
-	omadaUpdateSsidResp, err := c.repository.UpdateSsid(omadaIdResp.Result.OmadacId, cookies,
-		omadaLoginResp.Result.Token, (*omadaSitesResp.Result.Data)[0].Id,
-		(*omadaWlansResp.Result.Data)[0].Id, &ssid, &OmadaSsidUpdateData{
-			WlanScheduleEnable: NewBool(true),
-			Action:             NewInt(0),
-			ScheduleId:         scheduleId,
-		})
-	if err != nil || omadaUpdateSsidResp.ErrorCode != 0 {
-		c.writeResponse(w, http.StatusBadGateway, false,
-			NewStr("Can not update ssid"), omadaUpdateSsidResp, err)
-		return
-	}
-
-	c.writeResponse(w, http.StatusOK, true, nil, nil, nil)
-
+	return scheduleId, nil
 }
 
 func (c *controller) writeResponse(w http.ResponseWriter, statusCode int, updated bool,
 	errorMessage *string, upstreamResp *OmadaResponse, upstreamErr error) {
 	var nw NetworksResponse
-	if errorMessage != nil {
+	if errorMessage != nil || upstreamErr != nil {
 		var fmtErrorMessage *string
 		if upstreamResp != nil {
 			fmtErrorMessage = NewStr(fmt.Sprintf("%s: %s", *errorMessage, *upstreamResp.Msg))
@@ -225,10 +255,8 @@ func (c *controller) writeResponse(w http.ResponseWriter, statusCode int, update
 		glog.Error(nw.Error.Message)
 	}
 
-	if updated {
-		nw.Data = &NetworksResponseSuccess{
-			Updated: true,
-		}
+	nw.Data = &NetworksResponseSuccess{
+		Updated: updated,
 	}
 
 	data, err := json.Marshal(nw)

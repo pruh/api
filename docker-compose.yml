@@ -21,6 +21,4 @@ services:
     volumes:
       - ./volumes/mongo:/data/db
     env_file: api.env
-    env:
-      - UID: 1000
-      - GID: 1000
+

@@ -28,8 +28,7 @@ type OmadaApi interface {
 	GetSsids(omadaControllerId *string, cookies []*http.Cookie, loginToken *string,
 		siteId *string, wlanId *string) (*OmadaResponse, error)
 	UpdateSsid(omadaControllerId *string, cookies []*http.Cookie, loginToken *string,
-		siteId *string, wlanId *string, ssidId *string,
-		ssidUpdateData *OmadaSsidUpdateData) (*OmadaResponse, error)
+		siteId *string, wlanId *string, ssidUpdateData *Data) (*OmadaResponse, error)
 	GetTimeRanges(omadaControllerId *string, cookies []*http.Cookie, loginToken *string,
 		siteId *string) (*OmadaResponse, error)
 	CreateTimeRange(omadaControllerId *string, cookies []*http.Cookie, loginToken *string,
@@ -248,13 +247,13 @@ func (oa *omadaApi) GetSsids(omadaControllerId *string, cookies []*http.Cookie, 
 }
 
 func (oa *omadaApi) UpdateSsid(omadaControllerId *string, cookies []*http.Cookie,
-	loginToken *string, siteId *string, wlanId *string, ssidId *string,
-	ssidUpdateData *OmadaSsidUpdateData) (*OmadaResponse, error) {
+	loginToken *string, siteId *string, wlanId *string,
+	ssidUpdateData *Data) (*OmadaResponse, error) {
 	url := fmt.Sprintf("%s/%s/api/v2/sites/%s/setting/wlans/%s/ssids/%s",
-		*oa.config.OmadaUrl, *omadaControllerId, *siteId, *wlanId, *ssidId)
+		*oa.config.OmadaUrl, *omadaControllerId, *siteId, *wlanId, *ssidUpdateData.Id)
 
 	glog.Infof("sending UpdateSsid request to %s", url)
-	glog.Infof("updating ssid %s with %+v", *ssidId, ssidUpdateData)
+	glog.Infof("updating ssid %s with %+v", *ssidUpdateData.Id, ssidUpdateData)
 
 	jsonStr, err := json.Marshal(ssidUpdateData)
 	if err != nil {
