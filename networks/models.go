@@ -19,22 +19,23 @@ type Data struct {
 	Name *string `json:"name,omitempty"`
 
 	// ssid params
-	Band               *int        `json:"band,omitempty"`
-	WlanId             *string     `json:"wlanid,omitempty"`
-	VlanEnable         *bool       `json:"vlanEnable,omitempty"`
-	VlanId             *string     `json:"vlanId,omitempty"`
-	Broadcast          *bool       `json:"broadcast,omitempty"`
-	Security           *int        `json:"security,omitempty"`
-	GuestNetEnable     *bool       `json:"guestNetEnable,omitempty"`
-	WlanScheduleEnable *bool       `json:"wlanScheduleEnable,omitempty"`
-	Action             *int        `json:"action,omitempty"`
-	ScheduleId         *string     `json:"scheduleId,omitempty"`
-	MacFilterEnable    *bool       `json:"macFilterEnable,omitempty"`
-	Policy             *int        `json:"policy,omitempty"`
-	MacFilterId        *string     `json:"macFilterId,omitempty"`
-	RateLimit          *RateLimit  `json:"rateLimit,omitempty"`
-	PskSetting         *PskSetting `json:"pskSetting,omitempty"`
-	WpaSetting         *WpaSetting `json:"wpaSetting,omitempty"`
+	Band               *int               `json:"band,omitempty"`
+	WlanId             *string            `json:"wlanid,omitempty"`
+	VlanEnable         *bool              `json:"vlanEnable,omitempty"`
+	VlanId             *string            `json:"vlanId,omitempty"`
+	Broadcast          *bool              `json:"broadcast,omitempty"`
+	Security           *int               `json:"security,omitempty"`
+	GuestNetEnable     *bool              `json:"guestNetEnable,omitempty"`
+	WlanScheduleEnable *bool              `json:"wlanScheduleEnable,omitempty"`
+	Action             *int               `json:"action,omitempty"`
+	ScheduleId         *string            `json:"scheduleId,omitempty"`
+	MacFilterEnable    *bool              `json:"macFilterEnable,omitempty"`
+	Policy             *int               `json:"policy,omitempty"`
+	MacFilterId        *string            `json:"macFilterId,omitempty"`
+	RateLimit          *RateLimit         `json:"rateLimit,omitempty"`
+	PskSetting         *PskSetting        `json:"pskSetting,omitempty"`
+	WpaSetting         *WpaSetting        `json:"wpaSetting,omitempty"`
+	RateAndBeaconCtrl  *RateAndBeaconCtrl `json:"rateAndBeaconCtrl,omitempty"`
 
 	// time range params
 	DayMode  *int        `json:"dayMode,omitempty"`
@@ -101,7 +102,7 @@ type OmadaTimeRangeData struct {
 }
 
 type NetworksSsidRequest struct {
-	Enable *bool `json:"enable,omitempty"`
+	RadioOff *bool `json:"radioOff,omitempty"`
 }
 
 type NetworksResponse struct {

@@ -32,7 +32,7 @@ func TestUpdateWifis_ControllerId(t *testing.T) {
 		{
 			description:       "ControllerId happy path",
 			requestUrl:        "https://omada.example.com/networks/ssid",
-			requestData:       NewStr(`{"enable":true}`),
+			requestData:       NewStr(`{"radioOff":true}`),
 			ssidParam:         NewStr("my_ssid"),
 			omadaControllerId: NewStr("c_id"),
 			loginToken:        NewStr("login_token"),
@@ -41,13 +41,13 @@ func TestUpdateWifis_ControllerId(t *testing.T) {
 		{
 			description:  "ssid missing in the request params",
 			requestUrl:   "https://omada.example.com",
-			requestData:  NewStr(`{"enable":true}`),
+			requestData:  NewStr(`{"radioOff":true}`),
 			responseCode: http.StatusBadRequest,
 		},
 		{
 			description:        "omada controller id response error",
 			requestUrl:         "https://omada.example.com",
-			requestData:        NewStr(`{"enable":true}`),
+			requestData:        NewStr(`{"radioOff":true}`),
 			ssidParam:          NewStr("my_ssid"),
 			omadaResponseError: true,
 			omadaControllerId:  NewStr("c_id"),
@@ -366,7 +366,7 @@ func TestUpdateWifis_Login(t *testing.T) {
 
 		w := httptest.NewRecorder()
 		req := httptest.NewRequest(http.MethodPost, "http://example.com/foo",
-			bytes.NewBuffer([]byte(`{"enable":true}`)))
+			bytes.NewBuffer([]byte(`{"radioOff":true}`)))
 
 		// setting mux vars for testing
 		vars := map[string]string{
@@ -542,7 +542,7 @@ func TestUpdateWifis_GetSites(t *testing.T) {
 
 		w := httptest.NewRecorder()
 		req := httptest.NewRequest(http.MethodPost, "http://example.com/foo",
-			bytes.NewBuffer([]byte(`{"enable":true}`)))
+			bytes.NewBuffer([]byte(`{"radioOff":true}`)))
 
 		// setting mux vars for testing
 		vars := map[string]string{
@@ -709,7 +709,7 @@ func TestUpdateWifis_GetWlans(t *testing.T) {
 
 		w := httptest.NewRecorder()
 		req := httptest.NewRequest(http.MethodPost, "http://example.com/foo",
-			bytes.NewBuffer([]byte(`{"enable":true}`)))
+			bytes.NewBuffer([]byte(`{"radioOff":true}`)))
 
 		// setting mux vars for testing
 		vars := map[string]string{
@@ -879,7 +879,7 @@ func TestUpdateWifis_GetSsids(t *testing.T) {
 
 		w := httptest.NewRecorder()
 		req := httptest.NewRequest(http.MethodPost, "http://example.com/foo",
-			bytes.NewBuffer([]byte(`{"enable":true}`)))
+			bytes.NewBuffer([]byte(`{"radioOff":true}`)))
 
 		// setting mux vars for testing
 		vars := map[string]string{
@@ -1040,7 +1040,7 @@ func TestUpdateWifis_UpdateSsid(t *testing.T) {
 
 		w := httptest.NewRecorder()
 		req := httptest.NewRequest(http.MethodPost, "http://example.com/foo",
-			bytes.NewBuffer([]byte(`{"enable":true}`)))
+			bytes.NewBuffer([]byte(`{"radioOff":true}`)))
 
 		// setting mux vars for testing
 		vars := map[string]string{
@@ -1200,7 +1200,7 @@ func TestUpdateWifis_GetTimeRanges(t *testing.T) {
 
 		w := httptest.NewRecorder()
 		req := httptest.NewRequest(http.MethodPost, "http://example.com/foo",
-			bytes.NewBuffer([]byte(`{"enable":true}`)))
+			bytes.NewBuffer([]byte(`{"radioOff":true}`)))
 
 		// setting mux vars for testing
 		vars := map[string]string{
@@ -1402,7 +1402,7 @@ func TestUpdateWifis_CreateTimeRanges(t *testing.T) {
 
 		w := httptest.NewRecorder()
 		req := httptest.NewRequest(http.MethodPost, "http://example.com/foo",
-			bytes.NewBuffer([]byte(`{"enable":true}`)))
+			bytes.NewBuffer([]byte(`{"radioOff":true}`)))
 
 		// setting mux vars for testing
 		vars := map[string]string{

@@ -252,13 +252,13 @@ func (oa *omadaApi) UpdateSsid(omadaControllerId *string, cookies []*http.Cookie
 	url := fmt.Sprintf("%s/%s/api/v2/sites/%s/setting/wlans/%s/ssids/%s",
 		*oa.config.OmadaUrl, *omadaControllerId, *siteId, *wlanId, *ssidUpdateData.Id)
 
-	glog.Infof("sending UpdateSsid request to %s", url)
-	glog.Infof("updating ssid %s with %+v", *ssidUpdateData.Id, ssidUpdateData)
-
 	jsonStr, err := json.Marshal(ssidUpdateData)
 	if err != nil {
 		return nil, err
 	}
+
+	glog.Infof("sending UpdateSsid request to %s", url)
+	glog.Infof("updating ssid %s", *ssidUpdateData.Name)
 
 	req, err := http.NewRequest(http.MethodPatch, url, bytes.NewBuffer(jsonStr))
 	if err != nil {
