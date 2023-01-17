@@ -214,7 +214,7 @@ func TestGetWifi(t *testing.T) {
 		assert.Equal(testData.responseCode, w.Code, "Response code is not correct")
 		if testData.responseCode == http.StatusOK {
 			assert.True(netsResponse.Ssid != nil, "Response success body is incorrect")
-			assert.True(netsResponse.RadioOff != nil, "Response success body is incorrect")
+			assert.True(netsResponse.RadioOn != nil, "Response success body is incorrect")
 		} else {
 			assert.True(len(*netsResponse.ErrorMessage) > 0, "Response error message is missing")
 		}
@@ -235,7 +235,7 @@ func TestUpdateWifis_ControllerId(t *testing.T) {
 		{
 			description:       "ControllerId happy path",
 			requestUrl:        "https://omada.example.com/networks/ssid",
-			requestData:       NewStr(`{"radioOff":true}`),
+			requestData:       NewStr(`{"radioOn":false}`),
 			ssidParam:         NewStr("my_ssid"),
 			omadaControllerId: NewStr("c_id"),
 			loginToken:        NewStr("login_token"),
@@ -244,13 +244,13 @@ func TestUpdateWifis_ControllerId(t *testing.T) {
 		{
 			description:  "ssid missing in the request params",
 			requestUrl:   "https://omada.example.com",
-			requestData:  NewStr(`{"radioOff":true}`),
+			requestData:  NewStr(`{"radioOn":false}`),
 			responseCode: http.StatusBadRequest,
 		},
 		{
 			description:        "omada controller id response error",
 			requestUrl:         "https://omada.example.com",
-			requestData:        NewStr(`{"radioOff":true}`),
+			requestData:        NewStr(`{"radioOn":false}`),
 			ssidParam:          NewStr("my_ssid"),
 			omadaResponseError: true,
 			omadaControllerId:  NewStr("c_id"),
@@ -414,7 +414,7 @@ func TestUpdateWifis_ControllerId(t *testing.T) {
 		if testData.responseCode == http.StatusOK {
 			assert.True(*netsResponse.Updated, "Response success body missing updated flag")
 			assert.True(netsResponse.Ssid != nil, "Response success body is incorrect")
-			assert.True(netsResponse.RadioOff != nil, "Response success body is incorrect")
+			assert.True(netsResponse.RadioOn != nil, "Response success body is incorrect")
 		} else {
 			assert.True(len(*netsResponse.ErrorMessage) > 0, "Response error message is missing")
 		}
@@ -571,7 +571,7 @@ func TestUpdateWifis_Login(t *testing.T) {
 
 		w := httptest.NewRecorder()
 		req := httptest.NewRequest(http.MethodPost, "http://example.com/foo",
-			bytes.NewBuffer([]byte(`{"radioOff":true}`)))
+			bytes.NewBuffer([]byte(`{"radioOn":false}`)))
 
 		// setting mux vars for testing
 		vars := map[string]string{
@@ -587,7 +587,7 @@ func TestUpdateWifis_Login(t *testing.T) {
 		if testData.responseCode == http.StatusOK {
 			assert.True(*netsResponse.Updated, "Response success body missing updated flag")
 			assert.True(netsResponse.Ssid != nil, "Response success body is incorrect")
-			assert.True(netsResponse.RadioOff != nil, "Response success body is incorrect")
+			assert.True(netsResponse.RadioOn != nil, "Response success body is incorrect")
 		} else {
 			assert.True(len(*netsResponse.ErrorMessage) > 0, "Response error message is missing")
 		}
@@ -749,7 +749,7 @@ func TestUpdateWifis_GetSites(t *testing.T) {
 
 		w := httptest.NewRecorder()
 		req := httptest.NewRequest(http.MethodPost, "http://example.com/foo",
-			bytes.NewBuffer([]byte(`{"radioOff":true}`)))
+			bytes.NewBuffer([]byte(`{"radioOn":false}`)))
 
 		// setting mux vars for testing
 		vars := map[string]string{
@@ -765,7 +765,7 @@ func TestUpdateWifis_GetSites(t *testing.T) {
 		if testData.responseCode == http.StatusOK {
 			assert.True(*netsResponse.Updated, "Response success body missing updated flag")
 			assert.True(netsResponse.Ssid != nil, "Response success body is incorrect")
-			assert.True(netsResponse.RadioOff != nil, "Response success body is incorrect")
+			assert.True(netsResponse.RadioOn != nil, "Response success body is incorrect")
 		} else {
 			assert.True(len(*netsResponse.ErrorMessage) > 0, "Response error message is missing")
 		}
@@ -918,7 +918,7 @@ func TestUpdateWifis_GetWlans(t *testing.T) {
 
 		w := httptest.NewRecorder()
 		req := httptest.NewRequest(http.MethodPost, "http://example.com/foo",
-			bytes.NewBuffer([]byte(`{"radioOff":true}`)))
+			bytes.NewBuffer([]byte(`{"radioOn":false}`)))
 
 		// setting mux vars for testing
 		vars := map[string]string{
@@ -934,7 +934,7 @@ func TestUpdateWifis_GetWlans(t *testing.T) {
 		if testData.responseCode == http.StatusOK {
 			assert.True(*netsResponse.Updated, "Response success body missing updated flag")
 			assert.True(netsResponse.Ssid != nil, "Response success body is incorrect")
-			assert.True(netsResponse.RadioOff != nil, "Response success body is incorrect")
+			assert.True(netsResponse.RadioOn != nil, "Response success body is incorrect")
 		} else {
 			assert.True(len(*netsResponse.ErrorMessage) > 0, "Response error message is missing")
 		}
@@ -1090,7 +1090,7 @@ func TestUpdateWifis_GetSsids(t *testing.T) {
 
 		w := httptest.NewRecorder()
 		req := httptest.NewRequest(http.MethodPost, "http://example.com/foo",
-			bytes.NewBuffer([]byte(`{"radioOff":true}`)))
+			bytes.NewBuffer([]byte(`{"radioOn":false}`)))
 
 		// setting mux vars for testing
 		vars := map[string]string{
@@ -1106,7 +1106,7 @@ func TestUpdateWifis_GetSsids(t *testing.T) {
 		if testData.responseCode == http.StatusOK {
 			assert.True(*netsResponse.Updated, "Response success body missing updated flag")
 			assert.True(netsResponse.Ssid != nil, "Response success body is incorrect")
-			assert.True(netsResponse.RadioOff != nil, "Response success body is incorrect")
+			assert.True(netsResponse.RadioOn != nil, "Response success body is incorrect")
 		} else {
 			assert.True(len(*netsResponse.ErrorMessage) > 0, "Response error message is missing")
 		}
@@ -1253,7 +1253,7 @@ func TestUpdateWifis_UpdateSsid(t *testing.T) {
 
 		w := httptest.NewRecorder()
 		req := httptest.NewRequest(http.MethodPost, "http://example.com/foo",
-			bytes.NewBuffer([]byte(`{"radioOff":true}`)))
+			bytes.NewBuffer([]byte(`{"radioOn":false}`)))
 
 		// setting mux vars for testing
 		vars := map[string]string{
@@ -1269,7 +1269,7 @@ func TestUpdateWifis_UpdateSsid(t *testing.T) {
 		if testData.responseCode == http.StatusOK {
 			assert.True(*netsResponse.Updated, "Response success body missing updated flag")
 			assert.True(netsResponse.Ssid != nil, "Response success body is incorrect")
-			assert.True(netsResponse.RadioOff != nil, "Response success body is incorrect")
+			assert.True(netsResponse.RadioOn != nil, "Response success body is incorrect")
 		} else {
 			assert.True(len(*netsResponse.ErrorMessage) > 0, "Response error message is missing")
 		}
@@ -1415,7 +1415,7 @@ func TestUpdateWifis_GetTimeRanges(t *testing.T) {
 
 		w := httptest.NewRecorder()
 		req := httptest.NewRequest(http.MethodPost, "http://example.com/foo",
-			bytes.NewBuffer([]byte(`{"radioOff":true}`)))
+			bytes.NewBuffer([]byte(`{"radioOn":false}`)))
 
 		// setting mux vars for testing
 		vars := map[string]string{
@@ -1431,7 +1431,7 @@ func TestUpdateWifis_GetTimeRanges(t *testing.T) {
 		if testData.responseCode == http.StatusOK {
 			assert.True(*netsResponse.Updated, "Response success body missing updated flag")
 			assert.True(netsResponse.Ssid != nil, "Response success body is incorrect")
-			assert.True(netsResponse.RadioOff != nil, "Response success body is incorrect")
+			assert.True(netsResponse.RadioOn != nil, "Response success body is incorrect")
 		} else {
 			assert.True(len(*netsResponse.ErrorMessage) > 0, "Response error message is missing")
 		}
@@ -1619,7 +1619,7 @@ func TestUpdateWifis_CreateTimeRanges(t *testing.T) {
 
 		w := httptest.NewRecorder()
 		req := httptest.NewRequest(http.MethodPost, "http://example.com/foo",
-			bytes.NewBuffer([]byte(`{"radioOff":true}`)))
+			bytes.NewBuffer([]byte(`{"radioOn":false}`)))
 
 		// setting mux vars for testing
 		vars := map[string]string{

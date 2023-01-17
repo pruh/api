@@ -138,7 +138,7 @@ Networks are interacting with Omada portal to provide Radio On / Off capabilitie
   ```json
   {
     "ssid": "SSID",
-    "radioOff": false
+    "radioOn": true
   }
   ```
 
@@ -147,7 +147,7 @@ Networks are interacting with Omada portal to provide Radio On / Off capabilitie
   Accepts JSON with radio on / off command:
   ```json
   {
-    "radioOff": true
+    "radioOn": false
   }
   ```
 
@@ -155,7 +155,7 @@ Networks are interacting with Omada portal to provide Radio On / Off capabilitie
   ```json
   {
     "ssid": "SSID",
-    "radioOff": false,
+    "radioOn": false,
     "updated": true
   }
   ```

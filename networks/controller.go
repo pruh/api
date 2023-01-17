@@ -128,7 +128,7 @@ func (c *controller) GetWifi(w http.ResponseWriter, r *http.Request) {
 
 	glog.Infof("Omada ssid id %s", *ssidData.Id)
 
-	c.writeResponse(w, http.StatusOK, ssidData.Name, ssidData.WlanScheduleEnable,
+	c.writeResponse(w, http.StatusOK, ssidData.Name, NewBool(!*ssidData.WlanScheduleEnable),
 		nil, nil, nil)
 }
 
@@ -144,7 +144,7 @@ func (c *controller) UpdateWifi(w http.ResponseWriter, r *http.Request) {
 
 	var ssidRequest NetworksSsidRequest
 	err := json.NewDecoder(r.Body).Decode(&ssidRequest)
-	if err != nil || ssidRequest.RadioOff == nil {
+	if err != nil || ssidRequest.RadioOn == nil {
 		c.writeResponse(w, http.StatusBadRequest, nil, nil, nil, nil,
 			fmt.Errorf("request json is malformed %v", err))
 		return
@@ -223,15 +223,15 @@ func (c *controller) UpdateWifi(w http.ResponseWriter, r *http.Request) {
 
 	glog.Infof("Omada ssid id %s", *ssidData.Id)
 
-	if *ssidData.WlanScheduleEnable == *ssidRequest.RadioOff {
+	if *ssidData.WlanScheduleEnable != *ssidRequest.RadioOn {
 		glog.Info("no need to update ssid")
-		c.writeResponse(w, http.StatusOK, ssidData.Name, ssidData.WlanScheduleEnable,
+		c.writeResponse(w, http.StatusOK, ssidData.Name, NewBool(!*ssidData.WlanScheduleEnable),
 			NewBool(false), nil, nil)
 		return
 	}
 
-	ssidData.WlanScheduleEnable = ssidRequest.RadioOff
-	if *ssidRequest.RadioOff {
+	ssidData.WlanScheduleEnable = NewBool(!*ssidRequest.RadioOn)
+	if *ssidData.WlanScheduleEnable {
 		glog.Infof("Looking for time range for ssid %s", *ssidData.Id)
 
 		scheduleId, err := c.getTimeRange(omadaIdResp, cookies, omadaLoginResp.Result.Token, omadaSitesResp)
@@ -254,7 +254,7 @@ func (c *controller) UpdateWifi(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	c.writeResponse(w, http.StatusOK, ssidData.Name, ssidData.WlanScheduleEnable,
+	c.writeResponse(w, http.StatusOK, ssidData.Name, NewBool(!*ssidData.WlanScheduleEnable),
 		NewBool(true), nil, nil)
 }
 
@@ -326,7 +326,7 @@ func (c *controller) getTimeRange(omadaIdResp *OmadaResponse, cookies []*http.Co
 }
 
 func (c *controller) writeResponse(w http.ResponseWriter, statusCode int, ssid *string,
-	radioOff *bool, updated *bool,
+	radioOn *bool, updated *bool,
 	upstreamResp *OmadaResponse, upstreamErr error) {
 	var nw NetworksResponse
 	if upstreamErr != nil {
@@ -343,7 +343,7 @@ func (c *controller) writeResponse(w http.ResponseWriter, statusCode int, ssid *
 	}
 
 	nw.Ssid = ssid
-	nw.RadioOff = radioOff
+	nw.RadioOn = radioOn
 	nw.Updated = updated
 
 	data, err := json.Marshal(nw)
