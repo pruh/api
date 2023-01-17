@@ -35,9 +35,8 @@ jobs:
     - name: Run lint
       shell: bash
       run: |
-        GO_FILES=$(find . -iname '*.go' -type f)
         echo 'fail if a .go file has not been formatted with gofmt'
-        test -z "$(gofmt -s -l $(echo $GO_FILES))"
+        gofmt -d .; test -z $(gofmt -l -s -w .)
         echo 'go vet is the official Go static analyzer'
         go vet ./...
 
