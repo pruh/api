@@ -339,7 +339,7 @@ func (c *controller) writeResponse(w http.ResponseWriter, statusCode int, ssid *
 
 		nw.ErrorMessage = fmtErrorMessage
 
-		glog.Error(nw.ErrorMessage)
+		glog.Error(*nw.ErrorMessage)
 	}
 
 	nw.Ssid = ssid
