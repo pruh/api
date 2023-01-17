@@ -128,7 +128,8 @@ func (c *controller) GetWifi(w http.ResponseWriter, r *http.Request) {
 
 	glog.Infof("Omada ssid id %s", *ssidData.Id)
 
-	c.writeResponse(w, http.StatusOK, ssidData.Name, ssidData.WlanScheduleEnable, NewBool(true), nil, nil)
+	c.writeResponse(w, http.StatusOK, ssidData.Name, ssidData.WlanScheduleEnable,
+		nil, nil, nil)
 }
 
 func (c *controller) UpdateWifi(w http.ResponseWriter, r *http.Request) {

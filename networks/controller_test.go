@@ -213,7 +213,8 @@ func TestGetWifi(t *testing.T) {
 
 		assert.Equal(testData.responseCode, w.Code, "Response code is not correct")
 		if testData.responseCode == http.StatusOK {
-			assert.True(*netsResponse.Updated, "Response success body missing updated flag")
+			assert.True(netsResponse.Ssid != nil, "Response success body is incorrect")
+			assert.True(netsResponse.RadioOff != nil, "Response success body is incorrect")
 		} else {
 			assert.True(len(*netsResponse.ErrorMessage) > 0, "Response error message is missing")
 		}
@@ -412,6 +413,8 @@ func TestUpdateWifis_ControllerId(t *testing.T) {
 		assert.Equal(testData.responseCode, w.Code, "Response code is not correct")
 		if testData.responseCode == http.StatusOK {
 			assert.True(*netsResponse.Updated, "Response success body missing updated flag")
+			assert.True(netsResponse.Ssid != nil, "Response success body is incorrect")
+			assert.True(netsResponse.RadioOff != nil, "Response success body is incorrect")
 		} else {
 			assert.True(len(*netsResponse.ErrorMessage) > 0, "Response error message is missing")
 		}
@@ -583,6 +586,8 @@ func TestUpdateWifis_Login(t *testing.T) {
 		assert.Equal(testData.responseCode, w.Code, "Response code is not correct")
 		if testData.responseCode == http.StatusOK {
 			assert.True(*netsResponse.Updated, "Response success body missing updated flag")
+			assert.True(netsResponse.Ssid != nil, "Response success body is incorrect")
+			assert.True(netsResponse.RadioOff != nil, "Response success body is incorrect")
 		} else {
 			assert.True(len(*netsResponse.ErrorMessage) > 0, "Response error message is missing")
 		}
@@ -759,6 +764,8 @@ func TestUpdateWifis_GetSites(t *testing.T) {
 		assert.Equal(testData.responseCode, w.Code, "Response code is not correct")
 		if testData.responseCode == http.StatusOK {
 			assert.True(*netsResponse.Updated, "Response success body missing updated flag")
+			assert.True(netsResponse.Ssid != nil, "Response success body is incorrect")
+			assert.True(netsResponse.RadioOff != nil, "Response success body is incorrect")
 		} else {
 			assert.True(len(*netsResponse.ErrorMessage) > 0, "Response error message is missing")
 		}
@@ -926,6 +933,8 @@ func TestUpdateWifis_GetWlans(t *testing.T) {
 		assert.Equal(testData.responseCode, w.Code, "Response code is not correct")
 		if testData.responseCode == http.StatusOK {
 			assert.True(*netsResponse.Updated, "Response success body missing updated flag")
+			assert.True(netsResponse.Ssid != nil, "Response success body is incorrect")
+			assert.True(netsResponse.RadioOff != nil, "Response success body is incorrect")
 		} else {
 			assert.True(len(*netsResponse.ErrorMessage) > 0, "Response error message is missing")
 		}
@@ -1096,6 +1105,8 @@ func TestUpdateWifis_GetSsids(t *testing.T) {
 		assert.Equal(testData.responseCode, w.Code, "Response code is not correct")
 		if testData.responseCode == http.StatusOK {
 			assert.True(*netsResponse.Updated, "Response success body missing updated flag")
+			assert.True(netsResponse.Ssid != nil, "Response success body is incorrect")
+			assert.True(netsResponse.RadioOff != nil, "Response success body is incorrect")
 		} else {
 			assert.True(len(*netsResponse.ErrorMessage) > 0, "Response error message is missing")
 		}
@@ -1257,6 +1268,8 @@ func TestUpdateWifis_UpdateSsid(t *testing.T) {
 		assert.Equal(testData.responseCode, w.Code, "Response code is not correct")
 		if testData.responseCode == http.StatusOK {
 			assert.True(*netsResponse.Updated, "Response success body missing updated flag")
+			assert.True(netsResponse.Ssid != nil, "Response success body is incorrect")
+			assert.True(netsResponse.RadioOff != nil, "Response success body is incorrect")
 		} else {
 			assert.True(len(*netsResponse.ErrorMessage) > 0, "Response error message is missing")
 		}
@@ -1417,6 +1430,8 @@ func TestUpdateWifis_GetTimeRanges(t *testing.T) {
 		assert.Equal(testData.responseCode, w.Code, "Response code is not correct")
 		if testData.responseCode == http.StatusOK {
 			assert.True(*netsResponse.Updated, "Response success body missing updated flag")
+			assert.True(netsResponse.Ssid != nil, "Response success body is incorrect")
+			assert.True(netsResponse.RadioOff != nil, "Response success body is incorrect")
 		} else {
 			assert.True(len(*netsResponse.ErrorMessage) > 0, "Response error message is missing")
 		}
