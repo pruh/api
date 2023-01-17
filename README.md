@@ -24,6 +24,10 @@ Simple key-value file which will be used by docker to set container environment 
 * `MONGO_INITDB_ROOT_USERNAME` optional mongo username. Will be set only on first start.
 * `MONGO_INITDB_ROOT_PASSWORD` optional mongo password. Will be set only on first start.
 
+* `OMADA_URL` optional URL to Omada portal.
+* `OMADA_USERNAME` optional Omada portal username.
+* `OMADA_PASSWORD` optional Omada portal password.
+
 ## List of API methods
 
 ### Messages:
@@ -123,3 +127,35 @@ The following HTTP methods are supported:
   ```
 
 * `/api/v1/providers/{UUID}` HTTP DELETE method to delete a previously saved provider by UUID.
+
+### Networks
+
+Networks are interacting with Omada portal to provide Radio On / Off capabilities for Wifi Networks. The purpose of the networks API is to control home sites, therefore the expectation is that there is only one site and one WLAN. If there are multiple of them, the first returned is used.
+
+* GET `api/v1/wifis/{ssid}` - query radio status for `ssid` param
+
+  Returns SSID name and radio flag, e.g.
+  ```json
+  {
+    "ssid": "SSID",
+    "radioOff": false
+  }
+  ```
+
+* PATCH `api/v1/wifis/{ssid}` - switch radio status for `ssid` param
+
+  Accepts JSON with radio on / off command:
+  ```json
+  {
+    "radioOff": true
+  }
+  ```
+
+  Returns SSID name, new radio flag and whether or not radio status was updated, e.g.
+  ```json
+  {
+    "ssid": "SSID",
+    "radioOff": false,
+    "updated": true
+  }
+  ```
