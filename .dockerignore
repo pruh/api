@@ -1,8 +1,25 @@
+# Git
+.git
+.gitignore
+
+# GitHub
 .github
-volumes
-api.env.template
 LICENSE
 README.md
-.gitignore
+
+# CI
 codecov.yml
 
+# Docker
+docker-compose.yml
+Dockerfile
+.docker
+.dockerignore
+volumes
+
+# env files
+api.env.template
+api.env
+
+# VS Code
+.vscode/
