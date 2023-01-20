@@ -1,5 +1,5 @@
 # Build stage
-FROM golang:1.19-alpine AS build-env
+FROM golang:alpine AS build-env
 
 ADD . /go/src/github.com/pruh/api/
 
