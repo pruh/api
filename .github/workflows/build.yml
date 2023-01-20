@@ -10,7 +10,7 @@ on:
     - cron: '0 0 * * 0' # weekly
 
 jobs:
-  testing:
+  test:
     runs-on: ubuntu-latest
         
     steps:
@@ -46,7 +46,7 @@ jobs:
     - name: Upload coverage to Codecov
       uses: codecov/codecov-action@v3
   
-  docker:
+  docker-compose-up:
     runs-on: ubuntu-latest
 
     steps:
