@@ -144,7 +144,8 @@ func (c *controller) UpdateWifi(w http.ResponseWriter, r *http.Request) {
 
 	var ssidRequest NetworksSsidRequest
 	err := json.NewDecoder(r.Body).Decode(&ssidRequest)
-	if err != nil || ssidRequest.RadioOn == nil {
+	if err != nil ||
+		(ssidRequest.RadioOn == nil && ssidRequest.UploadSpeed == nil && ssidRequest.DownloadSpeed == nil) {
 		c.writeResponse(w, http.StatusBadRequest, nil, nil, nil, nil,
 			fmt.Errorf("request json is malformed %v", err))
 		return

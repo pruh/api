@@ -102,14 +102,18 @@ type OmadaTimeRangeData struct {
 }
 
 type NetworksSsidRequest struct {
-	RadioOn *bool `json:"radioOn,omitempty"`
+	RadioOn       *bool `json:"radioOn,omitempty"`
+	UploadSpeed   *int  `json:"uploadSpeed,omitempty"`
+	DownloadSpeed *int  `json:"downloadSpeed,omitempty"`
 }
 
 type NetworksResponse struct {
-	Ssid         *string `json:"ssid,omitempty"`
-	RadioOn      *bool   `json:"radioOn,omitempty"`
-	Updated      *bool   `json:"updated,omitempty"`
-	ErrorMessage *string `json:"errorMessage,omitempty"`
+	Ssid          *string `json:"ssid,omitempty"`
+	RadioOn       *bool   `json:"radioOn,omitempty"`
+	UploadSpeed   *int    `json:"uploadSpeed,omitempty"`
+	DownloadSpeed *int    `json:"downloadSpeed,omitempty"`
+	Updated       *bool   `json:"updated,omitempty"`
+	ErrorMessage  *string `json:"errorMessage,omitempty"`
 }
 
 func NewStr(str string) *string {
