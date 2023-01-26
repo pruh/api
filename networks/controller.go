@@ -144,10 +144,15 @@ func (c *controller) UpdateWifi(w http.ResponseWriter, r *http.Request) {
 
 	var ssidRequest NetworksSsidRequest
 	err := json.NewDecoder(r.Body).Decode(&ssidRequest)
-	if err != nil ||
-		(ssidRequest.RadioOn == nil && ssidRequest.UploadSpeed == nil && ssidRequest.DownloadSpeed == nil) {
+	if err != nil {
 		c.writeResponse(w, http.StatusBadRequest, nil, nil, nil, nil,
-			fmt.Errorf("request json is malformed %v", err))
+			fmt.Errorf("request is malformed %v", err))
+		return
+	}
+
+	if ssidRequest.RadioOn == nil && ssidRequest.UploadLimit == nil && ssidRequest.DownloadLimit == nil {
+		c.writeResponse(w, http.StatusOK, &ssid, nil,
+			NewBool(false), nil, nil)
 		return
 	}
 
@@ -224,13 +229,19 @@ func (c *controller) UpdateWifi(w http.ResponseWriter, r *http.Request) {
 
 	glog.Infof("Omada ssid id %s", *ssidData.Id)
 
-	if *ssidData.WlanScheduleEnable != *ssidRequest.RadioOn {
+	if c.isRadioStateEqual(ssidData.WlanScheduleEnable, ssidRequest.RadioOn) &&
+		c.isSpeedLimitEqual(ssidData.RateLimit.DownLimitEnable, ssidData.RateLimit.DownLimit,
+			ssidData.RateLimit.DownLimitType, ssidRequest.DownloadLimit) &&
+		c.isSpeedLimitEqual(ssidData.RateLimit.UpLimitEnable, ssidData.RateLimit.UpLimit,
+			ssidData.RateLimit.UpLimitType, ssidRequest.UploadLimit) {
+
 		glog.Info("no need to update ssid")
 		c.writeResponse(w, http.StatusOK, ssidData.Name, NewBool(!*ssidData.WlanScheduleEnable),
 			NewBool(false), nil, nil)
 		return
 	}
 
+	// TODO only if not null
 	ssidData.WlanScheduleEnable = NewBool(!*ssidRequest.RadioOn)
 	if *ssidData.WlanScheduleEnable {
 		glog.Infof("Looking for time range for ssid %s", *ssidData.Id)
@@ -257,6 +268,39 @@ func (c *controller) UpdateWifi(w http.ResponseWriter, r *http.Request) {
 
 	c.writeResponse(w, http.StatusOK, ssidData.Name, NewBool(!*ssidData.WlanScheduleEnable),
 		NewBool(true), nil, nil)
+}
+
+func (c *controller) isRadioStateEqual(wlanScheduleEnable *bool, requestRadioOn *bool) bool {
+	// state is equal if request radio state is NOT equal schedule enabled state
+	return *requestRadioOn == !*wlanScheduleEnable
+}
+
+func (c *controller) isSpeedLimitEqual(
+	speedLimitEnable *bool,
+	speedLimit *int,
+	speedLimitType *int,
+	requestSpeedLimit *int) bool {
+	if requestSpeedLimit == nil {
+		// no speed limit in request
+		return true
+	}
+
+	if *requestSpeedLimit < 1 {
+		// request to set no speed limit
+		// speed is equal if speed limit not set
+		return !*speedLimitEnable
+	}
+
+	// request to set speed limit
+
+	if !*speedLimitEnable {
+		// speed is NOT equal if speed limit is NOT enabled
+		return false
+	}
+
+	// speed is equal if speed limit speed is the same
+	speedLimitKbps := *speedLimit * (1024 ^ *speedLimitType)
+	return speedLimitKbps == *requestSpeedLimit
 }
 
 func (c *controller) getTimeRange(omadaIdResp *OmadaResponse, cookies []*http.Cookie,

@@ -223,23 +223,27 @@ func TestGetWifi(t *testing.T) {
 
 func TestUpdateWifis_ControllerId(t *testing.T) {
 	testsData := []struct {
-		description        string
-		requestUrl         string
-		requestData        *string
-		ssidParam          *string
-		omadaResponseError bool
-		omadaControllerId  *string
-		loginToken         *string
-		responseCode       int
+		description         string
+		requestUrl          string
+		requestData         *string
+		ssidParam           *string
+		omadaResponseError  bool
+		omadaControllerId   *string
+		loginToken          *string
+		responseCode        int
+		responseSsidUpdated *bool
+		responseRadioOn     *bool
 	}{
 		{
-			description:       "ControllerId happy path",
-			requestUrl:        "https://omada.example.com/networks/ssid",
-			requestData:       NewStr(`{"radioOn":false}`),
-			ssidParam:         NewStr("my_ssid"),
-			omadaControllerId: NewStr("c_id"),
-			loginToken:        NewStr("login_token"),
-			responseCode:      http.StatusOK,
+			description:         "ControllerId happy path",
+			requestUrl:          "https://omada.example.com/networks/ssid",
+			requestData:         NewStr(`{"radioOn":false}`),
+			ssidParam:           NewStr("my_ssid"),
+			omadaControllerId:   NewStr("c_id"),
+			loginToken:          NewStr("login_token"),
+			responseCode:        http.StatusOK,
+			responseSsidUpdated: NewBool(true),
+			responseRadioOn:     NewBool(false),
 		},
 		{
 			description:  "ssid missing in the request params",
@@ -259,10 +263,19 @@ func TestUpdateWifis_ControllerId(t *testing.T) {
 		{
 			description:       "request json malformed",
 			requestUrl:        "https://omada.example.com",
-			requestData:       NewStr(`{}`),
+			requestData:       NewStr(`aaa`),
 			ssidParam:         NewStr("my_ssid"),
 			omadaControllerId: nil,
 			responseCode:      http.StatusBadRequest,
+		},
+		{
+			description:         "request empty json",
+			requestUrl:          "https://omada.example.com",
+			requestData:         NewStr(`{}`),
+			ssidParam:           NewStr("my_ssid"),
+			omadaControllerId:   nil,
+			responseCode:        http.StatusOK,
+			responseSsidUpdated: NewBool(false),
 		},
 	}
 
@@ -412,9 +425,11 @@ func TestUpdateWifis_ControllerId(t *testing.T) {
 
 		assert.Equal(testData.responseCode, w.Code, "Response code is not correct")
 		if testData.responseCode == http.StatusOK {
-			assert.True(*netsResponse.Updated, "Response success body missing updated flag")
+			assert.Equal(*testData.responseSsidUpdated, *netsResponse.Updated, "Response updated flag is incorrect")
 			assert.True(netsResponse.Ssid != nil, "Response success body is incorrect")
-			assert.True(netsResponse.RadioOn != nil, "Response success body is incorrect")
+			if testData.responseRadioOn != nil {
+				assert.Equal(*testData.responseRadioOn, *netsResponse.RadioOn, "Response success body is incorrect")
+			}
 		} else {
 			assert.True(len(*netsResponse.ErrorMessage) > 0, "Response error message is missing")
 		}
