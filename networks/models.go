@@ -81,12 +81,13 @@ type WpaSetting struct {
 }
 
 type RateLimit struct {
-	DownLimitEnable *bool `json:"downLimitEnable,omitempty"`
-	DownLimit       *int  `json:"downLimit,omitempty"`
-	DownLimitType   *int  `json:"downLimitType,omitempty"`
-	UpLimitEnable   *bool `json:"upLimitEnable,omitempty"`
-	UpLimit         *int  `json:"upLimit,omitempty"`
-	UpLimitType     *int  `json:"upLimitType,omitempty"`
+	DownLimitEnable *bool   `json:"downLimitEnable,omitempty"`
+	DownLimit       *int    `json:"downLimit,omitempty"`
+	DownLimitType   *int    `json:"downLimitType,omitempty"`
+	UpLimitEnable   *bool   `json:"upLimitEnable,omitempty"`
+	UpLimit         *int    `json:"upLimit,omitempty"`
+	UpLimitType     *int    `json:"upLimitType,omitempty"`
+	RateLimitId     *string `json:"rateLimitId,omitempty"`
 }
 
 type RateAndBeaconCtrl struct {
@@ -102,14 +103,18 @@ type OmadaTimeRangeData struct {
 }
 
 type NetworksSsidRequest struct {
-	RadioOn *bool `json:"radioOn,omitempty"`
+	RadioOn       *bool `json:"radioOn,omitempty"`
+	UploadLimit   *int  `json:"uploadLimit,omitempty"`
+	DownloadLimit *int  `json:"downloadLimit,omitempty"`
 }
 
 type NetworksResponse struct {
-	Ssid         *string `json:"ssid,omitempty"`
-	RadioOn      *bool   `json:"radioOn,omitempty"`
-	Updated      *bool   `json:"updated,omitempty"`
-	ErrorMessage *string `json:"errorMessage,omitempty"`
+	Ssid          *string `json:"ssid,omitempty"`
+	RadioOn       *bool   `json:"radioOn,omitempty"`
+	UploadLimit   *int    `json:"uploadLimit,omitempty"`
+	DownloadLimit *int    `json:"downloadLimit,omitempty"`
+	Updated       *bool   `json:"updated,omitempty"`
+	ErrorMessage  *string `json:"errorMessage,omitempty"`
 }
 
 func NewStr(str string) *string {

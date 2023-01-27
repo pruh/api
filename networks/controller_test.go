@@ -32,7 +32,7 @@ func TestGetWifi(t *testing.T) {
 		responseCode int
 	}{
 		{
-			description:  "ControllerId happy path",
+			description:  "get wifi happy path",
 			requestUrl:   "https://omada.example.com/networks/ssid",
 			ssidParam:    NewStr("my_ssid"),
 			responseCode: http.StatusOK,
@@ -186,6 +186,10 @@ func TestGetWifi(t *testing.T) {
 									Id:                 NewStr("ssid_id"),
 									Name:               NewStr("my_ssid"),
 									WlanScheduleEnable: NewBool(false),
+									RateLimit: &RateLimit{
+										UpLimitEnable:   NewBool(false),
+										DownLimitEnable: NewBool(false),
+									},
 								},
 							},
 						},
@@ -215,6 +219,8 @@ func TestGetWifi(t *testing.T) {
 		if testData.responseCode == http.StatusOK {
 			assert.True(netsResponse.Ssid != nil, "Response success body is incorrect")
 			assert.True(netsResponse.RadioOn != nil, "Response success body is incorrect")
+			assert.True(netsResponse.UploadLimit != nil, "Response success body missing upload limit")
+			assert.True(netsResponse.DownloadLimit != nil, "Response success body missing download limit")
 		} else {
 			assert.True(len(*netsResponse.ErrorMessage) > 0, "Response error message is missing")
 		}
@@ -223,23 +229,27 @@ func TestGetWifi(t *testing.T) {
 
 func TestUpdateWifis_ControllerId(t *testing.T) {
 	testsData := []struct {
-		description        string
-		requestUrl         string
-		requestData        *string
-		ssidParam          *string
-		omadaResponseError bool
-		omadaControllerId  *string
-		loginToken         *string
-		responseCode       int
+		description         string
+		requestUrl          string
+		requestData         *string
+		ssidParam           *string
+		omadaResponseError  bool
+		omadaControllerId   *string
+		loginToken          *string
+		responseCode        int
+		responseSsidUpdated *bool
+		responseRadioOn     *bool
 	}{
 		{
-			description:       "ControllerId happy path",
-			requestUrl:        "https://omada.example.com/networks/ssid",
-			requestData:       NewStr(`{"radioOn":false}`),
-			ssidParam:         NewStr("my_ssid"),
-			omadaControllerId: NewStr("c_id"),
-			loginToken:        NewStr("login_token"),
-			responseCode:      http.StatusOK,
+			description:         "ControllerId happy path",
+			requestUrl:          "https://omada.example.com/networks/ssid",
+			requestData:         NewStr(`{"radioOn":false}`),
+			ssidParam:           NewStr("my_ssid"),
+			omadaControllerId:   NewStr("c_id"),
+			loginToken:          NewStr("login_token"),
+			responseCode:        http.StatusOK,
+			responseSsidUpdated: NewBool(true),
+			responseRadioOn:     NewBool(false),
 		},
 		{
 			description:  "ssid missing in the request params",
@@ -259,10 +269,19 @@ func TestUpdateWifis_ControllerId(t *testing.T) {
 		{
 			description:       "request json malformed",
 			requestUrl:        "https://omada.example.com",
-			requestData:       NewStr(`{}`),
+			requestData:       NewStr(`aaa`),
 			ssidParam:         NewStr("my_ssid"),
 			omadaControllerId: nil,
 			responseCode:      http.StatusBadRequest,
+		},
+		{
+			description:         "request empty json",
+			requestUrl:          "https://omada.example.com",
+			requestData:         NewStr(`{}`),
+			ssidParam:           NewStr("my_ssid"),
+			omadaControllerId:   nil,
+			responseCode:        http.StatusOK,
+			responseSsidUpdated: NewBool(false),
 		},
 	}
 
@@ -351,6 +370,10 @@ func TestUpdateWifis_ControllerId(t *testing.T) {
 									Id:                 NewStr("ssid_id"),
 									Name:               NewStr("my_ssid"),
 									WlanScheduleEnable: NewBool(false),
+									RateLimit: &RateLimit{
+										UpLimitEnable:   NewBool(false),
+										DownLimitEnable: NewBool(false),
+									},
 								},
 							},
 						},
@@ -412,9 +435,11 @@ func TestUpdateWifis_ControllerId(t *testing.T) {
 
 		assert.Equal(testData.responseCode, w.Code, "Response code is not correct")
 		if testData.responseCode == http.StatusOK {
-			assert.True(*netsResponse.Updated, "Response success body missing updated flag")
+			assert.Equal(*testData.responseSsidUpdated, *netsResponse.Updated, "Response updated flag is incorrect")
 			assert.True(netsResponse.Ssid != nil, "Response success body is incorrect")
-			assert.True(netsResponse.RadioOn != nil, "Response success body is incorrect")
+			if testData.responseRadioOn != nil {
+				assert.Equal(*testData.responseRadioOn, *netsResponse.RadioOn, "Response success body is incorrect")
+			}
 		} else {
 			assert.True(len(*netsResponse.ErrorMessage) > 0, "Response error message is missing")
 		}
@@ -527,6 +552,10 @@ func TestUpdateWifis_Login(t *testing.T) {
 									Id:                 NewStr("ssid_id"),
 									Name:               NewStr("my_ssid"),
 									WlanScheduleEnable: NewBool(false),
+									RateLimit: &RateLimit{
+										UpLimitEnable:   NewBool(false),
+										DownLimitEnable: NewBool(false),
+									},
 								},
 							},
 						},
@@ -705,6 +734,10 @@ func TestUpdateWifis_GetSites(t *testing.T) {
 									Id:                 NewStr("ssid_id"),
 									Name:               NewStr("my_ssid"),
 									WlanScheduleEnable: NewBool(false),
+									RateLimit: &RateLimit{
+										UpLimitEnable:   NewBool(false),
+										DownLimitEnable: NewBool(false),
+									},
 								},
 							},
 						},
@@ -874,6 +907,10 @@ func TestUpdateWifis_GetWlans(t *testing.T) {
 									Id:                 NewStr("ssid_id"),
 									Name:               NewStr("my_ssid"),
 									WlanScheduleEnable: NewBool(false),
+									RateLimit: &RateLimit{
+										UpLimitEnable:   NewBool(false),
+										DownLimitEnable: NewBool(false),
+									},
 								},
 							},
 						},
@@ -947,11 +984,15 @@ func TestUpdateWifis_GetSsids(t *testing.T) {
 		omadaResponseError bool
 		includeSsids       bool
 		responseCode       int
+		responseUpLimit    *int
+		responseDownLimit  *int
 	}{
 		{
-			description:  "GetSsids happy path",
-			includeSsids: true,
-			responseCode: http.StatusOK,
+			description:       "GetSsids happy path",
+			includeSsids:      true,
+			responseCode:      http.StatusOK,
+			responseUpLimit:   NewInt(DISABLED),
+			responseDownLimit: NewInt(1),
 		},
 		{
 			description:        "omada GetSites response error",
@@ -1001,7 +1042,8 @@ func TestUpdateWifis_GetSsids(t *testing.T) {
 
 					return resp, cookies, nil
 				},
-				MockGetSites: func(omadaControllerId *string, cookies []*http.Cookie, loginToken *string) (*OmadaResponse, error) {
+				MockGetSites: func(omadaControllerId *string, cookies []*http.Cookie,
+					loginToken *string) (*OmadaResponse, error) {
 					resp := &OmadaResponse{
 						ErrorCode: 0,
 						Msg:       NewStr("test"),
@@ -1012,7 +1054,8 @@ func TestUpdateWifis_GetSsids(t *testing.T) {
 
 					return resp, nil
 				},
-				MockGetWlans: func(omadaControllerId *string, cookies []*http.Cookie, loginToken *string, siteId *string) (*OmadaResponse, error) {
+				MockGetWlans: func(omadaControllerId *string, cookies []*http.Cookie,
+					loginToken *string, siteId *string) (*OmadaResponse, error) {
 					resp := &OmadaResponse{
 						ErrorCode: 0,
 						Msg:       NewStr("test"),
@@ -1036,12 +1079,46 @@ func TestUpdateWifis_GetSsids(t *testing.T) {
 
 					var res *Result
 					if testData.includeSsids {
+						var upLimitEnable *bool
+						var upLimit *int
+						var upLimitType *int
+						if testData.responseUpLimit != nil {
+							upLimitEnable = NewBool(*testData.responseUpLimit != DISABLED)
+							if *testData.responseUpLimit > 0 {
+								upLimit = NewInt(*testData.responseUpLimit)
+							} else {
+								upLimit = NewInt(0)
+							}
+							upLimitType = NewInt(0)
+						}
+						var downLimitEnable *bool
+						var downLimit *int
+						var downLimitType *int
+						if testData.responseDownLimit != nil {
+							downLimitEnable = NewBool(*testData.responseDownLimit != DISABLED)
+							if *testData.responseDownLimit > 0 {
+								downLimit = NewInt(*testData.responseDownLimit)
+							} else {
+								downLimit = NewInt(0)
+							}
+							downLimitType = NewInt(0)
+						}
 						res = &Result{
-							Data: &[]Data{{
-								Id:                 NewStr("ssid_id"),
-								Name:               NewStr("my_ssid"),
-								WlanScheduleEnable: NewBool(false),
-							}},
+							Data: &[]Data{
+								{
+									Id:                 NewStr("ssid_id"),
+									Name:               NewStr("my_ssid"),
+									WlanScheduleEnable: NewBool(false),
+									RateLimit: &RateLimit{
+										UpLimitEnable:   upLimitEnable,
+										UpLimitType:     upLimitType,
+										UpLimit:         upLimit,
+										DownLimitEnable: downLimitEnable,
+										DownLimitType:   downLimitType,
+										DownLimit:       downLimit,
+									},
+								},
+							},
 						}
 					}
 
@@ -1107,6 +1184,13 @@ func TestUpdateWifis_GetSsids(t *testing.T) {
 			assert.True(*netsResponse.Updated, "Response success body missing updated flag")
 			assert.True(netsResponse.Ssid != nil, "Response success body is incorrect")
 			assert.True(netsResponse.RadioOn != nil, "Response success body is incorrect")
+
+			if testData.responseUpLimit != nil {
+				assert.Equal(*testData.responseUpLimit, *netsResponse.UploadLimit, "upload limit is incorrect")
+			}
+			if testData.responseDownLimit != nil {
+				assert.Equal(*testData.responseDownLimit, *netsResponse.DownloadLimit, "download limit is incorrect")
+			}
 		} else {
 			assert.True(len(*netsResponse.ErrorMessage) > 0, "Response error message is missing")
 		}
@@ -1116,20 +1200,47 @@ func TestUpdateWifis_GetSsids(t *testing.T) {
 func TestUpdateWifis_UpdateSsid(t *testing.T) {
 	testsData := []struct {
 		description        string
+		requestBody        string
 		omadaResponseError bool
-		includeSsids       bool
+		updated            bool
 		responseCode       int
 	}{
 		{
 			description:  "UpdateSsid happy path",
-			includeSsids: true,
+			requestBody:  `{"radioOn":false,"uploadLimit":1024,"downloadLimit":2048}`,
+			updated:      true,
 			responseCode: http.StatusOK,
 		},
 		{
 			description:        "omada UpdateSsid response error",
-			includeSsids:       true,
+			requestBody:        `{"radioOn":true,"uploadLimit":1024,"downloadLimit":2048}`,
 			omadaResponseError: true,
+			updated:            false,
 			responseCode:       http.StatusBadGateway,
+		},
+		{
+			description:  "UpdateSsid update when only radio state update required",
+			requestBody:  `{"radioOn":false,"uploadLimit":0,"downloadLimit":0}`,
+			updated:      true,
+			responseCode: http.StatusOK,
+		},
+		{
+			description:  "UpdateSsid update when only down speed state update required",
+			requestBody:  `{"radioOn":true,"uploadLimit":0,"downloadLimit":2048}`,
+			updated:      true,
+			responseCode: http.StatusOK,
+		},
+		{
+			description:  "UpdateSsid update when only upload speed state update required",
+			requestBody:  `{"radioOn":true,"uploadLimit":1024,"downloadLimit":0}`,
+			updated:      true,
+			responseCode: http.StatusOK,
+		},
+		{
+			description:  "UpdateSsid not called when state is current",
+			requestBody:  `{"radioOn":true,"uploadLimit":0,"downloadLimit":0}`,
+			updated:      false,
+			responseCode: http.StatusOK,
 		},
 	}
 
@@ -1201,11 +1312,17 @@ func TestUpdateWifis_UpdateSsid(t *testing.T) {
 						ErrorCode: 0,
 						Msg:       NewStr("test"),
 						Result: &Result{
-							Data: &[]Data{{
-								Id:                 NewStr("ssid_id"),
-								Name:               NewStr("my_ssid"),
-								WlanScheduleEnable: NewBool(false),
-							}},
+							Data: &[]Data{
+								{
+									Id:                 NewStr("ssid_id"),
+									Name:               NewStr("my_ssid"),
+									WlanScheduleEnable: NewBool(false),
+									RateLimit: &RateLimit{
+										UpLimitEnable:   NewBool(false),
+										DownLimitEnable: NewBool(false),
+									},
+								},
+							},
 						},
 					}
 
@@ -1253,7 +1370,7 @@ func TestUpdateWifis_UpdateSsid(t *testing.T) {
 
 		w := httptest.NewRecorder()
 		req := httptest.NewRequest(http.MethodPost, "http://example.com/foo",
-			bytes.NewBuffer([]byte(`{"radioOn":false}`)))
+			bytes.NewBuffer([]byte(testData.requestBody)))
 
 		// setting mux vars for testing
 		vars := map[string]string{
@@ -1267,8 +1384,8 @@ func TestUpdateWifis_UpdateSsid(t *testing.T) {
 
 		assert.Equal(testData.responseCode, w.Code, "Response code is not correct")
 		if testData.responseCode == http.StatusOK {
-			assert.True(*netsResponse.Updated, "Response success body missing updated flag")
-			assert.True(netsResponse.Ssid != nil, "Response success body is incorrect")
+			assert.Equal(testData.updated, *netsResponse.Updated, "updated flag is incorrect")
+			assert.Equal("my_ssid", *netsResponse.Ssid, "ssid name is incorrect")
 			assert.True(netsResponse.RadioOn != nil, "Response success body is incorrect")
 		} else {
 			assert.True(len(*netsResponse.ErrorMessage) > 0, "Response error message is missing")
@@ -1363,11 +1480,17 @@ func TestUpdateWifis_GetTimeRanges(t *testing.T) {
 						ErrorCode: 0,
 						Msg:       NewStr("test"),
 						Result: &Result{
-							Data: &[]Data{{
-								Id:                 NewStr("ssid_id"),
-								Name:               NewStr("my_ssid"),
-								WlanScheduleEnable: NewBool(false),
-							}},
+							Data: &[]Data{
+								{
+									Id:                 NewStr("ssid_id"),
+									Name:               NewStr("my_ssid"),
+									WlanScheduleEnable: NewBool(false),
+									RateLimit: &RateLimit{
+										UpLimitEnable:   NewBool(false),
+										DownLimitEnable: NewBool(false),
+									},
+								},
+							},
 						},
 					}
 
@@ -1538,11 +1661,17 @@ func TestUpdateWifis_CreateTimeRanges(t *testing.T) {
 						ErrorCode: 0,
 						Msg:       NewStr("test"),
 						Result: &Result{
-							Data: &[]Data{{
-								Id:                 NewStr("ssid_id"),
-								Name:               NewStr("my_ssid"),
-								WlanScheduleEnable: NewBool(false),
-							}},
+							Data: &[]Data{
+								{
+									Id:                 NewStr("ssid_id"),
+									Name:               NewStr("my_ssid"),
+									WlanScheduleEnable: NewBool(false),
+									RateLimit: &RateLimit{
+										UpLimitEnable:   NewBool(false),
+										DownLimitEnable: NewBool(false),
+									},
+								},
+							},
 						},
 					}
 

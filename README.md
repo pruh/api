@@ -130,32 +130,38 @@ The following HTTP methods are supported:
 
 ### Networks
 
-Networks are interacting with Omada portal to provide Radio On / Off capabilities for Wifi Networks. The purpose of the networks API is to control home sites, therefore the expectation is that there is only one site and one WLAN. If there are multiple of them, the first returned is used.
+Networks are interacting with Omada portal to provide Radio On / Off and Speed Limiting capabilities for Wifi Networks. Rate limiting options are in kilobytes per second and values less than 1 will turn limiting off. The purpose of the networks API is to control home sites, therefore the expectation is that there is only one site and one WLAN. If there are multiple of them, the first one is used.
 
-* GET `api/v1/wifis/{ssid}` - query radio status for `ssid` param
+* GET `api/v1/wifis/{ssid}` - query radio status and rate limit for `ssid`
 
-  Returns SSID name and radio flag, e.g.
+  Returns SSID name, radio flag and rate limits, e.g.
   ```json
   {
     "ssid": "SSID",
-    "radioOn": true
+    "radioOn": true,
+    "uploadLimit": 1024,
+    "DownloadLimit": 0
   }
   ```
 
 * PATCH `api/v1/wifis/{ssid}` - switch radio status for `ssid` param
 
-  Accepts JSON with radio on / off command:
+  Accepts JSON with any combination of the following request params:
   ```json
   {
-    "radioOn": false
+    "radioOn": false,
+    "uploadLimit": 1024,
+    "DownloadLimit": 0
   }
   ```
 
-  Returns SSID name, new radio flag and whether or not radio status was updated, e.g.
+  Returns SSID name, updated radio state flag, updated rate limits and if wifi state is updated, e.g.
   ```json
   {
     "ssid": "SSID",
     "radioOn": false,
+    "uploadLimit": 1024,
+    "DownloadLimit": 0,
     "updated": true
   }
   ```
