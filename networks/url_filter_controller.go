@@ -24,11 +24,20 @@ func NewUrlFilterController(r Repository) UrlFilterController {
 // Query URL filters for SSID
 func (ufc urlFilterController) QueryUrlFilters(omadaControllerId *string, cookies []*http.Cookie,
 	loginToken *string, siteId *string, ssidData *Data) (*[]UrlFilter, error) {
-	// todo query omada for all AP url filters
-	ufc.repository.QueryAPUrlFilters(omadaControllerId, cookies, loginToken, siteId)
+	resp, err := ufc.repository.QueryAPUrlFilters(omadaControllerId, cookies, loginToken, siteId)
+	if err != nil {
+		return nil, err
+	}
 
-	// extract uf for given ssid
-	return nil, nil
+	var urlFilters []UrlFilter
+	for _, omadaFilter := range *resp.Result.Data {
+		var urlFilter UrlFilter
+		urlFilter.Name = omadaFilter.Name
+		urlFilter.BypassFilter = NewBool(*omadaFilter.Policy == 1)
+		copy(*omadaFilter.Urls, *urlFilter.Urls)
+	}
+
+	return &urlFilters, nil
 }
 
 // Update URL filter if required
