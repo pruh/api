@@ -32,7 +32,7 @@ func TestGetWifi(t *testing.T) {
 		responseCode int
 	}{
 		{
-			description:  "ControllerId happy path",
+			description:  "get wifi happy path",
 			requestUrl:   "https://omada.example.com/networks/ssid",
 			ssidParam:    NewStr("my_ssid"),
 			responseCode: http.StatusOK,
@@ -368,6 +368,10 @@ func TestUpdateWifis_ControllerId(t *testing.T) {
 									Id:                 NewStr("ssid_id"),
 									Name:               NewStr("my_ssid"),
 									WlanScheduleEnable: NewBool(false),
+									RateLimit: &RateLimit{
+										UpLimitEnable:   NewBool(false),
+										DownLimitEnable: NewBool(false),
+									},
 								},
 							},
 						},
@@ -546,6 +550,10 @@ func TestUpdateWifis_Login(t *testing.T) {
 									Id:                 NewStr("ssid_id"),
 									Name:               NewStr("my_ssid"),
 									WlanScheduleEnable: NewBool(false),
+									RateLimit: &RateLimit{
+										UpLimitEnable:   NewBool(false),
+										DownLimitEnable: NewBool(false),
+									},
 								},
 							},
 						},
@@ -724,6 +732,10 @@ func TestUpdateWifis_GetSites(t *testing.T) {
 									Id:                 NewStr("ssid_id"),
 									Name:               NewStr("my_ssid"),
 									WlanScheduleEnable: NewBool(false),
+									RateLimit: &RateLimit{
+										UpLimitEnable:   NewBool(false),
+										DownLimitEnable: NewBool(false),
+									},
 								},
 							},
 						},
@@ -893,6 +905,10 @@ func TestUpdateWifis_GetWlans(t *testing.T) {
 									Id:                 NewStr("ssid_id"),
 									Name:               NewStr("my_ssid"),
 									WlanScheduleEnable: NewBool(false),
+									RateLimit: &RateLimit{
+										UpLimitEnable:   NewBool(false),
+										DownLimitEnable: NewBool(false),
+									},
 								},
 							},
 						},
@@ -1056,11 +1072,17 @@ func TestUpdateWifis_GetSsids(t *testing.T) {
 					var res *Result
 					if testData.includeSsids {
 						res = &Result{
-							Data: &[]Data{{
-								Id:                 NewStr("ssid_id"),
-								Name:               NewStr("my_ssid"),
-								WlanScheduleEnable: NewBool(false),
-							}},
+							Data: &[]Data{
+								{
+									Id:                 NewStr("ssid_id"),
+									Name:               NewStr("my_ssid"),
+									WlanScheduleEnable: NewBool(false),
+									RateLimit: &RateLimit{
+										UpLimitEnable:   NewBool(false),
+										DownLimitEnable: NewBool(false),
+									},
+								},
+							},
 						}
 					}
 
@@ -1220,11 +1242,17 @@ func TestUpdateWifis_UpdateSsid(t *testing.T) {
 						ErrorCode: 0,
 						Msg:       NewStr("test"),
 						Result: &Result{
-							Data: &[]Data{{
-								Id:                 NewStr("ssid_id"),
-								Name:               NewStr("my_ssid"),
-								WlanScheduleEnable: NewBool(false),
-							}},
+							Data: &[]Data{
+								{
+									Id:                 NewStr("ssid_id"),
+									Name:               NewStr("my_ssid"),
+									WlanScheduleEnable: NewBool(false),
+									RateLimit: &RateLimit{
+										UpLimitEnable:   NewBool(false),
+										DownLimitEnable: NewBool(false),
+									},
+								},
+							},
 						},
 					}
 
@@ -1382,11 +1410,17 @@ func TestUpdateWifis_GetTimeRanges(t *testing.T) {
 						ErrorCode: 0,
 						Msg:       NewStr("test"),
 						Result: &Result{
-							Data: &[]Data{{
-								Id:                 NewStr("ssid_id"),
-								Name:               NewStr("my_ssid"),
-								WlanScheduleEnable: NewBool(false),
-							}},
+							Data: &[]Data{
+								{
+									Id:                 NewStr("ssid_id"),
+									Name:               NewStr("my_ssid"),
+									WlanScheduleEnable: NewBool(false),
+									RateLimit: &RateLimit{
+										UpLimitEnable:   NewBool(false),
+										DownLimitEnable: NewBool(false),
+									},
+								},
+							},
 						},
 					}
 
@@ -1557,11 +1591,17 @@ func TestUpdateWifis_CreateTimeRanges(t *testing.T) {
 						ErrorCode: 0,
 						Msg:       NewStr("test"),
 						Result: &Result{
-							Data: &[]Data{{
-								Id:                 NewStr("ssid_id"),
-								Name:               NewStr("my_ssid"),
-								WlanScheduleEnable: NewBool(false),
-							}},
+							Data: &[]Data{
+								{
+									Id:                 NewStr("ssid_id"),
+									Name:               NewStr("my_ssid"),
+									WlanScheduleEnable: NewBool(false),
+									RateLimit: &RateLimit{
+										UpLimitEnable:   NewBool(false),
+										DownLimitEnable: NewBool(false),
+									},
+								},
+							},
 						},
 					}
 
