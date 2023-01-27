@@ -15,8 +15,11 @@ type Result struct {
 }
 
 type Data struct {
-	Id   *string `json:"id,omitempty"`
-	Name *string `json:"name,omitempty"`
+	// common params
+	Id     *string `json:"id,omitempty"`
+	Name   *string `json:"name,omitempty"`
+	SiteId *string `json:"siteid,omitempty"`
+	Policy *int    `json:"policy,omitempty"`
 
 	// ssid params
 	Band               *int               `json:"band,omitempty"`
@@ -30,7 +33,6 @@ type Data struct {
 	Action             *int               `json:"action,omitempty"`
 	ScheduleId         *string            `json:"scheduleId,omitempty"`
 	MacFilterEnable    *bool              `json:"macFilterEnable,omitempty"`
-	Policy             *int               `json:"policy,omitempty"`
 	MacFilterId        *string            `json:"macFilterId,omitempty"`
 	RateLimit          *RateLimit         `json:"rateLimit,omitempty"`
 	PskSetting         *PskSetting        `json:"pskSetting,omitempty"`
@@ -47,6 +49,14 @@ type Data struct {
 	DayFri   *bool       `json:"dayFri,omitempty"`
 	DaySat   *bool       `json:"daySat,omitempty"`
 	DaySun   *bool       `json:"daySun,omitempty"`
+
+	// url filtering
+	Type       *string   `json:"type,omitempty"`
+	EntryId    *int      `json:"entryId,omitempty"`
+	Status     *bool     `json:"status,omitempty"`
+	SourceType *int      `json:"sourceType,omitempty"`
+	SourceIds  *[]string `json:"sourceIds,omitempty"`
+	Urls       *[]string `json:"urls,omitempty"`
 }
 
 type TimeList struct {
