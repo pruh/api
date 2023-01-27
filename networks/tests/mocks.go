@@ -68,3 +68,23 @@ func (oa *MockOmadaApi) CreateTimeRange(omadaControllerId *string, cookies []*ht
 	siteId *string, trData *Data) (*OmadaResponse, error) {
 	return oa.MockCreateTimeRange(omadaControllerId, cookies, loginToken, siteId, trData)
 }
+
+type MockUrlFilterController struct {
+	MockQueryUrlFilters       func(ssidData *Data) (*[]UrlFilter, error)
+	MockMaybeUpdateUrlFilters func() (*[]UrlFilter, error)
+}
+
+func (ufc MockUrlFilterController) QueryUrlFilters(ssidData *Data) (*[]UrlFilter, error) {
+	return ufc.MockQueryUrlFilters(ssidData)
+}
+
+func (ufc MockUrlFilterController) MaybeUpdateUrlFilters() (*[]UrlFilter, error) {
+	return ufc.MockMaybeUpdateUrlFilters()
+}
+
+func NewMockUrlFilterController() MockUrlFilterController {
+	return MockUrlFilterController{
+		MockQueryUrlFilters:       func(ssidData *Data) (*[]UrlFilter, error) { return nil, nil },
+		MockMaybeUpdateUrlFilters: func() (*[]UrlFilter, error) { return nil, nil },
+	}
+}
