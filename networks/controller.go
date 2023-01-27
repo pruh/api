@@ -128,11 +128,20 @@ func (c *controller) GetWifi(w http.ResponseWriter, r *http.Request) {
 
 	glog.Infof("Omada ssid id %s", *ssidData.Id)
 
-	// todo add converter
-	u, err := ssidData.ToUploadRateLimit()
-	d, err := ssidData.ToDownloadRateLimit()
+	upRate, err := ssidData.ToUploadRateLimit()
+	if err != nil {
+		c.writeResponse(w, http.StatusBadGateway, nil, nil, nil, nil, nil, omadaSsidsResp,
+			fmt.Errorf("omada ssid upload rate limit query error %v", err))
+		return
+	}
+	downRate, err := ssidData.ToDownloadRateLimit()
+	if err != nil {
+		c.writeResponse(w, http.StatusBadGateway, nil, nil, nil, nil, nil, omadaSsidsResp,
+			fmt.Errorf("omada ssid download rate limit query error %v", err))
+		return
+	}
 	c.writeResponse(w, http.StatusOK, ssidData.Name,
-		NewBool(!*ssidData.WlanScheduleEnable), u, d,
+		NewBool(!*ssidData.WlanScheduleEnable), upRate, downRate,
 		nil, nil, nil)
 }
 

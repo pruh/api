@@ -186,6 +186,10 @@ func TestGetWifi(t *testing.T) {
 									Id:                 NewStr("ssid_id"),
 									Name:               NewStr("my_ssid"),
 									WlanScheduleEnable: NewBool(false),
+									RateLimit: &RateLimit{
+										UpLimitEnable:   NewBool(false),
+										DownLimitEnable: NewBool(false),
+									},
 								},
 							},
 						},
