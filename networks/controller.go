@@ -32,20 +32,21 @@ type Controller interface {
 	UpdateWifi(w http.ResponseWriter, r *http.Request)
 }
 
-// NewController creates new networks controller
+// Creates new networks controller
 func NewController(config *config.Configuration) Controller {
 	omadaApi := NewOmadaApi(config, apihttp.NewHTTPClient())
-	ufc := NewUrlFilterController()
-	return NewControllerWithParams(config, ufc, omadaApi)
+	r := NewRepository(omadaApi)
+	ufc := NewUrlFilterController(r)
+	return NewControllerWithParams(config, ufc, r)
 }
 
 // Creates a new controller with additional dependencies for tests
 func NewControllerWithParams(config *config.Configuration,
-	ufc UrlFilterController, omadaApi OmadaApi) Controller {
+	ufc UrlFilterController, r Repository) Controller {
 	return &controller{
 		config:     config,
 		ufc:        ufc,
-		repository: NewRepository(omadaApi),
+		repository: r,
 	}
 }
 

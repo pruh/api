@@ -2,9 +2,7 @@ package networks
 
 // Controller to operatate with URL filters
 type urlFilterController struct {
-	// config     *config.Configuration
-	// ufc        UrlFilterController
-	// repository Repository
+	repository Repository
 }
 
 // Controller to operatate with URL filters
@@ -14,12 +12,17 @@ type UrlFilterController interface {
 }
 
 // creates new URL filter controller
-func NewUrlFilterController() UrlFilterController {
-	return urlFilterController{}
+func NewUrlFilterController(r Repository) UrlFilterController {
+	return urlFilterController{
+		repository: r,
+	}
 }
 
 // Query URL filters for SSID
 func (ufc urlFilterController) QueryUrlFilters(ssidData *Data) (*[]UrlFilter, error) {
+	// todo query omada for all AP url filters
+
+	// extract uf for given ssid
 	return nil, nil
 }
 
