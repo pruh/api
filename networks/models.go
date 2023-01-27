@@ -113,18 +113,25 @@ type OmadaTimeRangeData struct {
 }
 
 type NetworksSsidRequest struct {
-	RadioOn       *bool `json:"radioOn,omitempty"`
-	UploadLimit   *int  `json:"uploadLimit,omitempty"`
-	DownloadLimit *int  `json:"downloadLimit,omitempty"`
+	RadioOn       *bool        `json:"radioOn,omitempty"`
+	UploadLimit   *int         `json:"uploadLimit,omitempty"`
+	DownloadLimit *int         `json:"downloadLimit,omitempty"`
+	UrlFilters    *[]UrlFilter `json:"urlFilters,omitempty"`
 }
 
 type NetworksResponse struct {
-	Ssid          *string `json:"ssid,omitempty"`
-	RadioOn       *bool   `json:"radioOn,omitempty"`
-	UploadLimit   *int    `json:"uploadLimit,omitempty"`
-	DownloadLimit *int    `json:"downloadLimit,omitempty"`
-	Updated       *bool   `json:"updated,omitempty"`
-	ErrorMessage  *string `json:"errorMessage,omitempty"`
+	Ssid          *string      `json:"ssid,omitempty"`
+	RadioOn       *bool        `json:"radioOn,omitempty"`
+	UploadLimit   *int         `json:"uploadLimit,omitempty"`
+	DownloadLimit *int         `json:"downloadLimit,omitempty"`
+	UrlFilters    *[]UrlFilter `json:"urlFilters,omitempty"`
+	Updated       *bool        `json:"updated,omitempty"`
+	ErrorMessage  *string      `json:"errorMessage,omitempty"`
+}
+
+type UrlFilter struct {
+	Name *string   `json:"name,omitempty"`
+	Urls *[]string `json:"urls,omitempty"`
 }
 
 func NewStr(str string) *string {

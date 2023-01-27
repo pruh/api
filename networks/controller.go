@@ -149,7 +149,9 @@ func (c *controller) UpdateWifi(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if ssidRequest.RadioOn == nil && ssidRequest.UploadLimit == nil && ssidRequest.DownloadLimit == nil {
+	if ssidRequest.RadioOn == nil &&
+		ssidRequest.UploadLimit == nil && ssidRequest.DownloadLimit == nil &&
+		ssidRequest.UrlFilters == nil {
 		writeSuccessResponse(w, ssid, nil, NewBool(false))
 		return
 	}
