@@ -33,6 +33,9 @@ type OmadaApi interface {
 		siteId *string) (*OmadaResponse, error)
 	CreateTimeRange(omadaControllerId *string, cookies []*http.Cookie, loginToken *string,
 		siteId *string, trData *Data) (*OmadaResponse, error)
+
+	QueryAPUrlFilters(omadaControllerId *string, cookies []*http.Cookie, loginToken *string,
+		siteId *string) (*OmadaResponse, error)
 }
 
 // NewOmadaApi creates new omada api
@@ -378,6 +381,48 @@ func (oa *omadaApi) CreateTimeRange(omadaControllerId *string, cookies []*http.C
 	err = json.Unmarshal(body, &omadaResponse)
 	if err != nil {
 		glog.Errorf("Error parsing omada time range create response: %s", err)
+		return nil, err
+	}
+
+	return &omadaResponse, nil
+}
+
+func (oa *omadaApi) QueryAPUrlFilters(omadaControllerId *string, cookies []*http.Cookie,
+	loginToken *string, siteId *string) (*OmadaResponse, error) {
+	url := fmt.Sprintf("%s/%s/api/v2/sites/%s/setting/firewall/urlfilterings?type=ap",
+		*oa.config.OmadaUrl, *omadaControllerId, *siteId)
+
+	req, err := http.NewRequest(http.MethodGet, url, nil)
+	if err != nil {
+		glog.Errorf("Failed to create HTTP request: %s", err)
+		return nil, err
+	}
+	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("Csrf-token", *loginToken)
+	for _, cookie := range cookies {
+		req.AddCookie(cookie)
+	}
+
+	glog.Infof("sending QueryAPUrlFilters request to %s", url)
+
+	resp, err := oa.httpClient.Do(req)
+	if err != nil {
+		glog.Errorf("Error querying omada url filters: %s", err)
+		return nil, err
+	}
+
+	defer resp.Body.Close()
+
+	body, err := io.ReadAll(io.LimitReader(resp.Body, 1024*1024))
+	if err != nil {
+		glog.Errorf("Error reading omada url filter response: %s", err)
+		return nil, err
+	}
+
+	var omadaResponse OmadaResponse
+	err = json.Unmarshal(body, &omadaResponse)
+	if err != nil {
+		glog.Errorf("Error parsing omada url filter: %s", err)
 		return nil, err
 	}
 

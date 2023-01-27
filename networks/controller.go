@@ -133,7 +133,8 @@ func (c *controller) GetWifi(w http.ResponseWriter, r *http.Request) {
 
 	glog.Infof("Omada ssid id %s", *ssidData.Id)
 
-	urlFilters, err := c.ufc.QueryUrlFilters(ssidData)
+	urlFilters, err := c.ufc.QueryUrlFilters(omadaIdResp.Result.OmadacId, cookies,
+		omadaLoginResp.Result.Token, (*omadaSitesResp.Result.Data)[0].Id, ssidData)
 	if err != nil {
 		writeErrorResponse(w, http.StatusBadGateway, ssid, omadaSsidsResp,
 			fmt.Errorf("failure querying url filters %v", err))

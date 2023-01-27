@@ -52,3 +52,8 @@ func (r *Repository) CreateTimeRange(omadaControllerId *string, cookies []*http.
 	siteId *string, timeRangeData *Data) (*OmadaResponse, error) {
 	return r.omadaApi.CreateTimeRange(omadaControllerId, cookies, loginToken, siteId, timeRangeData)
 }
+
+func (r *Repository) QueryAPUrlFilters(omadaControllerId *string, cookies []*http.Cookie,
+	loginToken *string, siteId *string) (*OmadaResponse, error) {
+	return r.omadaApi.QueryAPUrlFilters(omadaControllerId, cookies, loginToken, siteId)
+}

@@ -1,5 +1,7 @@
 package networks
 
+import "net/http"
+
 // Controller to operatate with URL filters
 type urlFilterController struct {
 	repository Repository
@@ -7,7 +9,8 @@ type urlFilterController struct {
 
 // Controller to operatate with URL filters
 type UrlFilterController interface {
-	QueryUrlFilters(ssidData *Data) (*[]UrlFilter, error)
+	QueryUrlFilters(omadaControllerId *string, cookies []*http.Cookie,
+		loginToken *string, siteId *string, ssidData *Data) (*[]UrlFilter, error)
 	MaybeUpdateUrlFilters() (*[]UrlFilter, error)
 }
 
@@ -19,8 +22,10 @@ func NewUrlFilterController(r Repository) UrlFilterController {
 }
 
 // Query URL filters for SSID
-func (ufc urlFilterController) QueryUrlFilters(ssidData *Data) (*[]UrlFilter, error) {
+func (ufc urlFilterController) QueryUrlFilters(omadaControllerId *string, cookies []*http.Cookie,
+	loginToken *string, siteId *string, ssidData *Data) (*[]UrlFilter, error) {
 	// todo query omada for all AP url filters
+	ufc.repository.QueryAPUrlFilters(omadaControllerId, cookies, loginToken, siteId)
 
 	// extract uf for given ssid
 	return nil, nil

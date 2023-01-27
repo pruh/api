@@ -248,3 +248,30 @@ func TestRepoCreateTimeRanges(t *testing.T) {
 	assert.True(mockCalled, "mock is not called")
 	assert.Equal(0, controllerId.ErrorCode, "wrong response data")
 }
+
+func TestRepoQueryAPUrlFilters(t *testing.T) {
+	var mockCalled = false
+
+	mockOmadaApi := MockOmadaApi{
+		MockQueryAPUrlFilters: func(omadaControllerId *string, cookies []*http.Cookie,
+			loginToken *string, siteId *string) (*OmadaResponse, error) {
+			resp := &OmadaResponse{
+				ErrorCode: 0,
+				Msg:       NewStr("Success."),
+			}
+
+			mockCalled = true
+
+			return resp, nil
+		},
+	}
+
+	repo := NewRepository(&mockOmadaApi)
+
+	assert := assert.New(t)
+
+	controllerId, _ := repo.QueryAPUrlFilters(nil, nil, nil, nil)
+
+	assert.True(mockCalled, "mock is not called")
+	assert.Equal(0, controllerId.ErrorCode, "wrong response data")
+}

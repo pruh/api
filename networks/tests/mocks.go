@@ -29,6 +29,9 @@ type MockOmadaApi struct {
 		siteId *string) (*OmadaResponse, error)
 	MockCreateTimeRange func(omadaControllerId *string, cookies []*http.Cookie, loginToken *string,
 		siteId *string, trData *Data) (*OmadaResponse, error)
+
+	MockQueryAPUrlFilters func(omadaControllerId *string, cookies []*http.Cookie,
+		loginToken *string, siteId *string) (*OmadaResponse, error)
 }
 
 func (oa *MockOmadaApi) GetControllerId() (*OmadaResponse, error) {
@@ -69,13 +72,20 @@ func (oa *MockOmadaApi) CreateTimeRange(omadaControllerId *string, cookies []*ht
 	return oa.MockCreateTimeRange(omadaControllerId, cookies, loginToken, siteId, trData)
 }
 
+func (oa *MockOmadaApi) QueryAPUrlFilters(omadaControllerId *string, cookies []*http.Cookie, loginToken *string,
+	siteId *string) (*OmadaResponse, error) {
+	return oa.MockQueryAPUrlFilters(omadaControllerId, cookies, loginToken, siteId)
+}
+
 type MockUrlFilterController struct {
-	MockQueryUrlFilters       func(ssidData *Data) (*[]UrlFilter, error)
+	MockQueryUrlFilters func(omadaControllerId *string, cookies []*http.Cookie,
+		loginToken *string, siteId *string, ssidData *Data) (*[]UrlFilter, error)
 	MockMaybeUpdateUrlFilters func() (*[]UrlFilter, error)
 }
 
-func (ufc MockUrlFilterController) QueryUrlFilters(ssidData *Data) (*[]UrlFilter, error) {
-	return ufc.MockQueryUrlFilters(ssidData)
+func (ufc MockUrlFilterController) QueryUrlFilters(omadaControllerId *string, cookies []*http.Cookie,
+	loginToken *string, siteId *string, ssidData *Data) (*[]UrlFilter, error) {
+	return ufc.MockQueryUrlFilters(omadaControllerId, cookies, loginToken, siteId, ssidData)
 }
 
 func (ufc MockUrlFilterController) MaybeUpdateUrlFilters() (*[]UrlFilter, error) {
@@ -84,7 +94,10 @@ func (ufc MockUrlFilterController) MaybeUpdateUrlFilters() (*[]UrlFilter, error)
 
 func NewMockUrlFilterController() MockUrlFilterController {
 	return MockUrlFilterController{
-		MockQueryUrlFilters:       func(ssidData *Data) (*[]UrlFilter, error) { return nil, nil },
+		MockQueryUrlFilters: func(omadaControllerId *string, cookies []*http.Cookie,
+			loginToken *string, siteId *string, ssidData *Data) (*[]UrlFilter, error) {
+			return nil, nil
+		},
 		MockMaybeUpdateUrlFilters: func() (*[]UrlFilter, error) { return nil, nil },
 	}
 }
