@@ -1,4 +1,4 @@
-name: docker base image update
+name: docker push on release
 
 on:
   release:
