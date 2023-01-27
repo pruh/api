@@ -1200,17 +1200,47 @@ func TestUpdateWifis_GetSsids(t *testing.T) {
 func TestUpdateWifis_UpdateSsid(t *testing.T) {
 	testsData := []struct {
 		description        string
+		requestBody        string
 		omadaResponseError bool
+		updated            bool
 		responseCode       int
 	}{
 		{
 			description:  "UpdateSsid happy path",
+			requestBody:  `{"radioOn":false,"uploadLimit":1024,"downloadLimit":2048}`,
+			updated:      true,
 			responseCode: http.StatusOK,
 		},
 		{
 			description:        "omada UpdateSsid response error",
+			requestBody:        `{"radioOn":true,"uploadLimit":1024,"downloadLimit":2048}`,
 			omadaResponseError: true,
+			updated:            false,
 			responseCode:       http.StatusBadGateway,
+		},
+		{
+			description:  "UpdateSsid update when only radio state update required",
+			requestBody:  `{"radioOn":false,"uploadLimit":0,"downloadLimit":0}`,
+			updated:      true,
+			responseCode: http.StatusOK,
+		},
+		{
+			description:  "UpdateSsid update when only down speed state update required",
+			requestBody:  `{"radioOn":true,"uploadLimit":0,"downloadLimit":2048}`,
+			updated:      true,
+			responseCode: http.StatusOK,
+		},
+		{
+			description:  "UpdateSsid update when only upload speed state update required",
+			requestBody:  `{"radioOn":true,"uploadLimit":1024,"downloadLimit":0}`,
+			updated:      true,
+			responseCode: http.StatusOK,
+		},
+		{
+			description:  "UpdateSsid not called when state is current",
+			requestBody:  `{"radioOn":true,"uploadLimit":0,"downloadLimit":0}`,
+			updated:      false,
+			responseCode: http.StatusOK,
 		},
 	}
 
@@ -1340,7 +1370,7 @@ func TestUpdateWifis_UpdateSsid(t *testing.T) {
 
 		w := httptest.NewRecorder()
 		req := httptest.NewRequest(http.MethodPost, "http://example.com/foo",
-			bytes.NewBuffer([]byte(`{"radioOn":false}`)))
+			bytes.NewBuffer([]byte(testData.requestBody)))
 
 		// setting mux vars for testing
 		vars := map[string]string{
@@ -1354,8 +1384,8 @@ func TestUpdateWifis_UpdateSsid(t *testing.T) {
 
 		assert.Equal(testData.responseCode, w.Code, "Response code is not correct")
 		if testData.responseCode == http.StatusOK {
-			assert.True(*netsResponse.Updated, "Response success body missing updated flag")
-			assert.True(netsResponse.Ssid != nil, "Response success body is incorrect")
+			assert.Equal(testData.updated, *netsResponse.Updated, "updated flag is incorrect")
+			assert.Equal("my_ssid", *netsResponse.Ssid, "ssid name is incorrect")
 			assert.True(netsResponse.RadioOn != nil, "Response success body is incorrect")
 		} else {
 			assert.True(len(*netsResponse.ErrorMessage) > 0, "Response error message is missing")
