@@ -1,6 +1,10 @@
 package networks
 
-import "net/http"
+import (
+	"net/http"
+
+	"golang.org/x/exp/slices"
+)
 
 // Controller to operatate with URL filters
 type urlFilterController struct {
@@ -29,12 +33,23 @@ func (ufc urlFilterController) QueryUrlFilters(omadaControllerId *string, cookie
 		return nil, err
 	}
 
-	var urlFilters []UrlFilter
+	urlFilters := []UrlFilter{}
 	for _, omadaFilter := range *resp.Result.Data {
+		if *omadaFilter.SourceType != 2 {
+			// only accepct SSID filters
+			continue
+		}
+		if *omadaFilter.SourceIds == nil ||
+			!slices.Contains(*omadaFilter.SourceIds, *ssidData.Id) {
+			// skip filters that do not belong to requested ssid
+			continue
+		}
 		var urlFilter UrlFilter
 		urlFilter.Name = omadaFilter.Name
 		urlFilter.BypassFilter = NewBool(*omadaFilter.Policy == 1)
-		copy(*omadaFilter.Urls, *urlFilter.Urls)
+		urlFilter.Urls = omadaFilter.Urls
+
+		urlFilters = append(urlFilters, urlFilter)
 	}
 
 	return &urlFilters, nil
