@@ -219,6 +219,8 @@ func TestGetWifi(t *testing.T) {
 		if testData.responseCode == http.StatusOK {
 			assert.True(netsResponse.Ssid != nil, "Response success body is incorrect")
 			assert.True(netsResponse.RadioOn != nil, "Response success body is incorrect")
+			assert.True(netsResponse.UploadLimit != nil, "Response success body missing upload limit")
+			assert.True(netsResponse.DownloadLimit != nil, "Response success body missing download limit")
 		} else {
 			assert.True(len(*netsResponse.ErrorMessage) > 0, "Response error message is missing")
 		}
@@ -982,11 +984,15 @@ func TestUpdateWifis_GetSsids(t *testing.T) {
 		omadaResponseError bool
 		includeSsids       bool
 		responseCode       int
+		responseUpLimit    *int
+		responseDownLimit  *int
 	}{
 		{
-			description:  "GetSsids happy path",
-			includeSsids: true,
-			responseCode: http.StatusOK,
+			description:       "GetSsids happy path",
+			includeSsids:      true,
+			responseCode:      http.StatusOK,
+			responseUpLimit:   NewInt(DISABLED),
+			responseDownLimit: NewInt(1),
 		},
 		{
 			description:        "omada GetSites response error",
@@ -1071,6 +1077,14 @@ func TestUpdateWifis_GetSsids(t *testing.T) {
 
 					var res *Result
 					if testData.includeSsids {
+						var upLimitEnable *bool
+						if testData.responseUpLimit != nil {
+							upLimitEnable = NewBool(*testData.responseUpLimit != DISABLED)
+						}
+						var downLimitEnable *bool
+						if testData.responseDownLimit != nil {
+							downLimitEnable = NewBool(*testData.responseDownLimit != DISABLED)
+						}
 						res = &Result{
 							Data: &[]Data{
 								{
@@ -1078,8 +1092,8 @@ func TestUpdateWifis_GetSsids(t *testing.T) {
 									Name:               NewStr("my_ssid"),
 									WlanScheduleEnable: NewBool(false),
 									RateLimit: &RateLimit{
-										UpLimitEnable:   NewBool(false),
-										DownLimitEnable: NewBool(false),
+										UpLimitEnable:   upLimitEnable,
+										DownLimitEnable: downLimitEnable,
 									},
 								},
 							},
@@ -1148,6 +1162,13 @@ func TestUpdateWifis_GetSsids(t *testing.T) {
 			assert.True(*netsResponse.Updated, "Response success body missing updated flag")
 			assert.True(netsResponse.Ssid != nil, "Response success body is incorrect")
 			assert.True(netsResponse.RadioOn != nil, "Response success body is incorrect")
+
+			if testData.responseUpLimit != nil {
+				assert.Equal(*testData.responseUpLimit, *netsResponse.UploadLimit, "upload limit is incorrect")
+			}
+			if testData.responseDownLimit != nil {
+				assert.Equal(*testData.responseDownLimit, *netsResponse.DownloadLimit, "download limit is incorrect")
+			}
 		} else {
 			assert.True(len(*netsResponse.ErrorMessage) > 0, "Response error message is missing")
 		}
