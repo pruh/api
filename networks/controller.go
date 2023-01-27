@@ -50,7 +50,7 @@ func (c *controller) GetWifi(w http.ResponseWriter, r *http.Request) {
 	params := mux.Vars(r)
 	ssid := params["ssid"]
 	if len(ssid) == 0 {
-		writeResponse(w, http.StatusBadRequest, ssid, nil, nil, nil, nil, nil,
+		writeErrorResponse(w, http.StatusBadRequest, ssid, nil,
 			errors.New("ssid is missing in the request parameters"))
 		return
 	}
@@ -59,7 +59,7 @@ func (c *controller) GetWifi(w http.ResponseWriter, r *http.Request) {
 	omadaIdResp, err := c.repository.GetControllerId()
 	if err != nil || omadaIdResp == nil ||
 		omadaIdResp.ErrorCode != 0 || omadaIdResp.Result.OmadacId == nil {
-		writeResponse(w, http.StatusBadGateway, ssid, nil, nil, nil, nil, omadaIdResp,
+		writeErrorResponse(w, http.StatusBadGateway, ssid, omadaIdResp,
 			fmt.Errorf("omada controller query error %v", err))
 		return
 	}
@@ -69,7 +69,7 @@ func (c *controller) GetWifi(w http.ResponseWriter, r *http.Request) {
 	omadaLoginResp, cookies, err := c.repository.Login(omadaIdResp.Result.OmadacId)
 	if err != nil || omadaLoginResp == nil || omadaLoginResp.ErrorCode != 0 || cookies == nil ||
 		omadaLoginResp.Result == nil || omadaLoginResp.Result.Token == nil {
-		writeResponse(w, http.StatusBadGateway, ssid, nil, nil, nil, nil, omadaLoginResp,
+		writeErrorResponse(w, http.StatusBadGateway, ssid, omadaLoginResp,
 			fmt.Errorf("omada login query error %v", err))
 		return
 	}
@@ -81,7 +81,7 @@ func (c *controller) GetWifi(w http.ResponseWriter, r *http.Request) {
 	if err != nil || omadaSitesResp == nil ||
 		omadaSitesResp.ErrorCode != 0 || omadaSitesResp.Result == nil ||
 		omadaSitesResp.Result.Data == nil || len(*omadaSitesResp.Result.Data) == 0 {
-		writeResponse(w, http.StatusBadGateway, ssid, nil, nil, nil, nil, omadaSitesResp,
+		writeErrorResponse(w, http.StatusBadGateway, ssid, omadaSitesResp,
 			fmt.Errorf("omada sites query error %v", err))
 		return
 	}
@@ -93,7 +93,7 @@ func (c *controller) GetWifi(w http.ResponseWriter, r *http.Request) {
 	if err != nil || omadaWlansResp == nil ||
 		omadaWlansResp.ErrorCode != 0 || omadaWlansResp.Result == nil ||
 		omadaWlansResp.Result.Data == nil || len(*omadaWlansResp.Result.Data) == 0 {
-		writeResponse(w, http.StatusBadGateway, ssid, nil, nil, nil, nil, omadaWlansResp,
+		writeErrorResponse(w, http.StatusBadGateway, ssid, omadaWlansResp,
 			fmt.Errorf("omada wlans query error %v", err))
 		return
 	}
@@ -105,7 +105,7 @@ func (c *controller) GetWifi(w http.ResponseWriter, r *http.Request) {
 	if err != nil || omadaSsidsResp == nil ||
 		omadaSsidsResp.ErrorCode != 0 || omadaSsidsResp.Result == nil ||
 		omadaSsidsResp.Result.Data == nil || len(*omadaSsidsResp.Result.Data) == 0 {
-		writeResponse(w, http.StatusBadGateway, ssid, nil, nil, nil, nil, omadaSsidsResp,
+		writeErrorResponse(w, http.StatusBadGateway, ssid, omadaSsidsResp,
 			fmt.Errorf("omada ssids query error %v", err))
 		return
 	}
@@ -121,7 +121,7 @@ func (c *controller) GetWifi(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if ssidData == nil {
-		writeResponse(w, http.StatusNotFound, ssid, nil, nil, nil, nil, nil,
+		writeErrorResponse(w, http.StatusNotFound, ssid, nil,
 			errors.New("ssid with given name not found in configured networks"))
 		return
 	}
@@ -136,7 +136,7 @@ func (c *controller) UpdateWifi(w http.ResponseWriter, r *http.Request) {
 	params := mux.Vars(r)
 	ssid := params["ssid"]
 	if len(ssid) == 0 {
-		writeResponse(w, http.StatusBadRequest, ssid, nil, nil, nil, nil, nil,
+		writeErrorResponse(w, http.StatusBadRequest, ssid, nil,
 			errors.New("ssid is missing in the request parameters"))
 		return
 	}
@@ -144,7 +144,7 @@ func (c *controller) UpdateWifi(w http.ResponseWriter, r *http.Request) {
 	var ssidRequest NetworksSsidRequest
 	err := json.NewDecoder(r.Body).Decode(&ssidRequest)
 	if err != nil {
-		writeResponse(w, http.StatusBadRequest, ssid, nil, nil, nil, nil, nil,
+		writeErrorResponse(w, http.StatusBadRequest, ssid, nil,
 			fmt.Errorf("request is malformed %v", err))
 		return
 	}
@@ -158,7 +158,7 @@ func (c *controller) UpdateWifi(w http.ResponseWriter, r *http.Request) {
 	omadaIdResp, err := c.repository.GetControllerId()
 	if err != nil || omadaIdResp == nil ||
 		omadaIdResp.ErrorCode != 0 || omadaIdResp.Result.OmadacId == nil {
-		writeResponse(w, http.StatusBadGateway, ssid, nil, nil, nil, nil, omadaIdResp,
+		writeErrorResponse(w, http.StatusBadGateway, ssid, omadaIdResp,
 			fmt.Errorf("omada controller query error %v", err))
 		return
 	}
@@ -168,7 +168,7 @@ func (c *controller) UpdateWifi(w http.ResponseWriter, r *http.Request) {
 	omadaLoginResp, cookies, err := c.repository.Login(omadaIdResp.Result.OmadacId)
 	if err != nil || omadaLoginResp == nil || omadaLoginResp.ErrorCode != 0 || cookies == nil ||
 		omadaLoginResp.Result == nil || omadaLoginResp.Result.Token == nil {
-		writeResponse(w, http.StatusBadGateway, ssid, nil, nil, nil, nil, omadaLoginResp,
+		writeErrorResponse(w, http.StatusBadGateway, ssid, omadaLoginResp,
 			fmt.Errorf("omada login query error %v", err))
 		return
 	}
@@ -180,7 +180,7 @@ func (c *controller) UpdateWifi(w http.ResponseWriter, r *http.Request) {
 	if err != nil || omadaSitesResp == nil ||
 		omadaSitesResp.ErrorCode != 0 || omadaSitesResp.Result == nil ||
 		omadaSitesResp.Result.Data == nil || len(*omadaSitesResp.Result.Data) == 0 {
-		writeResponse(w, http.StatusBadGateway, ssid, nil, nil, nil, nil, omadaSitesResp,
+		writeErrorResponse(w, http.StatusBadGateway, ssid, omadaSitesResp,
 			fmt.Errorf("omada sites query error %v", err))
 		return
 	}
@@ -192,7 +192,7 @@ func (c *controller) UpdateWifi(w http.ResponseWriter, r *http.Request) {
 	if err != nil || omadaWlansResp == nil ||
 		omadaWlansResp.ErrorCode != 0 || omadaWlansResp.Result == nil ||
 		omadaWlansResp.Result.Data == nil || len(*omadaWlansResp.Result.Data) == 0 {
-		writeResponse(w, http.StatusBadGateway, ssid, nil, nil, nil, nil, omadaWlansResp,
+		writeErrorResponse(w, http.StatusBadGateway, ssid, omadaWlansResp,
 			fmt.Errorf("omada wlans query error %v", err))
 		return
 	}
@@ -204,7 +204,7 @@ func (c *controller) UpdateWifi(w http.ResponseWriter, r *http.Request) {
 	if err != nil || omadaSsidsResp == nil ||
 		omadaSsidsResp.ErrorCode != 0 || omadaSsidsResp.Result == nil ||
 		omadaSsidsResp.Result.Data == nil || len(*omadaSsidsResp.Result.Data) == 0 {
-		writeResponse(w, http.StatusBadGateway, ssid, nil, nil, nil, nil, omadaSsidsResp,
+		writeErrorResponse(w, http.StatusBadGateway, ssid, omadaSsidsResp,
 			fmt.Errorf("omada ssids query error %v", err))
 		return
 	}
@@ -220,7 +220,7 @@ func (c *controller) UpdateWifi(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if ssidData == nil {
-		writeResponse(w, http.StatusNotFound, ssid, nil, nil, nil, nil, nil,
+		writeErrorResponse(w, http.StatusNotFound, ssid, nil,
 			errors.New("ssid with given name not found in configured networks"))
 		return
 	}
@@ -246,7 +246,7 @@ func (c *controller) UpdateWifi(w http.ResponseWriter, r *http.Request) {
 
 		scheduleId, err := c.getTimeRange(omadaIdResp, cookies, omadaLoginResp.Result.Token, omadaSitesResp)
 		if err != nil {
-			writeResponse(w, http.StatusBadGateway, ssid, nil, nil, nil, nil, nil, err)
+			writeErrorResponse(w, http.StatusBadGateway, ssid, nil, err)
 			return
 		}
 
@@ -259,7 +259,7 @@ func (c *controller) UpdateWifi(w http.ResponseWriter, r *http.Request) {
 		(*omadaWlansResp.Result.Data)[0].Id, ssidData)
 
 	if err != nil || omadaUpdateSsidResp == nil || omadaUpdateSsidResp.ErrorCode != 0 {
-		writeResponse(w, http.StatusBadGateway, ssid, nil, nil, nil, nil, omadaUpdateSsidResp,
+		writeErrorResponse(w, http.StatusBadGateway, ssid, omadaUpdateSsidResp,
 			fmt.Errorf("can not update ssid %v", err))
 		return
 	}
@@ -272,6 +272,12 @@ func isRadioStateEqual(wlanScheduleEnable *bool, requestRadioOn *bool) bool {
 	return *requestRadioOn == !*wlanScheduleEnable
 }
 
+func writeErrorResponse(w http.ResponseWriter, statusCode int, ssid string,
+	upstreamResp *OmadaResponse, upstreamErr error) {
+	writeResponse(w, statusCode, ssid,
+		nil, nil, nil, nil, upstreamResp, upstreamErr)
+}
+
 func writeSuccessResponse(w http.ResponseWriter, ssid string, ssidData *Data, updated *bool) {
 	if ssidData == nil {
 		writeResponse(w, http.StatusOK, ssid, nil, nil, nil, updated, nil, nil)
@@ -280,13 +286,13 @@ func writeSuccessResponse(w http.ResponseWriter, ssid string, ssidData *Data, up
 
 	upRate, err := ssidData.ToUploadRateLimit()
 	if err != nil {
-		writeResponse(w, http.StatusBadGateway, ssid, nil, nil, nil, nil, nil,
+		writeErrorResponse(w, http.StatusBadGateway, ssid, nil,
 			fmt.Errorf("omada ssid upload rate limit error %v", err))
 		return
 	}
 	downRate, err := ssidData.ToDownloadRateLimit()
 	if err != nil {
-		writeResponse(w, http.StatusBadGateway, ssid, nil, nil, nil, nil, nil,
+		writeErrorResponse(w, http.StatusBadGateway, ssid, nil,
 			fmt.Errorf("omada ssid download rate limit error %v", err))
 		return
 	}
