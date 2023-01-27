@@ -40,7 +40,35 @@ func (d *Data) ToDownloadRateLimit() (*int, error) {
 		return nil, errors.New("download rate limit is not set for data")
 	}
 
-	return NewInt(*d.RateLimit.DownLimit * int(powInt(1024, *d.RateLimit.DownLimitType))), nil
+	return NewInt(*d.RateLimit.DownLimit * powInt(1024, *d.RateLimit.DownLimitType)), nil
+}
+
+func IsSpeedLimitEqual(
+	speedLimitEnable *bool,
+	speedLimit *int,
+	speedLimitType *int,
+	requestSpeedLimit *int) bool {
+	if requestSpeedLimit == nil {
+		// no speed limit in request
+		return true
+	}
+
+	if *requestSpeedLimit < 1 {
+		// request to set no speed limit
+		// speed is equal if speed limit not set
+		return !*speedLimitEnable
+	}
+
+	// request to set speed limit
+
+	if !*speedLimitEnable {
+		// speed is NOT equal if speed limit is NOT enabled
+		return false
+	}
+
+	// speed is equal if speed limit speed is the same
+	speedLimitKbps := *speedLimit * powInt(1024, *speedLimitType)
+	return speedLimitKbps == *requestSpeedLimit
 }
 
 func powInt(x, y int) int {
