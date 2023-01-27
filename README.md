@@ -130,7 +130,7 @@ The following HTTP methods are supported:
 
 ### Networks
 
-Networks are interacting with Omada portal to provide Radio On / Off and Speed Limiting capabilities for Wifi Networks. The purpose of the networks API is to control home sites, therefore the expectation is that there is only one site and one WLAN. If there are multiple of them, the first one is used.
+Networks are interacting with Omada portal to provide Radio On / Off and Speed Limiting capabilities for Wifi Networks. Rate limiting options are in kilobytes per second and values less than 1 will turn limiting off. The purpose of the networks API is to control home sites, therefore the expectation is that there is only one site and one WLAN. If there are multiple of them, the first one is used.
 
 * GET `api/v1/wifis/{ssid}` - query radio status and rate limit for `ssid`
 
@@ -139,8 +139,8 @@ Networks are interacting with Omada portal to provide Radio On / Off and Speed L
   {
     "ssid": "SSID",
     "radioOn": true,
-    "uploadLimit": 1024, # in KBPS, value < 1 no limit
-    "DownloadLimit": 0 # in KBPS, value < 1 no limit
+    "uploadLimit": 1024,
+    "DownloadLimit": 0
   }
   ```
 
@@ -150,8 +150,8 @@ Networks are interacting with Omada portal to provide Radio On / Off and Speed L
   ```json
   {
     "radioOn": false,
-    "uploadLimit": 1024, # in KBPS, value < 1 to disable limit
-    "DownloadLimit": 0 # in KBPS, value < 1 to disable limit
+    "uploadLimit": 1024,
+    "DownloadLimit": 0
   }
   ```
 
@@ -160,8 +160,8 @@ Networks are interacting with Omada portal to provide Radio On / Off and Speed L
   {
     "ssid": "SSID",
     "radioOn": false,
-    "uploadLimit": 1024, # in KBPS, value < 1 no limit
-    "DownloadLimit": 0, # in KBPS, value < 1 no limit
+    "uploadLimit": 1024,
+    "DownloadLimit": 0,
     "updated": true
   }
   ```
