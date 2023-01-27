@@ -1042,7 +1042,8 @@ func TestUpdateWifis_GetSsids(t *testing.T) {
 
 					return resp, cookies, nil
 				},
-				MockGetSites: func(omadaControllerId *string, cookies []*http.Cookie, loginToken *string) (*OmadaResponse, error) {
+				MockGetSites: func(omadaControllerId *string, cookies []*http.Cookie,
+					loginToken *string) (*OmadaResponse, error) {
 					resp := &OmadaResponse{
 						ErrorCode: 0,
 						Msg:       NewStr("test"),
@@ -1053,7 +1054,8 @@ func TestUpdateWifis_GetSsids(t *testing.T) {
 
 					return resp, nil
 				},
-				MockGetWlans: func(omadaControllerId *string, cookies []*http.Cookie, loginToken *string, siteId *string) (*OmadaResponse, error) {
+				MockGetWlans: func(omadaControllerId *string, cookies []*http.Cookie,
+					loginToken *string, siteId *string) (*OmadaResponse, error) {
 					resp := &OmadaResponse{
 						ErrorCode: 0,
 						Msg:       NewStr("test"),
@@ -1078,12 +1080,28 @@ func TestUpdateWifis_GetSsids(t *testing.T) {
 					var res *Result
 					if testData.includeSsids {
 						var upLimitEnable *bool
+						var upLimit *int
+						var upLimitType *int
 						if testData.responseUpLimit != nil {
 							upLimitEnable = NewBool(*testData.responseUpLimit != DISABLED)
+							if *testData.responseUpLimit > 0 {
+								upLimit = NewInt(*testData.responseUpLimit)
+							} else {
+								upLimit = NewInt(0)
+							}
+							upLimitType = NewInt(0)
 						}
 						var downLimitEnable *bool
+						var downLimit *int
+						var downLimitType *int
 						if testData.responseDownLimit != nil {
 							downLimitEnable = NewBool(*testData.responseDownLimit != DISABLED)
+							if *testData.responseDownLimit > 0 {
+								downLimit = NewInt(*testData.responseDownLimit)
+							} else {
+								downLimit = NewInt(0)
+							}
+							downLimitType = NewInt(0)
 						}
 						res = &Result{
 							Data: &[]Data{
@@ -1093,7 +1111,11 @@ func TestUpdateWifis_GetSsids(t *testing.T) {
 									WlanScheduleEnable: NewBool(false),
 									RateLimit: &RateLimit{
 										UpLimitEnable:   upLimitEnable,
+										UpLimitType:     upLimitType,
+										UpLimit:         upLimit,
 										DownLimitEnable: downLimitEnable,
+										DownLimitType:   downLimitType,
+										DownLimit:       downLimit,
 									},
 								},
 							},
@@ -1179,17 +1201,14 @@ func TestUpdateWifis_UpdateSsid(t *testing.T) {
 	testsData := []struct {
 		description        string
 		omadaResponseError bool
-		includeSsids       bool
 		responseCode       int
 	}{
 		{
 			description:  "UpdateSsid happy path",
-			includeSsids: true,
 			responseCode: http.StatusOK,
 		},
 		{
 			description:        "omada UpdateSsid response error",
-			includeSsids:       true,
 			omadaResponseError: true,
 			responseCode:       http.StatusBadGateway,
 		},

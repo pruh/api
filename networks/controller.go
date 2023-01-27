@@ -227,49 +227,85 @@ func (c *controller) UpdateWifi(w http.ResponseWriter, r *http.Request) {
 
 	glog.Infof("Omada ssid id %s", *ssidData.Id)
 
-	if isRadioStateEqual(ssidData.WlanScheduleEnable, ssidRequest.RadioOn) &&
-		IsSpeedLimitEqual(ssidData.RateLimit.DownLimitEnable, ssidData.RateLimit.DownLimit,
-			ssidData.RateLimit.DownLimitType, ssidRequest.DownloadLimit) &&
-		IsSpeedLimitEqual(ssidData.RateLimit.UpLimitEnable, ssidData.RateLimit.UpLimit,
-			ssidData.RateLimit.UpLimitType, ssidRequest.UploadLimit) {
+	needtoUpdate := false
+	if needRadioStateUpdate(ssidData.WlanScheduleEnable, ssidRequest.RadioOn) {
+		glog.Info("need to update radio state")
 
-		glog.Info("no need to update ssid")
+		needtoUpdate = true
 
-		writeSuccessResponse(w, ssid, ssidData, NewBool(false))
-		return
+		ssidData.WlanScheduleEnable = NewBool(!*ssidRequest.RadioOn)
+		if *ssidData.WlanScheduleEnable {
+			glog.Infof("Looking for time range for ssid %s", *ssidData.Id)
+
+			scheduleId, err := c.getTimeRange(omadaIdResp, cookies,
+				omadaLoginResp.Result.Token, omadaSitesResp)
+			if err != nil {
+				writeErrorResponse(w, http.StatusBadGateway, ssid, nil, err)
+				return
+			}
+
+			ssidData.Action = NewInt(0)
+			ssidData.ScheduleId = scheduleId
+		}
 	}
 
-	// TODO only if not null
-	ssidData.WlanScheduleEnable = NewBool(!*ssidRequest.RadioOn)
-	if *ssidData.WlanScheduleEnable {
-		glog.Infof("Looking for time range for ssid %s", *ssidData.Id)
+	if !IsSpeedLimitEqual(ssidData.RateLimit.DownLimitEnable, ssidData.RateLimit.DownLimit,
+		ssidData.RateLimit.DownLimitType, ssidRequest.DownloadLimit) {
 
-		scheduleId, err := c.getTimeRange(omadaIdResp, cookies, omadaLoginResp.Result.Token, omadaSitesResp)
-		if err != nil {
-			writeErrorResponse(w, http.StatusBadGateway, ssid, nil, err)
+		glog.Info("need to update download limit")
+
+		needtoUpdate = true
+
+		ssidData.RateLimit.DownLimitEnable = NewBool(*ssidRequest.DownloadLimit > 0)
+		if *ssidRequest.DownloadLimit > 0 {
+			ssidData.RateLimit.DownLimit = NewInt(*ssidRequest.DownloadLimit)
+		} else {
+			ssidData.RateLimit.DownLimit = NewInt(0)
+		}
+		ssidData.RateLimit.DownLimitType = NewInt(0)
+
+		ssidData.RateLimit.RateLimitId = nil
+	}
+
+	if !IsSpeedLimitEqual(ssidData.RateLimit.UpLimitEnable, ssidData.RateLimit.UpLimit,
+		ssidData.RateLimit.UpLimitType, ssidRequest.UploadLimit) {
+
+		glog.Info("need to update upload limit")
+
+		needtoUpdate = true
+
+		ssidData.RateLimit.UpLimitEnable = NewBool(*ssidRequest.UploadLimit > 0)
+		if *ssidRequest.UploadLimit > 0 {
+			ssidData.RateLimit.UpLimit = NewInt(*ssidRequest.UploadLimit)
+		} else {
+			ssidData.RateLimit.UpLimit = NewInt(0)
+		}
+		ssidData.RateLimit.UpLimitType = NewInt(0)
+
+		ssidData.RateLimit.RateLimitId = nil
+	}
+
+	if needtoUpdate {
+		omadaUpdateSsidResp, err := c.repository.UpdateSsid(omadaIdResp.Result.OmadacId, cookies,
+			omadaLoginResp.Result.Token, (*omadaSitesResp.Result.Data)[0].Id,
+			(*omadaWlansResp.Result.Data)[0].Id, ssidData)
+
+		if err != nil || omadaUpdateSsidResp == nil || omadaUpdateSsidResp.ErrorCode != 0 {
+			writeErrorResponse(w, http.StatusBadGateway, ssid, omadaUpdateSsidResp,
+				fmt.Errorf("can not update ssid %v", err))
 			return
 		}
-
-		ssidData.Action = NewInt(0)
-		ssidData.ScheduleId = scheduleId
 	}
 
-	omadaUpdateSsidResp, err := c.repository.UpdateSsid(omadaIdResp.Result.OmadacId, cookies,
-		omadaLoginResp.Result.Token, (*omadaSitesResp.Result.Data)[0].Id,
-		(*omadaWlansResp.Result.Data)[0].Id, ssidData)
-
-	if err != nil || omadaUpdateSsidResp == nil || omadaUpdateSsidResp.ErrorCode != 0 {
-		writeErrorResponse(w, http.StatusBadGateway, ssid, omadaUpdateSsidResp,
-			fmt.Errorf("can not update ssid %v", err))
-		return
-	}
-
-	writeSuccessResponse(w, ssid, ssidData, NewBool(true))
+	writeSuccessResponse(w, ssid, ssidData, NewBool(needtoUpdate))
 }
 
-func isRadioStateEqual(wlanScheduleEnable *bool, requestRadioOn *bool) bool {
-	// state is equal if request radio state is NOT equal schedule enabled state
-	return *requestRadioOn == !*wlanScheduleEnable
+func needRadioStateUpdate(wlanScheduleEnable *bool, requestRadioOn *bool) bool {
+	// radio state needs update if request current radio state is equal to schedule enabled state
+	if requestRadioOn == nil {
+		return false
+	}
+	return *requestRadioOn == *wlanScheduleEnable
 }
 
 func writeErrorResponse(w http.ResponseWriter, statusCode int, ssid string,
