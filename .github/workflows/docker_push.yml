@@ -1,4 +1,4 @@
-name: Docker
+name: docker base image update
 
 on:
   schedule:
