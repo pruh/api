@@ -92,7 +92,18 @@ func TestGetWifi(t *testing.T) {
 		controller := NewControllerWithParams(
 			NewConfigSafe(NewStr("8080"), NewStr("1"), NewStr("123"), nil, nil, nil,
 				NewStr(testData.requestUrl), nil, nil),
-			NewMockUrlFilterController(),
+			MockUrlFilterController{
+				MockQueryUrlFilters: func(omadaControllerId *string, cookies []*http.Cookie,
+					loginToken *string, siteId *string, ssidData *Data) (*[]UrlFilter, error) {
+					return &[]UrlFilter{
+						{
+							Name:         NewStr("name"),
+							BypassFilter: NewBool(true),
+							Urls:         &[]string{"filter"},
+						},
+					}, nil
+				},
+			},
 			NewRepository(
 				&MockOmadaApi{
 					MockGetControllerId: func() (*OmadaResponse, error) {
@@ -223,6 +234,13 @@ func TestGetWifi(t *testing.T) {
 			assert.True(netsResponse.RadioOn != nil, "Response success body is incorrect")
 			assert.True(netsResponse.UploadLimit != nil, "Response success body missing upload limit")
 			assert.True(netsResponse.DownloadLimit != nil, "Response success body missing download limit")
+			assert.Equal([]UrlFilter{
+				{
+					Name:         NewStr("name"),
+					BypassFilter: NewBool(true),
+					Urls:         &[]string{"filter"},
+				},
+			}, *netsResponse.UrlFilters, "Response success body missing url filters")
 		} else {
 			assert.True(len(*netsResponse.ErrorMessage) > 0, "Response error message is missing")
 		}
