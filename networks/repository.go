@@ -53,7 +53,22 @@ func (r *Repository) CreateTimeRange(omadaControllerId *string, cookies []*http.
 	return r.omadaApi.CreateTimeRange(omadaControllerId, cookies, loginToken, siteId, timeRangeData)
 }
 
-func (r *Repository) QueryAPUrlFilters(omadaControllerId *string, cookies []*http.Cookie,
+func (r *Repository) QueryUrlFilters(omadaControllerId *string, cookies []*http.Cookie,
 	loginToken *string, siteId *string) (*OmadaResponse, error) {
-	return r.omadaApi.QueryAPUrlFilters(omadaControllerId, cookies, loginToken, siteId)
+	return r.omadaApi.QueryUrlFilters(omadaControllerId, cookies, loginToken, siteId)
+}
+
+func (r *Repository) CreateUrlFilter(omadaControllerId *string, cookies []*http.Cookie,
+	loginToken *string, siteId *string, urlFilterData *Data) (*OmadaResponse, error) {
+	return r.omadaApi.CreateUrlFilter(omadaControllerId, cookies, loginToken, siteId, urlFilterData)
+}
+
+func (r *Repository) UpdateUrlFilter(omadaControllerId *string, cookies []*http.Cookie,
+	loginToken *string, siteId *string, urlFilterData *Data) (*OmadaResponse, error) {
+	return r.omadaApi.CreateUrlFilter(omadaControllerId, cookies, loginToken, siteId, urlFilterData)
+}
+
+func (r *Repository) DeleteUrlFilter(omadaControllerId *string, cookies []*http.Cookie,
+	loginToken *string, siteId *string, urlFilterId *string) (*OmadaResponse, error) {
+	return r.omadaApi.DeleteUrlFilter(omadaControllerId, cookies, loginToken, siteId, urlFilterId)
 }

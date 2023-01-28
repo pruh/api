@@ -995,7 +995,7 @@ func TestQueryAPUrlFilters(t *testing.T) {
 				NewStr(testData.omadaUrl), nil, nil),
 			&mockHttpClient)
 
-		resp, err := omadaApi.QueryAPUrlFilters(testData.omadacId, testData.cookies, testData.loginToken,
+		resp, err := omadaApi.QueryUrlFilters(testData.omadacId, testData.cookies, testData.loginToken,
 			testData.siteId)
 		if testData.expectError {
 			assert.True(err != nil, "should return error")

@@ -312,12 +312,15 @@ func (c *controller) UpdateWifi(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	uf, err := c.ufc.MaybeUpdateUrlFilters()
+	uf, updated, err := c.ufc.MaybeUpdateUrlFilters(omadaIdResp.Result.OmadacId, cookies,
+		omadaLoginResp.Result.Token, (*omadaSitesResp.Result.Data)[0].Id, ssidData, ssidRequest.UrlFilters)
 	if err != nil {
 		writeErrorResponse(w, http.StatusBadGateway, ssid, nil,
 			fmt.Errorf("can not update url filters %v", err))
 		return
 	}
+
+	needtoUpdate = needtoUpdate || *updated
 
 	writeSuccessResponse(w, ssid, ssidData, uf, NewBool(needtoUpdate))
 }

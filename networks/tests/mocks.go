@@ -30,8 +30,12 @@ type MockOmadaApi struct {
 	MockCreateTimeRange func(omadaControllerId *string, cookies []*http.Cookie, loginToken *string,
 		siteId *string, trData *Data) (*OmadaResponse, error)
 
-	MockQueryAPUrlFilters func(omadaControllerId *string, cookies []*http.Cookie,
+	MockQueryUrlFilters func(omadaControllerId *string, cookies []*http.Cookie,
 		loginToken *string, siteId *string) (*OmadaResponse, error)
+	MockCreateUrlFilter func(omadaControllerId *string, cookies []*http.Cookie,
+		loginToken *string, siteId *string, urlFilterData *Data) (*OmadaResponse, error)
+	MockDeleteUrlFilter func(omadaControllerId *string, cookies []*http.Cookie,
+		loginToken *string, siteId *string, urlFilterId *string) (*OmadaResponse, error)
 }
 
 func (oa *MockOmadaApi) GetControllerId() (*OmadaResponse, error) {
@@ -72,15 +76,27 @@ func (oa *MockOmadaApi) CreateTimeRange(omadaControllerId *string, cookies []*ht
 	return oa.MockCreateTimeRange(omadaControllerId, cookies, loginToken, siteId, trData)
 }
 
-func (oa *MockOmadaApi) QueryAPUrlFilters(omadaControllerId *string, cookies []*http.Cookie, loginToken *string,
+func (oa *MockOmadaApi) QueryUrlFilters(omadaControllerId *string, cookies []*http.Cookie, loginToken *string,
 	siteId *string) (*OmadaResponse, error) {
-	return oa.MockQueryAPUrlFilters(omadaControllerId, cookies, loginToken, siteId)
+	return oa.MockQueryUrlFilters(omadaControllerId, cookies, loginToken, siteId)
+}
+
+func (oa *MockOmadaApi) CreateUrlFilter(omadaControllerId *string, cookies []*http.Cookie,
+	loginToken *string, siteId *string, urlFilterData *Data) (*OmadaResponse, error) {
+	return oa.MockCreateUrlFilter(omadaControllerId, cookies, loginToken, siteId, urlFilterData)
+}
+
+func (oa *MockOmadaApi) DeleteUrlFilter(omadaControllerId *string, cookies []*http.Cookie,
+	loginToken *string, siteId *string, urlFilterId *string) (*OmadaResponse, error) {
+	return oa.MockDeleteUrlFilter(omadaControllerId, cookies, loginToken, siteId, urlFilterId)
 }
 
 type MockUrlFilterController struct {
 	MockQueryUrlFilters func(omadaControllerId *string, cookies []*http.Cookie,
 		loginToken *string, siteId *string, ssidData *Data) (*[]UrlFilter, error)
-	MockMaybeUpdateUrlFilters func() (*[]UrlFilter, error)
+	MockMaybeUpdateUrlFilters func(omadaControllerId *string,
+		cookies []*http.Cookie, loginToken *string, siteId *string, ssidData *Data,
+		requestedFilters *[]UrlFilter) (*[]UrlFilter, *bool, error)
 }
 
 func (ufc MockUrlFilterController) QueryUrlFilters(omadaControllerId *string, cookies []*http.Cookie,
@@ -88,16 +104,35 @@ func (ufc MockUrlFilterController) QueryUrlFilters(omadaControllerId *string, co
 	return ufc.MockQueryUrlFilters(omadaControllerId, cookies, loginToken, siteId, ssidData)
 }
 
-func (ufc MockUrlFilterController) MaybeUpdateUrlFilters() (*[]UrlFilter, error) {
-	return ufc.MockMaybeUpdateUrlFilters()
+func (ufc MockUrlFilterController) MaybeUpdateUrlFilters(omadaControllerId *string,
+	cookies []*http.Cookie, loginToken *string, siteId *string, ssidData *Data,
+	requestedFilters *[]UrlFilter) (*[]UrlFilter, *bool, error) {
+	return ufc.MockMaybeUpdateUrlFilters(omadaControllerId,
+		cookies, loginToken, siteId, ssidData, requestedFilters)
 }
 
 func NewMockUrlFilterController() MockUrlFilterController {
 	return MockUrlFilterController{
 		MockQueryUrlFilters: func(omadaControllerId *string, cookies []*http.Cookie,
 			loginToken *string, siteId *string, ssidData *Data) (*[]UrlFilter, error) {
-			return nil, nil
+			return &[]UrlFilter{
+				{
+					Name:         NewStr("test"),
+					BypassFilter: NewBool(false),
+					Urls:         &[]string{"test_url"},
+				},
+			}, nil
 		},
-		MockMaybeUpdateUrlFilters: func() (*[]UrlFilter, error) { return nil, nil },
+		MockMaybeUpdateUrlFilters: func(omadaControllerId *string, cookies []*http.Cookie,
+			loginToken *string, siteId *string, ssidData *Data,
+			requestedFilters *[]UrlFilter) (*[]UrlFilter, *bool, error) {
+			return &[]UrlFilter{
+				{
+					Name:         NewStr("test"),
+					BypassFilter: NewBool(false),
+					Urls:         &[]string{"test_url"},
+				},
+			}, NewBool(false), nil
+		},
 	}
 }

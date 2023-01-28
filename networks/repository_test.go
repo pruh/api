@@ -253,7 +253,7 @@ func TestRepoQueryAPUrlFilters(t *testing.T) {
 	var mockCalled = false
 
 	mockOmadaApi := MockOmadaApi{
-		MockQueryAPUrlFilters: func(omadaControllerId *string, cookies []*http.Cookie,
+		MockQueryUrlFilters: func(omadaControllerId *string, cookies []*http.Cookie,
 			loginToken *string, siteId *string) (*OmadaResponse, error) {
 			resp := &OmadaResponse{
 				ErrorCode: 0,
@@ -270,7 +270,7 @@ func TestRepoQueryAPUrlFilters(t *testing.T) {
 
 	assert := assert.New(t)
 
-	controllerId, _ := repo.QueryAPUrlFilters(nil, nil, nil, nil)
+	controllerId, _ := repo.QueryUrlFilters(nil, nil, nil, nil)
 
 	assert.True(mockCalled, "mock is not called")
 	assert.Equal(0, controllerId.ErrorCode, "wrong response data")

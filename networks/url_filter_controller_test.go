@@ -106,7 +106,7 @@ func TestQueryUrlFilters(t *testing.T) {
 		t.Logf("tesing %+v", testData.description)
 
 		ufc := NewUrlFilterController(NewRepository(&MockOmadaApi{
-			MockQueryAPUrlFilters: func(omadaControllerId *string, cookies []*http.Cookie,
+			MockQueryUrlFilters: func(omadaControllerId *string, cookies []*http.Cookie,
 				loginToken, siteId *string) (*OmadaResponse, error) {
 				if testData.expectError {
 					return nil, errors.New("test")
