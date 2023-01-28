@@ -1031,7 +1031,7 @@ func TestQueryUrlFilters(t *testing.T) {
 	}
 }
 
-func TestCreateUrlFilters(t *testing.T) {
+func TestCreateUrlFilter(t *testing.T) {
 	testsData := []struct {
 		description    string
 		omadaUrl       string
@@ -1039,9 +1039,9 @@ func TestCreateUrlFilters(t *testing.T) {
 		loginToken     *string
 		cookies        []*http.Cookie
 		siteId         *string
+		filterData     *Data
 		expectError    bool
 		responseCode   int
-		responseBody   string
 		omadaErrorCode int
 	}{
 		{
@@ -1055,53 +1055,17 @@ func TestCreateUrlFilters(t *testing.T) {
 					Value: "cookie_value",
 				},
 			},
-			siteId:       NewStr("site_id"),
-			expectError:  false,
-			responseCode: http.StatusOK,
-			responseBody: `{
-				"errorCode": 0,
-				"msg": "Success.",
-				"result": {
-					"data": [
-						{
-							"id": "1",
-							"index": 1,
-							"siteId": "site_id",
-							"type": "ap",
-							"entryId": 123,
-							"name": "Block List 1",
-							"status": true,
-							"policy": 0,
-							"sourceType": 2,
-							"sourceIds": [
-								"ssid_id_1",
-								"ssid_id_2"
-							],
-							"urls": [
-								"*google.com*",
-								"*goo.gl*"
-							]
-						},
-						{
-							"id": "2",
-							"index": 2,
-							"siteId": "site_id",
-							"type": "ap",
-							"entryId": 321,
-							"name": "Block List 2",
-							"status": false,
-							"policy": 1,
-							"sourceType": 2,
-							"sourceIds": [
-								"ssid_id_1"
-							],
-							"urls": [
-								"*.msn.com"
-							]
-						}
-					]
-				}
-			}`,
+			siteId: NewStr("site_id"),
+			filterData: &Data{
+				Name:       NewStr("test name"),
+				Status:     NewBool(true),
+				Policy:     NewInt(ENABLE_FILTERING),
+				SourceType: NewInt(SSID_SOURCE_TYPE),
+				SourceIds:  &[]string{"my_ssid_id"},
+				Urls:       &[]string{"some_url"},
+			},
+			expectError:    false,
+			responseCode:   http.StatusOK,
 			omadaErrorCode: 0,
 		},
 		{
@@ -1118,7 +1082,6 @@ func TestCreateUrlFilters(t *testing.T) {
 			siteId:         NewStr("site_id"),
 			expectError:    true,
 			responseCode:   http.StatusInternalServerError,
-			responseBody:   `{}`,
 			omadaErrorCode: 0,
 		},
 	}
@@ -1130,7 +1093,7 @@ func TestCreateUrlFilters(t *testing.T) {
 
 		mockHttpClient := MockHTTPClient{
 			MockDo: func(req *http.Request) (*http.Response, error) {
-				assert.Equal(fmt.Sprintf("%s/%s/api/v2/sites/%s/setting/firewall/urlfilterings?type=ap",
+				assert.Equal(fmt.Sprintf("%s/%s/api/v2/sites/%s/setting/firewall/urlfilterings",
 					testData.omadaUrl, *testData.omadacId, *testData.siteId),
 					req.URL.String(), "Omada request url is not correct")
 
@@ -1144,7 +1107,7 @@ func TestCreateUrlFilters(t *testing.T) {
 
 				w := httptest.NewRecorder()
 				w.WriteHeader(testData.responseCode)
-				if _, err := w.WriteString(testData.responseBody); err != nil {
+				if _, err := w.WriteString(`{"errorCode":0,"msg":"Success."}`); err != nil {
 					panic(fmt.Sprintf("Error writing body: %s", err))
 				}
 
@@ -1157,38 +1120,205 @@ func TestCreateUrlFilters(t *testing.T) {
 				NewStr(testData.omadaUrl), nil, nil),
 			&mockHttpClient)
 
-		resp, err := omadaApi.QueryUrlFilters(testData.omadacId, testData.cookies, testData.loginToken,
-			testData.siteId)
+		resp, err := omadaApi.CreateUrlFilter(testData.omadacId, testData.cookies, testData.loginToken,
+			testData.siteId, testData.filterData)
 		if testData.expectError {
 			assert.True(err != nil, "should return error")
 			continue
 		}
 
 		assert.Equal(testData.omadaErrorCode, resp.ErrorCode, "Error code is not correct")
-		assert.Equal([]Data{
-			{
-				Id:         NewStr("1"),
-				Name:       NewStr("Block List 1"),
-				SiteId:     NewStr("site_id"),
-				Policy:     NewInt(0),
-				Type:       NewStr("ap"),
-				EntryId:    NewInt(123),
-				Status:     NewBool(true),
-				SourceType: NewInt(2),
-				Urls:       &[]string{"*google.com*", "*goo.gl*"},
-				SourceIds:  &[]string{"ssid_id_1", "ssid_id_2"},
-			}, {
-				Id:         NewStr("2"),
-				Name:       NewStr("Block List 2"),
-				SiteId:     NewStr("site_id"),
-				Policy:     NewInt(1),
-				Type:       NewStr("ap"),
-				EntryId:    NewInt(321),
-				Status:     NewBool(false),
-				SourceType: NewInt(2),
-				Urls:       &[]string{"*.msn.com"},
-				SourceIds:  &[]string{"ssid_id_1"},
+	}
+}
+
+func TestUpdateUrlFilter(t *testing.T) {
+	testsData := []struct {
+		description    string
+		omadaUrl       string
+		omadacId       *string
+		loginToken     *string
+		cookies        []*http.Cookie
+		siteId         *string
+		urlFilter      *Data
+		expectError    bool
+		responseCode   int
+		omadaErrorCode int
+	}{
+		{
+			description: "happy path",
+			omadaUrl:    "https://omada.example.com",
+			omadacId:    NewStr("omada_cid"),
+			loginToken:  NewStr("login_token"),
+			cookies: []*http.Cookie{
+				{
+					Name:  "cookie_name",
+					Value: "cookie_value",
+				},
 			},
-		}, (*resp.Result.Data), "Response is incorrect")
+			siteId: NewStr("site_id"),
+			urlFilter: &Data{
+				Id: NewStr("filter_id"),
+			},
+			expectError:    false,
+			responseCode:   http.StatusOK,
+			omadaErrorCode: 0,
+		},
+		{
+			description: "upstream error",
+			omadaUrl:    "https://omada.example.com",
+			omadacId:    NewStr("omada_cid"),
+			loginToken:  NewStr("login_token"),
+			cookies: []*http.Cookie{
+				{
+					Name:  "cookie_name",
+					Value: "cookie_value",
+				},
+			},
+			siteId: NewStr("site_id"),
+			urlFilter: &Data{
+				Id: NewStr("filter_id"),
+			},
+			expectError:    true,
+			responseCode:   http.StatusInternalServerError,
+			omadaErrorCode: 0,
+		},
+	}
+
+	assert := assert.New(t)
+
+	for _, testData := range testsData {
+		t.Logf("tesing %+v", testData.description)
+
+		mockHttpClient := MockHTTPClient{
+			MockDo: func(req *http.Request) (*http.Response, error) {
+				assert.Equal(fmt.Sprintf("%s/%s/api/v2/sites/%s/setting/firewall/urlfilterings/%s",
+					testData.omadaUrl, *testData.omadacId, *testData.siteId, *testData.urlFilter.Id),
+					req.URL.String(), "Omada request url is not correct")
+
+				assert.Equal(testData.cookies, req.Cookies(), "cookie is missing")
+				assert.Equal(*testData.loginToken, req.Header.Get("Csrf-token"), "Login token is missing")
+
+				var respErr error
+				if testData.responseCode != http.StatusOK {
+					respErr = errors.New("test error")
+				}
+
+				w := httptest.NewRecorder()
+				w.WriteHeader(testData.responseCode)
+				if _, err := w.WriteString(`{"errorCode":0,"msg":"Success."}`); err != nil {
+					panic(fmt.Sprintf("Error writing body: %s", err))
+				}
+
+				return w.Result(), respErr
+			},
+		}
+
+		omadaApi := NewOmadaApi(
+			NewConfigSafe(NewStr("8080"), NewStr("1"), NewStr("123"), nil, nil, nil,
+				NewStr(testData.omadaUrl), nil, nil),
+			&mockHttpClient)
+
+		resp, err := omadaApi.UpdateUrlFilter(testData.omadacId, testData.cookies, testData.loginToken,
+			testData.siteId, testData.urlFilter)
+		if testData.expectError {
+			assert.True(err != nil, "should return error")
+			continue
+		}
+
+		assert.Equal(testData.omadaErrorCode, resp.ErrorCode, "Error code is not correct")
+	}
+}
+
+func TestDeleteUrlFilter(t *testing.T) {
+	testsData := []struct {
+		description    string
+		omadaUrl       string
+		omadacId       *string
+		loginToken     *string
+		cookies        []*http.Cookie
+		siteId         *string
+		filterId       *string
+		expectError    bool
+		responseCode   int
+		omadaErrorCode int
+	}{
+		{
+			description: "happy path",
+			omadaUrl:    "https://omada.example.com",
+			omadacId:    NewStr("omada_cid"),
+			loginToken:  NewStr("login_token"),
+			cookies: []*http.Cookie{
+				{
+					Name:  "cookie_name",
+					Value: "cookie_value",
+				},
+			},
+			siteId:         NewStr("site_id"),
+			filterId:       NewStr("filter_id"),
+			expectError:    false,
+			responseCode:   http.StatusOK,
+			omadaErrorCode: 0,
+		},
+		{
+			description: "upstream error",
+			omadaUrl:    "https://omada.example.com",
+			omadacId:    NewStr("omada_cid"),
+			loginToken:  NewStr("login_token"),
+			cookies: []*http.Cookie{
+				{
+					Name:  "cookie_name",
+					Value: "cookie_value",
+				},
+			},
+			siteId:         NewStr("site_id"),
+			filterId:       NewStr("filter_id"),
+			expectError:    true,
+			responseCode:   http.StatusInternalServerError,
+			omadaErrorCode: 0,
+		},
+	}
+
+	assert := assert.New(t)
+
+	for _, testData := range testsData {
+		t.Logf("tesing %+v", testData.description)
+
+		mockHttpClient := MockHTTPClient{
+			MockDo: func(req *http.Request) (*http.Response, error) {
+				assert.Equal(fmt.Sprintf("%s/%s/api/v2/sites/%s/setting/firewall/urlfilterings/%s",
+					testData.omadaUrl, *testData.omadacId, *testData.siteId, *testData.filterId),
+					req.URL.String(), "Omada request url is not correct")
+
+				assert.Equal(testData.cookies, req.Cookies(), "cookie is missing")
+				assert.Equal(*testData.loginToken, req.Header.Get("Csrf-token"), "Login token is missing")
+
+				var respErr error
+				if testData.responseCode != http.StatusOK {
+					respErr = errors.New("test error")
+				}
+
+				w := httptest.NewRecorder()
+				w.WriteHeader(testData.responseCode)
+				if _, err := w.WriteString(`{"errorCode":0,"msg":"Success."}`); err != nil {
+					panic(fmt.Sprintf("Error writing body: %s", err))
+				}
+
+				return w.Result(), respErr
+			},
+		}
+
+		omadaApi := NewOmadaApi(
+			NewConfigSafe(NewStr("8080"), NewStr("1"), NewStr("123"), nil, nil, nil,
+				NewStr(testData.omadaUrl), nil, nil),
+			&mockHttpClient)
+
+		resp, err := omadaApi.DeleteUrlFilter(testData.omadacId, testData.cookies, testData.loginToken,
+			testData.siteId, testData.filterId)
+		if testData.expectError {
+			assert.True(err != nil, "should return error")
+			continue
+		}
+
+		assert.Equal(testData.omadaErrorCode, resp.ErrorCode, "Error code is not correct")
 	}
 }
