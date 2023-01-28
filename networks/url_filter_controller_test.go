@@ -10,7 +10,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestQueryUrlFilters(t *testing.T) {
+func TestControllerQueryUrlFilters(t *testing.T) {
 	testsData := []struct {
 		description      string
 		ssidId           string

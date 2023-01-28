@@ -117,7 +117,7 @@ func (ufc urlFilterController) removeFiltering(omadaControllerId *string,
 			continue
 		}
 
-		if *omadaFilter.Status == false || *omadaFilter.Policy != ENABLE_FILTERING {
+		if !*omadaFilter.Status || *omadaFilter.Policy != ENABLE_FILTERING {
 			// rule is not enabled or policy is not blocking
 			continue
 		}
@@ -172,7 +172,7 @@ func (ufc urlFilterController) addFiltering(omadaControllerId *string,
 			continue
 		}
 
-		if *omadaFilter.Status == false || *omadaFilter.Policy != ENABLE_FILTERING {
+		if !*omadaFilter.Status || *omadaFilter.Policy != ENABLE_FILTERING {
 			// rule is not enabled or policy is not blocking
 			continue
 		}

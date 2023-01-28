@@ -65,7 +65,7 @@ func (r *Repository) CreateUrlFilter(omadaControllerId *string, cookies []*http.
 
 func (r *Repository) UpdateUrlFilter(omadaControllerId *string, cookies []*http.Cookie,
 	loginToken *string, siteId *string, urlFilterData *Data) (*OmadaResponse, error) {
-	return r.omadaApi.CreateUrlFilter(omadaControllerId, cookies, loginToken, siteId, urlFilterData)
+	return r.omadaApi.UpdateUrlFilter(omadaControllerId, cookies, loginToken, siteId, urlFilterData)
 }
 
 func (r *Repository) DeleteUrlFilter(omadaControllerId *string, cookies []*http.Cookie,

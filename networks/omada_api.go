@@ -38,6 +38,8 @@ type OmadaApi interface {
 		siteId *string) (*OmadaResponse, error)
 	CreateUrlFilter(omadaControllerId *string, cookies []*http.Cookie,
 		loginToken *string, siteId *string, urlFilterData *Data) (*OmadaResponse, error)
+	UpdateUrlFilter(omadaControllerId *string, cookies []*http.Cookie,
+		loginToken *string, siteId *string, urlFilterData *Data) (*OmadaResponse, error)
 	DeleteUrlFilter(omadaControllerId *string, cookies []*http.Cookie,
 		loginToken *string, siteId *string, urlFilterId *string) (*OmadaResponse, error)
 }

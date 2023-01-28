@@ -34,6 +34,8 @@ type MockOmadaApi struct {
 		loginToken *string, siteId *string) (*OmadaResponse, error)
 	MockCreateUrlFilter func(omadaControllerId *string, cookies []*http.Cookie,
 		loginToken *string, siteId *string, urlFilterData *Data) (*OmadaResponse, error)
+	MockUpdateUrlFilter func(omadaControllerId *string, cookies []*http.Cookie,
+		loginToken *string, siteId *string, urlFilterData *Data) (*OmadaResponse, error)
 	MockDeleteUrlFilter func(omadaControllerId *string, cookies []*http.Cookie,
 		loginToken *string, siteId *string, urlFilterId *string) (*OmadaResponse, error)
 }
@@ -84,6 +86,11 @@ func (oa *MockOmadaApi) QueryUrlFilters(omadaControllerId *string, cookies []*ht
 func (oa *MockOmadaApi) CreateUrlFilter(omadaControllerId *string, cookies []*http.Cookie,
 	loginToken *string, siteId *string, urlFilterData *Data) (*OmadaResponse, error) {
 	return oa.MockCreateUrlFilter(omadaControllerId, cookies, loginToken, siteId, urlFilterData)
+}
+
+func (oa *MockOmadaApi) UpdateUrlFilter(omadaControllerId *string, cookies []*http.Cookie,
+	loginToken *string, siteId *string, urlFilterData *Data) (*OmadaResponse, error) {
+	return oa.MockUpdateUrlFilter(omadaControllerId, cookies, loginToken, siteId, urlFilterData)
 }
 
 func (oa *MockOmadaApi) DeleteUrlFilter(omadaControllerId *string, cookies []*http.Cookie,
