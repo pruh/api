@@ -248,3 +248,111 @@ func TestRepoCreateTimeRanges(t *testing.T) {
 	assert.True(mockCalled, "mock is not called")
 	assert.Equal(0, controllerId.ErrorCode, "wrong response data")
 }
+
+func TestRepoQueryUrlFilters(t *testing.T) {
+	var mockCalled = false
+
+	mockOmadaApi := MockOmadaApi{
+		MockQueryUrlFilters: func(omadaControllerId *string, cookies []*http.Cookie,
+			loginToken *string, siteId *string) (*OmadaResponse, error) {
+			resp := &OmadaResponse{
+				ErrorCode: 0,
+				Msg:       NewStr("Success."),
+			}
+
+			mockCalled = true
+
+			return resp, nil
+		},
+	}
+
+	repo := NewRepository(&mockOmadaApi)
+
+	assert := assert.New(t)
+
+	controllerId, _ := repo.QueryUrlFilters(nil, nil, nil, nil)
+
+	assert.True(mockCalled, "mock is not called")
+	assert.Equal(0, controllerId.ErrorCode, "wrong response data")
+}
+
+func TestRepoCreateUrlFilters(t *testing.T) {
+	var mockCalled = false
+
+	mockOmadaApi := MockOmadaApi{
+		MockCreateUrlFilter: func(omadaControllerId *string, cookies []*http.Cookie,
+			loginToken *string, siteId *string, urlFilterData *Data) (*OmadaResponse, error) {
+			resp := &OmadaResponse{
+				ErrorCode: 0,
+				Msg:       NewStr("Success."),
+			}
+
+			mockCalled = true
+
+			return resp, nil
+		},
+	}
+
+	repo := NewRepository(&mockOmadaApi)
+
+	assert := assert.New(t)
+
+	controllerId, _ := repo.CreateUrlFilter(nil, nil, nil, nil, nil)
+
+	assert.True(mockCalled, "mock is not called")
+	assert.Equal(0, controllerId.ErrorCode, "wrong response data")
+}
+
+func TestRepoUpdateUrlFilters(t *testing.T) {
+	var mockCalled = false
+
+	mockOmadaApi := MockOmadaApi{
+		MockUpdateUrlFilter: func(omadaControllerId *string, cookies []*http.Cookie,
+			loginToken *string, siteId *string, urlFilterData *Data) (*OmadaResponse, error) {
+			resp := &OmadaResponse{
+				ErrorCode: 0,
+				Msg:       NewStr("Success."),
+			}
+
+			mockCalled = true
+
+			return resp, nil
+		},
+	}
+
+	repo := NewRepository(&mockOmadaApi)
+
+	assert := assert.New(t)
+
+	controllerId, _ := repo.UpdateUrlFilter(nil, nil, nil, nil, nil)
+
+	assert.True(mockCalled, "mock is not called")
+	assert.Equal(0, controllerId.ErrorCode, "wrong response data")
+}
+
+func TestRepoDeleteUrlFilters(t *testing.T) {
+	var mockCalled = false
+
+	mockOmadaApi := MockOmadaApi{
+		MockDeleteUrlFilter: func(omadaControllerId *string, cookies []*http.Cookie,
+			loginToken *string, siteId *string, urlFilterId *string) (*OmadaResponse, error) {
+			resp := &OmadaResponse{
+				ErrorCode: 0,
+				Msg:       NewStr("Success."),
+			}
+
+			mockCalled = true
+
+			return resp, nil
+		},
+	}
+
+	repo := NewRepository(&mockOmadaApi)
+
+	assert := assert.New(t)
+
+	controllerId, _ := repo.DeleteUrlFilter(nil, nil, nil, nil, nil)
+
+	assert.True(mockCalled, "mock is not called")
+	assert.Equal(0, controllerId.ErrorCode, "wrong response data")
+}

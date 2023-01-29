@@ -1,6 +1,7 @@
 package tests
 
 import (
+	"errors"
 	"net/http"
 
 	. "github.com/pruh/api/networks"
@@ -29,6 +30,15 @@ type MockOmadaApi struct {
 		siteId *string) (*OmadaResponse, error)
 	MockCreateTimeRange func(omadaControllerId *string, cookies []*http.Cookie, loginToken *string,
 		siteId *string, trData *Data) (*OmadaResponse, error)
+
+	MockQueryUrlFilters func(omadaControllerId *string, cookies []*http.Cookie,
+		loginToken *string, siteId *string) (*OmadaResponse, error)
+	MockCreateUrlFilter func(omadaControllerId *string, cookies []*http.Cookie,
+		loginToken *string, siteId *string, urlFilterData *Data) (*OmadaResponse, error)
+	MockUpdateUrlFilter func(omadaControllerId *string, cookies []*http.Cookie,
+		loginToken *string, siteId *string, urlFilterData *Data) (*OmadaResponse, error)
+	MockDeleteUrlFilter func(omadaControllerId *string, cookies []*http.Cookie,
+		loginToken *string, siteId *string, urlFilterId *string) (*OmadaResponse, error)
 }
 
 func (oa *MockOmadaApi) GetControllerId() (*OmadaResponse, error) {
@@ -67,4 +77,78 @@ func (oa *MockOmadaApi) GetTimeRanges(omadaControllerId *string, cookies []*http
 func (oa *MockOmadaApi) CreateTimeRange(omadaControllerId *string, cookies []*http.Cookie, loginToken *string,
 	siteId *string, trData *Data) (*OmadaResponse, error) {
 	return oa.MockCreateTimeRange(omadaControllerId, cookies, loginToken, siteId, trData)
+}
+
+func (oa *MockOmadaApi) QueryUrlFilters(omadaControllerId *string, cookies []*http.Cookie, loginToken *string,
+	siteId *string) (*OmadaResponse, error) {
+	return oa.MockQueryUrlFilters(omadaControllerId, cookies, loginToken, siteId)
+}
+
+func (oa *MockOmadaApi) CreateUrlFilter(omadaControllerId *string, cookies []*http.Cookie,
+	loginToken *string, siteId *string, urlFilterData *Data) (*OmadaResponse, error) {
+	return oa.MockCreateUrlFilter(omadaControllerId, cookies, loginToken, siteId, urlFilterData)
+}
+
+func (oa *MockOmadaApi) UpdateUrlFilter(omadaControllerId *string, cookies []*http.Cookie,
+	loginToken *string, siteId *string, urlFilterData *Data) (*OmadaResponse, error) {
+	return oa.MockUpdateUrlFilter(omadaControllerId, cookies, loginToken, siteId, urlFilterData)
+}
+
+func (oa *MockOmadaApi) DeleteUrlFilter(omadaControllerId *string, cookies []*http.Cookie,
+	loginToken *string, siteId *string, urlFilterId *string) (*OmadaResponse, error) {
+	return oa.MockDeleteUrlFilter(omadaControllerId, cookies, loginToken, siteId, urlFilterId)
+}
+
+type MockUrlFilterController struct {
+	MockQueryUrlFilters func(omadaControllerId *string, cookies []*http.Cookie,
+		loginToken *string, siteId *string, ssidData *Data) (*[]UrlFilter, error)
+	MockMaybeUpdateUrlFilters func(omadaControllerId *string,
+		cookies []*http.Cookie, loginToken *string, siteId *string, ssidData *Data,
+		requestedFilters *[]UrlFilter) (*[]UrlFilter, *bool, error)
+}
+
+func (ufc MockUrlFilterController) QueryUrlFilters(omadaControllerId *string, cookies []*http.Cookie,
+	loginToken *string, siteId *string, ssidData *Data) (*[]UrlFilter, error) {
+	return ufc.MockQueryUrlFilters(omadaControllerId, cookies, loginToken, siteId, ssidData)
+}
+
+func (ufc MockUrlFilterController) MaybeUpdateUrlFilters(omadaControllerId *string,
+	cookies []*http.Cookie, loginToken *string, siteId *string, ssidData *Data,
+	requestedFilters *[]UrlFilter) (*[]UrlFilter, *bool, error) {
+	return ufc.MockMaybeUpdateUrlFilters(omadaControllerId,
+		cookies, loginToken, siteId, ssidData, requestedFilters)
+}
+
+func NewMockUrlFilterController(queryError bool, updateUpstreamError bool) MockUrlFilterController {
+	return MockUrlFilterController{
+		MockQueryUrlFilters: func(omadaControllerId *string, cookies []*http.Cookie,
+			loginToken *string, siteId *string, ssidData *Data) (*[]UrlFilter, error) {
+			if queryError {
+				return nil, errors.New("test")
+			}
+
+			return &[]UrlFilter{
+				{
+					Name:   NewStr("test"),
+					Enable: NewBool(true),
+					Urls:   &[]string{"test_url"},
+				},
+			}, nil
+		},
+		MockMaybeUpdateUrlFilters: func(omadaControllerId *string, cookies []*http.Cookie,
+			loginToken *string, siteId *string, ssidData *Data,
+			requestedFilters *[]UrlFilter) (*[]UrlFilter, *bool, error) {
+			if updateUpstreamError {
+				return nil, nil, errors.New("test")
+			}
+
+			return &[]UrlFilter{
+				{
+					Name:   NewStr("test"),
+					Enable: NewBool(true),
+					Urls:   &[]string{"test_url"},
+				},
+			}, NewBool(false), nil
+		},
+	}
 }

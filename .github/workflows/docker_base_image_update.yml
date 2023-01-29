@@ -32,14 +32,19 @@ jobs:
       # (a cancellation is NOT the same and triggers a failure email)
       # see also https://github.com/actions/runner/issues/662
 
-      - name: Get base image latest version
+      - name: Get latest release version
+        id: release_version
+        uses: pozetroninc/github-action-get-latest-release@master
+        with:
+          repository: pruh/api
+          excludes: prerelease, draft
+        if: steps.check.outputs.needs-updating == 'true'
+
+      - name: normalize version
         id: version
-        run: | 
-              echo alpine_version=$(curl -L --fail "https://hub.docker.com/v2/repositories/${{ env.BASE_IMAGE }}/tags/?page_size=100" | 
-                jq '.results | .[] | .name' -r |
-                grep -Po "(\d+\.)+\d+" |
-                sort --version-sort |
-                tail -n 1) >> $GITHUB_OUTPUT
+        run: |
+          echo release_version=$(echo ${{ steps.release_version.outputs.release }} |
+            sed 's/release-//') >> $GITHUB_OUTPUT
         if: steps.check.outputs.needs-updating == 'true'
 
       - name: Login to DockerHub
@@ -57,5 +62,5 @@ jobs:
           tags: |
             ${{ env.IMAGE_NAME }}:latest
             ${{ env.IMAGE_NAME }}:${{ env.IMAGE_TAG }}
-            ${{ env.IMAGE_NAME }}:${{ steps.version.outputs.alpine_version }}-${{ env.IMAGE_TAG }}
+            ${{ env.IMAGE_NAME }}:${{ steps.version.outputs.release_version }}-${{ env.IMAGE_TAG }}
         if: steps.check.outputs.needs-updating == 'true'

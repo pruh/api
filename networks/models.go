@@ -15,8 +15,11 @@ type Result struct {
 }
 
 type Data struct {
-	Id   *string `json:"id,omitempty"`
-	Name *string `json:"name,omitempty"`
+	// common params
+	Id     *string `json:"id,omitempty"`
+	Name   *string `json:"name,omitempty"`
+	SiteId *string `json:"siteid,omitempty"`
+	Policy *int    `json:"policy,omitempty"`
 
 	// ssid params
 	Band               *int               `json:"band,omitempty"`
@@ -30,7 +33,6 @@ type Data struct {
 	Action             *int               `json:"action,omitempty"`
 	ScheduleId         *string            `json:"scheduleId,omitempty"`
 	MacFilterEnable    *bool              `json:"macFilterEnable,omitempty"`
-	Policy             *int               `json:"policy,omitempty"`
 	MacFilterId        *string            `json:"macFilterId,omitempty"`
 	RateLimit          *RateLimit         `json:"rateLimit,omitempty"`
 	PskSetting         *PskSetting        `json:"pskSetting,omitempty"`
@@ -47,6 +49,14 @@ type Data struct {
 	DayFri   *bool       `json:"dayFri,omitempty"`
 	DaySat   *bool       `json:"daySat,omitempty"`
 	DaySun   *bool       `json:"daySun,omitempty"`
+
+	// url filtering
+	Type       *string   `json:"type,omitempty"`
+	EntryId    *int      `json:"entryId,omitempty"`
+	Status     *bool     `json:"status,omitempty"`
+	SourceType *int      `json:"sourceType,omitempty"`
+	SourceIds  *[]string `json:"sourceIds,omitempty"`
+	Urls       *[]string `json:"urls,omitempty"`
 }
 
 type TimeList struct {
@@ -103,18 +113,26 @@ type OmadaTimeRangeData struct {
 }
 
 type NetworksSsidRequest struct {
-	RadioOn       *bool `json:"radioOn,omitempty"`
-	UploadLimit   *int  `json:"uploadLimit,omitempty"`
-	DownloadLimit *int  `json:"downloadLimit,omitempty"`
+	RadioOn       *bool        `json:"radioOn,omitempty"`
+	UploadLimit   *int         `json:"uploadLimit,omitempty"`
+	DownloadLimit *int         `json:"downloadLimit,omitempty"`
+	UrlFilters    *[]UrlFilter `json:"urlFilters,omitempty"`
 }
 
 type NetworksResponse struct {
-	Ssid          *string `json:"ssid,omitempty"`
-	RadioOn       *bool   `json:"radioOn,omitempty"`
-	UploadLimit   *int    `json:"uploadLimit,omitempty"`
-	DownloadLimit *int    `json:"downloadLimit,omitempty"`
-	Updated       *bool   `json:"updated,omitempty"`
-	ErrorMessage  *string `json:"errorMessage,omitempty"`
+	Ssid          *string      `json:"ssid,omitempty"`
+	RadioOn       *bool        `json:"radioOn,omitempty"`
+	UploadLimit   *int         `json:"uploadLimit,omitempty"`
+	DownloadLimit *int         `json:"downloadLimit,omitempty"`
+	UrlFilters    *[]UrlFilter `json:"urlFilters,omitempty"`
+	Updated       *bool        `json:"updated,omitempty"`
+	ErrorMessage  *string      `json:"errorMessage,omitempty"`
+}
+
+type UrlFilter struct {
+	Name   *string   `json:"name,omitempty"`
+	Enable *bool     `json:"Enable,omitempty"`
+	Urls   *[]string `json:"urls,omitempty"`
 }
 
 func NewStr(str string) *string {

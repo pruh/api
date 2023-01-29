@@ -23,6 +23,7 @@ const (
 // Controller handles all network related requests
 type controller struct {
 	config     *config.Configuration
+	ufc        UrlFilterController
 	repository Repository
 }
 
@@ -31,17 +32,21 @@ type Controller interface {
 	UpdateWifi(w http.ResponseWriter, r *http.Request)
 }
 
-// NewController creates new networks controller
+// Creates new networks controller
 func NewController(config *config.Configuration) Controller {
 	omadaApi := NewOmadaApi(config, apihttp.NewHTTPClient())
-	return NewControllerWithParams(config, omadaApi)
+	r := NewRepository(omadaApi)
+	ufc := NewUrlFilterController(r)
+	return NewControllerWithParams(config, ufc, r)
 }
 
 // Creates a new controller with additional dependencies for tests
-func NewControllerWithParams(config *config.Configuration, omadaApi OmadaApi) Controller {
+func NewControllerWithParams(config *config.Configuration,
+	ufc UrlFilterController, r Repository) Controller {
 	return &controller{
 		config:     config,
-		repository: NewRepository(omadaApi),
+		ufc:        ufc,
+		repository: r,
 	}
 }
 
@@ -128,7 +133,15 @@ func (c *controller) GetWifi(w http.ResponseWriter, r *http.Request) {
 
 	glog.Infof("Omada ssid id %s", *ssidData.Id)
 
-	writeSuccessResponse(w, ssid, ssidData, nil)
+	urlFilters, err := c.ufc.QueryUrlFilters(omadaIdResp.Result.OmadacId, cookies,
+		omadaLoginResp.Result.Token, (*omadaSitesResp.Result.Data)[0].Id, ssidData)
+	if err != nil {
+		writeErrorResponse(w, http.StatusBadGateway, ssid, omadaSsidsResp,
+			fmt.Errorf("failure querying url filters %v", err))
+		return
+	}
+
+	writeSuccessResponse(w, ssid, ssidData, urlFilters, nil)
 }
 
 func (c *controller) UpdateWifi(w http.ResponseWriter, r *http.Request) {
@@ -149,8 +162,10 @@ func (c *controller) UpdateWifi(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if ssidRequest.RadioOn == nil && ssidRequest.UploadLimit == nil && ssidRequest.DownloadLimit == nil {
-		writeSuccessResponse(w, ssid, nil, NewBool(false))
+	if ssidRequest.RadioOn == nil &&
+		ssidRequest.UploadLimit == nil && ssidRequest.DownloadLimit == nil &&
+		ssidRequest.UrlFilters == nil {
+		writeSuccessResponse(w, ssid, nil, nil, NewBool(false))
 		return
 	}
 
@@ -297,7 +312,17 @@ func (c *controller) UpdateWifi(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	writeSuccessResponse(w, ssid, ssidData, NewBool(needtoUpdate))
+	uf, updated, err := c.ufc.MaybeUpdateUrlFilters(omadaIdResp.Result.OmadacId, cookies,
+		omadaLoginResp.Result.Token, (*omadaSitesResp.Result.Data)[0].Id, ssidData, ssidRequest.UrlFilters)
+	if err != nil {
+		writeErrorResponse(w, http.StatusBadGateway, ssid, nil,
+			fmt.Errorf("can not update url filters %v", err))
+		return
+	}
+
+	needtoUpdate = needtoUpdate || *updated
+
+	writeSuccessResponse(w, ssid, ssidData, uf, NewBool(needtoUpdate))
 }
 
 func needRadioStateUpdate(wlanScheduleEnable *bool, requestRadioOn *bool) bool {
@@ -310,13 +335,29 @@ func needRadioStateUpdate(wlanScheduleEnable *bool, requestRadioOn *bool) bool {
 
 func writeErrorResponse(w http.ResponseWriter, statusCode int, ssid string,
 	upstreamResp *OmadaResponse, upstreamErr error) {
-	writeResponse(w, statusCode, ssid,
-		nil, nil, nil, nil, upstreamResp, upstreamErr)
+
+	var nw NetworksResponse
+	if upstreamErr != nil {
+		var fmtErrorMessage *string
+		if upstreamResp != nil {
+			fmtErrorMessage = NewStr(fmt.Sprintf("%s: %v", *upstreamResp.Msg, upstreamErr))
+		} else {
+			fmtErrorMessage = NewStr(fmt.Sprintf("%v", upstreamErr))
+		}
+
+		nw.ErrorMessage = fmtErrorMessage
+	}
+
+	nw.Ssid = &ssid
+
+	writeResponse(w, statusCode, &nw)
 }
 
-func writeSuccessResponse(w http.ResponseWriter, ssid string, ssidData *Data, updated *bool) {
+func writeSuccessResponse(w http.ResponseWriter, ssid string, ssidData *Data,
+	urlFilters *[]UrlFilter, updated *bool) {
+
 	if ssidData == nil {
-		writeResponse(w, http.StatusOK, ssid, nil, nil, nil, updated, nil, nil)
+		writeResponse(w, http.StatusOK, &NetworksResponse{Ssid: &ssid, Updated: updated})
 		return
 	}
 
@@ -332,34 +373,19 @@ func writeSuccessResponse(w http.ResponseWriter, ssid string, ssidData *Data, up
 			fmt.Errorf("omada ssid download rate limit error %v", err))
 		return
 	}
-
-	writeResponse(w, http.StatusOK, ssid,
-		NewBool(!*ssidData.WlanScheduleEnable), upRate, downRate, updated, nil, nil)
-}
-
-func writeResponse(w http.ResponseWriter, statusCode int, ssid string,
-	radioOn *bool, uploadLimit *int, downloadLimit *int, updated *bool,
-	upstreamResp *OmadaResponse, upstreamErr error) {
 	var nw NetworksResponse
-	if upstreamErr != nil {
-		var fmtErrorMessage *string
-		if upstreamResp != nil {
-			fmtErrorMessage = NewStr(fmt.Sprintf("%s: %v", *upstreamResp.Msg, upstreamErr))
-		} else {
-			fmtErrorMessage = NewStr(fmt.Sprintf("%v", upstreamErr))
-		}
-
-		nw.ErrorMessage = fmtErrorMessage
-
-		glog.Error(*nw.ErrorMessage)
-	}
 
 	nw.Ssid = &ssid
-	nw.RadioOn = radioOn
-	nw.UploadLimit = uploadLimit
-	nw.DownloadLimit = downloadLimit
+	nw.RadioOn = NewBool(!*ssidData.WlanScheduleEnable)
+	nw.UploadLimit = upRate
+	nw.DownloadLimit = downRate
+	nw.UrlFilters = urlFilters
 	nw.Updated = updated
 
+	writeResponse(w, http.StatusOK, &nw)
+}
+
+func writeResponse(w http.ResponseWriter, statusCode int, nw *NetworksResponse) {
 	data, err := json.Marshal(nw)
 	if err != nil {
 		glog.Errorf("Cannot marshal json response: %s", err)
