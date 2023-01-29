@@ -48,14 +48,21 @@ func convertOmadaUrlFilters(omadaFilters *[]Data, ssidId *string) *[]UrlFilter {
 	urlFilters := []UrlFilter{}
 	for _, omadaFilter := range *omadaFilters {
 		if *omadaFilter.SourceType != SSID_SOURCE_TYPE {
-			// only accepct SSID filters
+			glog.Info("not an ssid filter")
 			continue
 		}
+
+		if !*omadaFilter.Status || *omadaFilter.Policy != ENABLE_FILTERING {
+			glog.Info("skip turned off filters")
+			continue
+		}
+
 		if *omadaFilter.SourceIds == nil ||
 			!slices.Contains(*omadaFilter.SourceIds, *ssidId) {
-			// skip filters that do not belong to requested ssid
+			glog.Info("skip filters that do not belong to requested ssid")
 			continue
 		}
+
 		var urlFilter UrlFilter
 		urlFilter.Name = omadaFilter.Name
 		urlFilter.Enable = NewBool(*omadaFilter.Policy == ENABLE_FILTERING)

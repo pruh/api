@@ -131,7 +131,7 @@ type NetworksResponse struct {
 
 type UrlFilter struct {
 	Name   *string   `json:"name,omitempty"`
-	Enable *bool     `json:"Enable,omitempty"`
+	Enable *bool     `json:"enable,omitempty"`
 	Urls   *[]string `json:"urls,omitempty"`
 }
 
