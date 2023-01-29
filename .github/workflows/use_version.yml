@@ -17,7 +17,7 @@ env:
 
 jobs:
 
-  push:
+  debug:
     runs-on: ubuntu-latest
 
     steps:
@@ -34,7 +34,7 @@ jobs:
       - name: normalize version
         id: version
         run: |
-          echo release_version=$(${{ steps.release_version.outputs.release }} |
+          echo release_version=$(echo ${{ steps.release_version.outputs.release }} |
             sed 's/release-//') >> $GITHUB_OUTPUT
         
       - name: debug
