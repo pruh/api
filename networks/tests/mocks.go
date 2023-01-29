@@ -124,9 +124,9 @@ func NewMockUrlFilterController() MockUrlFilterController {
 			loginToken *string, siteId *string, ssidData *Data) (*[]UrlFilter, error) {
 			return &[]UrlFilter{
 				{
-					Name:         NewStr("test"),
-					BypassFilter: NewBool(false),
-					Urls:         &[]string{"test_url"},
+					Name:   NewStr("test"),
+					Enable: NewBool(true),
+					Urls:   &[]string{"test_url"},
 				},
 			}, nil
 		},
@@ -135,9 +135,9 @@ func NewMockUrlFilterController() MockUrlFilterController {
 			requestedFilters *[]UrlFilter) (*[]UrlFilter, *bool, error) {
 			return &[]UrlFilter{
 				{
-					Name:         NewStr("test"),
-					BypassFilter: NewBool(false),
-					Urls:         &[]string{"test_url"},
+					Name:   NewStr("test"),
+					Enable: NewBool(true),
+					Urls:   &[]string{"test_url"},
 				},
 			}, NewBool(false), nil
 		},

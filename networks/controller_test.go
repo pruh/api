@@ -97,9 +97,9 @@ func TestGetWifi(t *testing.T) {
 					loginToken *string, siteId *string, ssidData *Data) (*[]UrlFilter, error) {
 					return &[]UrlFilter{
 						{
-							Name:         NewStr("name"),
-							BypassFilter: NewBool(true),
-							Urls:         &[]string{"filter"},
+							Name:   NewStr("name"),
+							Enable: NewBool(false),
+							Urls:   &[]string{"filter"},
 						},
 					}, nil
 				},
@@ -236,9 +236,9 @@ func TestGetWifi(t *testing.T) {
 			assert.True(netsResponse.DownloadLimit != nil, "Response success body missing download limit")
 			assert.Equal([]UrlFilter{
 				{
-					Name:         NewStr("name"),
-					BypassFilter: NewBool(true),
-					Urls:         &[]string{"filter"},
+					Name:   NewStr("name"),
+					Enable: NewBool(false),
+					Urls:   &[]string{"filter"},
 				},
 			}, *netsResponse.UrlFilters, "Response success body missing url filters")
 		} else {

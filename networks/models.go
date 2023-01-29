@@ -130,9 +130,9 @@ type NetworksResponse struct {
 }
 
 type UrlFilter struct {
-	Name         *string   `json:"name,omitempty"`
-	BypassFilter *bool     `json:"bypassFilter,omitempty"`
-	Urls         *[]string `json:"urls,omitempty"`
+	Name   *string   `json:"name,omitempty"`
+	Enable *bool     `json:"Enable,omitempty"`
+	Urls   *[]string `json:"urls,omitempty"`
 }
 
 func NewStr(str string) *string {
