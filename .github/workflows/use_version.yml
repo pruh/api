@@ -1,8 +1,13 @@
 name: docker push on release
 
 on:
-  release:
-    types: [published]
+  push:
+    branches: [ "master" ]
+    tags: [ "v*" ]
+  pull_request:
+    branches: [ "master" ]
+  # release:
+  #   types: [published]
     
 env:
   BASE_IMAGE: library/alpine
