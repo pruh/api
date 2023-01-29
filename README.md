@@ -1,5 +1,5 @@
 # api
-![Build](https://github.com/pruh/api/actions/workflows/build.yml/badge.svg)
+![Build](https://github.com/pruh/api/actions/workflows/test_and_start.yml/badge.svg)
 [![CodeCov](https://codecov.io/gh/pruh/api/branch/master/graph/badge.svg)](https://codecov.io/gh/pruh/api)
 [![GoDoc](https://godoc.org/github.com/pruh/api?status.svg)](http://godoc.org/github.com/pruh/api)
 
