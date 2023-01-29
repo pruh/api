@@ -1,6 +1,7 @@
 package tests
 
 import (
+	"errors"
 	"net/http"
 
 	. "github.com/pruh/api/networks"
@@ -118,7 +119,7 @@ func (ufc MockUrlFilterController) MaybeUpdateUrlFilters(omadaControllerId *stri
 		cookies, loginToken, siteId, ssidData, requestedFilters)
 }
 
-func NewMockUrlFilterController() MockUrlFilterController {
+func NewMockUrlFilterController(updateUpstreamError bool) MockUrlFilterController {
 	return MockUrlFilterController{
 		MockQueryUrlFilters: func(omadaControllerId *string, cookies []*http.Cookie,
 			loginToken *string, siteId *string, ssidData *Data) (*[]UrlFilter, error) {
@@ -133,6 +134,10 @@ func NewMockUrlFilterController() MockUrlFilterController {
 		MockMaybeUpdateUrlFilters: func(omadaControllerId *string, cookies []*http.Cookie,
 			loginToken *string, siteId *string, ssidData *Data,
 			requestedFilters *[]UrlFilter) (*[]UrlFilter, *bool, error) {
+			if updateUpstreamError {
+				return nil, nil, errors.New("test")
+			}
+
 			return &[]UrlFilter{
 				{
 					Name:   NewStr("test"),

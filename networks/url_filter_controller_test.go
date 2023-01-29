@@ -180,6 +180,43 @@ func TestMaybeUpdateUrlFilters(t *testing.T) {
 			},
 		},
 		{
+			description: "add when multiple ssid",
+			ssidId:      "my_ssid_id",
+			requestFiltersUpdate: &[]UrlFilter{
+				{
+					Name:   NewStr("filter_name_1"),
+					Enable: NewBool(true),
+					Urls:   &[]string{"url_1"},
+				},
+			},
+			omadaResponse: &OmadaResponse{
+				Result: &Result{
+					Data: &[]Data{
+						{
+							Id:         NewStr("1"),
+							Name:       NewStr("filter_name_1"),
+							SiteId:     NewStr("site_id"),
+							Policy:     NewInt(ENABLE_FILTERING),
+							Type:       NewStr("ap"),
+							EntryId:    NewInt(123),
+							Status:     NewBool(true),
+							SourceType: NewInt(SSID_SOURCE_TYPE),
+							Urls:       &[]string{"url_1"},
+							SourceIds:  &[]string{"another_ssid_1", "another_ssid_2"},
+						},
+					},
+				},
+			},
+			expectUpdated: NewBool(true),
+			expectFilters: &[]UrlFilter{
+				{
+					Name:   NewStr("filter_name_1"),
+					Enable: NewBool(true),
+					Urls:   &[]string{"url_1"},
+				},
+			},
+		},
+		{
 			description: "update single filter",
 			ssidId:      "my_ssid_id",
 			requestFiltersUpdate: &[]UrlFilter{
@@ -240,6 +277,37 @@ func TestMaybeUpdateUrlFilters(t *testing.T) {
 							SourceType: NewInt(SSID_SOURCE_TYPE),
 							Urls:       &[]string{"url_1"},
 							SourceIds:  &[]string{"my_ssid_id"},
+						},
+					},
+				},
+			},
+			expectUpdated: NewBool(true),
+			expectFilters: &[]UrlFilter{},
+		},
+		{
+			description: "delete when several ssids",
+			ssidId:      "my_ssid_id",
+			requestFiltersUpdate: &[]UrlFilter{
+				{
+					Name:   NewStr("filter_name_1"),
+					Enable: NewBool(false),
+					Urls:   &[]string{"url_1"},
+				},
+			},
+			omadaResponse: &OmadaResponse{
+				Result: &Result{
+					Data: &[]Data{
+						{
+							Id:         NewStr("1"),
+							Name:       NewStr("filter_name_1"),
+							SiteId:     NewStr("site_id"),
+							Policy:     NewInt(ENABLE_FILTERING),
+							Type:       NewStr("ap"),
+							EntryId:    NewInt(123),
+							Status:     NewBool(true),
+							SourceType: NewInt(SSID_SOURCE_TYPE),
+							Urls:       &[]string{"url_1"},
+							SourceIds:  &[]string{"my_ssid_id", "another_ssid"},
 						},
 					},
 				},
