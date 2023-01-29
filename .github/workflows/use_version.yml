@@ -34,12 +34,12 @@ jobs:
       - name: normalize version
         id: version
         run: |
-          echo ${{ steps.release_version.outputs.release }} |
-            sed 's/release-//' >> $GITHUB_OUTPUT
+          echo release_version=$(${{ steps.release_version.outputs.release }} |
+            sed 's/release-//') >> $GITHUB_OUTPUT
         
       - name: debug
         run: |
-          echo ${{ steps.version.outputs.release }}
+          echo ${{ steps.version.outputs.release_version }}
 
       # - name: Login to DockerHub
       #   uses: docker/login-action@v2.1.0
