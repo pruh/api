@@ -23,7 +23,7 @@ jobs:
         id: version
         run: |
           echo release_version=$(echo ${{ github.ref }} |
-            sed 's/release-//') >> $GITHUB_OUTPUT
+            sed 's/refs\/tags\/release-//') >> $GITHUB_OUTPUT
 
       - name: Login to DockerHub
         uses: docker/login-action@v2.1.0
