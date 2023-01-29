@@ -119,10 +119,14 @@ func (ufc MockUrlFilterController) MaybeUpdateUrlFilters(omadaControllerId *stri
 		cookies, loginToken, siteId, ssidData, requestedFilters)
 }
 
-func NewMockUrlFilterController(updateUpstreamError bool) MockUrlFilterController {
+func NewMockUrlFilterController(queryError bool, updateUpstreamError bool) MockUrlFilterController {
 	return MockUrlFilterController{
 		MockQueryUrlFilters: func(omadaControllerId *string, cookies []*http.Cookie,
 			loginToken *string, siteId *string, ssidData *Data) (*[]UrlFilter, error) {
+			if queryError {
+				return nil, errors.New("test")
+			}
+
 			return &[]UrlFilter{
 				{
 					Name:   NewStr("test"),

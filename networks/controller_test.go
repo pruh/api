@@ -20,16 +20,16 @@ import (
 
 func TestGetWifi(t *testing.T) {
 	testsData := []struct {
-		description string
-		requestUrl  string
-		ssidParam   *string
-		cidError    bool
-		loginError  bool
-		siteError   bool
-		wlanError   bool
-		ssidError   bool
-
-		responseCode int
+		description    string
+		requestUrl     string
+		ssidParam      *string
+		cidError       bool
+		loginError     bool
+		siteError      bool
+		wlanError      bool
+		ssidError      bool
+		urlFilterError bool
+		responseCode   int
 	}{
 		{
 			description:  "get wifi happy path",
@@ -82,6 +82,14 @@ func TestGetWifi(t *testing.T) {
 
 			responseCode: http.StatusBadGateway,
 		},
+		{
+			description:    "url filter error",
+			requestUrl:     "https://omada.example.com",
+			ssidParam:      NewStr("my_ssid"),
+			urlFilterError: true,
+
+			responseCode: http.StatusBadGateway,
+		},
 	}
 
 	assert := assert.New(t)
@@ -92,18 +100,7 @@ func TestGetWifi(t *testing.T) {
 		controller := NewControllerWithParams(
 			NewConfigSafe(NewStr("8080"), NewStr("1"), NewStr("123"), nil, nil, nil,
 				NewStr(testData.requestUrl), nil, nil),
-			MockUrlFilterController{
-				MockQueryUrlFilters: func(omadaControllerId *string, cookies []*http.Cookie,
-					loginToken *string, siteId *string, ssidData *Data) (*[]UrlFilter, error) {
-					return &[]UrlFilter{
-						{
-							Name:   NewStr("name"),
-							Enable: NewBool(false),
-							Urls:   &[]string{"filter"},
-						},
-					}, nil
-				},
-			},
+			NewMockUrlFilterController(testData.urlFilterError, false),
 			NewRepository(
 				&MockOmadaApi{
 					MockGetControllerId: func() (*OmadaResponse, error) {
@@ -236,9 +233,9 @@ func TestGetWifi(t *testing.T) {
 			assert.True(netsResponse.DownloadLimit != nil, "Response success body missing download limit")
 			assert.Equal([]UrlFilter{
 				{
-					Name:   NewStr("name"),
-					Enable: NewBool(false),
-					Urls:   &[]string{"filter"},
+					Name:   NewStr("test"),
+					Enable: NewBool(true),
+					Urls:   &[]string{"test_url"},
 				},
 			}, *netsResponse.UrlFilters, "Response success body missing url filters")
 		} else {
@@ -313,7 +310,7 @@ func TestUpdateWifis_ControllerId(t *testing.T) {
 		controller := NewControllerWithParams(
 			NewConfigSafe(NewStr("8080"), NewStr("1"), NewStr("123"), nil, nil, nil,
 				NewStr(testData.requestUrl), nil, nil),
-			NewMockUrlFilterController(false),
+			NewMockUrlFilterController(false, false),
 			NewRepository(&MockOmadaApi{
 				MockGetControllerId: func() (*OmadaResponse, error) {
 					if testData.omadaResponseError {
@@ -503,7 +500,7 @@ func TestUpdateWifis_Login(t *testing.T) {
 
 		controller := NewControllerWithParams(
 			NewConfigSafe(NewStr("8080"), NewStr("1"), NewStr("123"), nil, nil, nil, NewStr(testData.requestUrl), nil, nil),
-			NewMockUrlFilterController(false),
+			NewMockUrlFilterController(false, false),
 			NewRepository(&MockOmadaApi{
 				MockGetControllerId: func() (*OmadaResponse, error) {
 					return &OmadaResponse{
@@ -681,7 +678,7 @@ func TestUpdateWifis_GetSites(t *testing.T) {
 
 		controller := NewControllerWithParams(
 			NewConfigSafe(NewStr("8080"), NewStr("1"), NewStr("123"), nil, nil, nil, NewStr(testData.requestUrl), nil, nil),
-			NewMockUrlFilterController(false),
+			NewMockUrlFilterController(false, false),
 			NewRepository(&MockOmadaApi{
 				MockGetControllerId: func() (*OmadaResponse, error) {
 					return &OmadaResponse{
@@ -860,7 +857,7 @@ func TestUpdateWifis_GetWlans(t *testing.T) {
 
 		controller := NewControllerWithParams(
 			NewConfigSafe(NewStr("8080"), NewStr("1"), NewStr("123"), nil, nil, nil, nil, nil, nil),
-			NewMockUrlFilterController(false),
+			NewMockUrlFilterController(false, false),
 			NewRepository(&MockOmadaApi{
 				MockGetControllerId: func() (*OmadaResponse, error) {
 					return &OmadaResponse{
@@ -1038,7 +1035,7 @@ func TestUpdateWifis_GetSsids(t *testing.T) {
 
 		controller := NewControllerWithParams(
 			NewConfigSafe(NewStr("8080"), NewStr("1"), NewStr("123"), nil, nil, nil, nil, nil, nil),
-			NewMockUrlFilterController(false),
+			NewMockUrlFilterController(false, false),
 			NewRepository(&MockOmadaApi{
 				MockGetControllerId: func() (*OmadaResponse, error) {
 					return &OmadaResponse{
@@ -1276,7 +1273,7 @@ func TestUpdateWifis_UpdateSsid(t *testing.T) {
 
 		controller := NewControllerWithParams(
 			NewConfigSafe(NewStr("8080"), NewStr("1"), NewStr("123"), nil, nil, nil, nil, nil, nil),
-			NewMockUrlFilterController(false),
+			NewMockUrlFilterController(false, false),
 			NewRepository(&MockOmadaApi{
 				MockGetControllerId: func() (*OmadaResponse, error) {
 					return &OmadaResponse{
@@ -1443,7 +1440,7 @@ func TestUpdateWifis_GetTimeRanges(t *testing.T) {
 
 		controller := NewControllerWithParams(
 			NewConfigSafe(NewStr("8080"), NewStr("1"), NewStr("123"), nil, nil, nil, nil, nil, nil),
-			NewMockUrlFilterController(false),
+			NewMockUrlFilterController(false, false),
 			NewRepository(&MockOmadaApi{
 				MockGetControllerId: func() (*OmadaResponse, error) {
 					return &OmadaResponse{
@@ -1625,7 +1622,7 @@ func TestUpdateWifis_CreateTimeRanges(t *testing.T) {
 
 		controller := NewControllerWithParams(
 			NewConfigSafe(NewStr("8080"), NewStr("1"), NewStr("123"), nil, nil, nil, nil, nil, nil),
-			NewMockUrlFilterController(false),
+			NewMockUrlFilterController(false, false),
 			NewRepository(&MockOmadaApi{
 				MockGetControllerId: func() (*OmadaResponse, error) {
 					return &OmadaResponse{
@@ -1822,7 +1819,7 @@ func TestUpdateWifis_ModifyUrlFilters(t *testing.T) {
 
 		controller := NewControllerWithParams(
 			NewConfigSafe(NewStr("8080"), NewStr("1"), NewStr("123"), nil, nil, nil, nil, nil, nil),
-			NewMockUrlFilterController(testData.upstreamError),
+			NewMockUrlFilterController(false, testData.upstreamError),
 			NewRepository(&MockOmadaApi{
 				MockGetControllerId: func() (*OmadaResponse, error) {
 					return &OmadaResponse{
