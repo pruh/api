@@ -25,7 +25,7 @@ type Data struct {
 	Band               *int               `json:"band,omitempty"`
 	WlanId             *string            `json:"wlanid,omitempty"`
 	VlanEnable         *bool              `json:"vlanEnable,omitempty"`
-	VlanId             *string            `json:"vlanId,omitempty"`
+	VlanId             *int               `json:"vlanId,omitempty"`
 	Broadcast          *bool              `json:"broadcast,omitempty"`
 	Security           *int               `json:"security,omitempty"`
 	GuestNetEnable     *bool              `json:"guestNetEnable,omitempty"`
