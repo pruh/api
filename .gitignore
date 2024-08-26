@@ -21,3 +21,7 @@ api.env
 
 # Docker volumes
 volumes
+
+## Compiled binaries
+**/api
+**/*.go
