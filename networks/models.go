@@ -51,7 +51,6 @@ type Data struct {
 	DaySun   *bool       `json:"daySun,omitempty"`
 
 	// url filtering
-	Type       *string   `json:"type,omitempty"`
 	EntryId    *int      `json:"entryId,omitempty"`
 	Status     *bool     `json:"status,omitempty"`
 	SourceType *int      `json:"sourceType,omitempty"`
