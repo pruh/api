@@ -23,7 +23,7 @@ jobs:
         id: version
         run: |
           raw_tag="${{ github.event.release.tag_name }}"
-          release_version="${raw_tag#release-}"
+          release_version="${raw_tag}"
           echo "release_version=${release_version}" >> "$GITHUB_OUTPUT"
 
       - name: Login to DockerHub
