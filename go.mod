@@ -1,4 +1,4 @@
-module github.com/pruh/api
+module github.com/pruh/api/v3
 
 go 1.19
 
