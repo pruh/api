@@ -8,6 +8,7 @@ import (
 	"io"
 	"net/http"
 	"net/http/httptest"
+	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -22,6 +23,7 @@ func TestTelegramControllerSendMessage(t *testing.T) {
 		description             string
 		requestBody             string
 		defaultChatID           *string
+		botToken                *string
 		telegramShouldBeCalled  bool
 		expectedOutboundMessage *messages.TelegramMessage
 		responseCode            int
@@ -129,15 +131,27 @@ func TestTelegramControllerSendMessage(t *testing.T) {
 			},
 			responseCode: http.StatusOK,
 		},
+		{
+			description:             "invalid telegram token url",
+			requestBody:             `{"message":"opossum","chat_id":1234}`,
+			botToken:                strPtr("bad\ntoken"),
+			telegramShouldBeCalled:  false,
+			expectedOutboundMessage: nil,
+			responseCode:            http.StatusInternalServerError,
+		},
 	}
 
 	assert := assert.New(t)
 
 	for _, testData := range testsData {
 		t.Logf("tesing %s", testData.description)
+		botToken := strPtr("1")
+		if testData.botToken != nil {
+			botToken = testData.botToken
+		}
 
 		controller := Controller{
-			Config: NewConfigSafe(strPtr("8080"), strPtr("1"), testData.defaultChatID, nil),
+			Config: NewConfigSafe(strPtr("8080"), botToken, testData.defaultChatID, nil),
 			HTTPClient: &MockHTTPClient{
 				do: func(req *http.Request) (*http.Response, error) {
 					if !testData.telegramShouldBeCalled {
@@ -195,4 +209,74 @@ func strPtr(str string) *string {
 
 func intPtr(num int) *int {
 	return &num
+}
+
+type errorReadCloser struct{}
+
+func (errorReadCloser) Read(p []byte) (int, error) {
+	return 0, errors.New("read failed")
+}
+
+func (errorReadCloser) Close() error {
+	return nil
+}
+
+func TestTelegramControllerSendMessageCopyFailure(t *testing.T) {
+	controller := Controller{
+		Config: NewConfigSafe(strPtr("8080"), strPtr("1"), nil, nil),
+		HTTPClient: &MockHTTPClient{
+			do: func(req *http.Request) (*http.Response, error) {
+				return &http.Response{
+					StatusCode: http.StatusOK,
+					Header: http.Header{
+						"Content-Type":   []string{"application/json"},
+						"Content-Length": []string{"10"},
+					},
+					Body: errorReadCloser{},
+				}, nil
+			},
+		},
+	}
+
+	w := httptest.NewRecorder()
+	req := httptest.NewRequest(http.MethodPost, "http://example.com/foo",
+		bytes.NewReader([]byte(`{"message":"hello","chat_id":1}`)))
+
+	controller.SendMessage(w, req)
+
+	if !strings.Contains(w.Body.String(), "Cannot copy a response.") {
+		t.Fatalf("expected copy failure message in body, got %q", w.Body.String())
+	}
+}
+
+func TestMessageConstructors(t *testing.T) {
+	t.Run("new telegram message defaults", func(t *testing.T) {
+		chatID := 42
+		msg := NewTelegramMessage(&chatID)
+
+		if msg.ChatID == nil || *msg.ChatID != chatID {
+			t.Fatalf("expected chat id %d, got %+v", chatID, msg.ChatID)
+		}
+		if !msg.DisablePreview {
+			t.Fatal("expected disable_web_page_preview to default to true")
+		}
+		if !msg.DisableNotification {
+			t.Fatal("expected disable_notification to default to true")
+		}
+	})
+
+	t.Run("new incoming message defaults", func(t *testing.T) {
+		chatID := 77
+		msg := NewMessage(&chatID)
+
+		if msg.ChatID == nil || *msg.ChatID != chatID {
+			t.Fatalf("expected chat id %d, got %+v", chatID, msg.ChatID)
+		}
+		if !msg.Silent {
+			t.Fatal("expected silent to default to true")
+		}
+		if msg.Message != "" {
+			t.Fatalf("expected empty message text by default, got %q", msg.Message)
+		}
+	})
 }
