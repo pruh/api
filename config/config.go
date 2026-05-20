@@ -17,9 +17,6 @@ type Configuration struct {
 	DefaultChatID    *int
 	APIV1Credentials *map[string]string
 	LocalNets        []*net.IPNet
-
-	MongoUsername *string
-	MongoPassword *string
 }
 
 // NewFromEnv creates new configuration from environment variables.
@@ -29,15 +26,12 @@ func NewFromEnv() (*Configuration, error) {
 	chatID := ptrOrNil(os.LookupEnv("TELEGRAM_DEFAULT_CHAT_ID"))
 	apiCreds := ptrOrNil(os.LookupEnv("API_V1_CREDS"))
 
-	mongoUsername := ptrOrNil(os.LookupEnv("MONGO_INITDB_ROOT_USERNAME"))
-	mongoPassword := ptrOrNil(os.LookupEnv("MONGO_INITDB_ROOT_PASSWORD"))
-
-	return NewFromParams(port, botToken, chatID, apiCreds, mongoUsername, mongoPassword)
+	return NewFromParams(port, botToken, chatID, apiCreds)
 }
 
 // NewFromParams creates new configuration from arguments.
 func NewFromParams(port *string, boToken *string, defaultChatID *string,
-	apiV1Credentials *string, mongoUsername *string, mongoPassword *string) (*Configuration, error) {
+	apiV1Credentials *string) (*Configuration, error) {
 	var conf Configuration
 	if port == nil || *port == "" {
 		return nil, errors.New("port should not be empty")
@@ -66,10 +60,6 @@ func NewFromParams(port *string, boToken *string, defaultChatID *string,
 	}
 
 	conf.LocalNets = getLocalIPNets()
-	if mongoUsername != nil && mongoPassword != nil {
-		conf.MongoUsername = mongoUsername
-		conf.MongoPassword = mongoPassword
-	}
 
 	return &conf, nil
 }

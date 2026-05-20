@@ -10,18 +10,3 @@ services:
     volumes:
       - /etc/localtime:/etc/localtime:ro
     env_file: api.env
-    depends_on:
-      - mongo
-
-  mongo:
-    image: mongo
-    container_name: mongo
-    restart: unless-stopped
-    user: "${UID}:${GID}"
-    ports:
-      - 27017:27017
-    volumes:
-      - ./volumes/mongo:/data/db
-      - /etc/localtime:/etc/localtime:ro
-    env_file: api.env
-

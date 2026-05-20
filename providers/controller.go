@@ -11,7 +11,6 @@ import (
 	"github.com/golang/glog"
 	"github.com/google/uuid"
 	"github.com/gorilla/mux"
-	"github.com/pruh/api/mongo"
 )
 
 const (
@@ -73,14 +72,14 @@ func (c *Controller) GetAll(w http.ResponseWriter, r *http.Request) {
 func (c *Controller) Get(w http.ResponseWriter, r *http.Request) {
 	params := mux.Vars(r)
 	uuid := params[uuidParam]
-	mongoUUID, err := validateUUID(uuid)
+	providerUUID, err := validateUUID(uuid)
 	if err != nil {
 		glog.Errorf("Provider UUID is malformed. %s", err)
 		http.Error(w, "Provider UUID is malformed.", http.StatusBadRequest)
 		return
 	}
 
-	provider, err := c.Repository.GetOne(*mongoUUID)
+	provider, err := c.Repository.GetOne(*providerUUID)
 	if err != nil {
 		glog.Errorf("Error while querying provider. %s", err)
 		http.Error(w, "Error while querying provider.", http.StatusInternalServerError)
@@ -131,7 +130,7 @@ func (c *Controller) Create(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	provider.ID = mongo.NewUUID()
+	provider.ID = uuid.New()
 	success := c.Repository.CreateOne(provider)
 	if !success {
 		glog.Errorf("Failed to create provider. %s", err)
@@ -151,14 +150,14 @@ func (c *Controller) Create(w http.ResponseWriter, r *http.Request) {
 func (c *Controller) Delete(w http.ResponseWriter, r *http.Request) {
 	params := mux.Vars(r)
 	uuid := params[uuidParam]
-	mongoUUID, err := validateUUID(uuid)
+	providerUUID, err := validateUUID(uuid)
 	if err != nil {
 		glog.Errorf("Provider UUID is malformed. %s", err)
 		http.Error(w, "Provider UUID is malformed.", http.StatusBadRequest)
 		return
 	}
 
-	res, err := c.Repository.DeleteOne(*mongoUUID)
+	res, err := c.Repository.DeleteOne(*providerUUID)
 	if err != nil {
 		glog.Errorf("Failed to delete provider. %s", err)
 		http.Error(w, fmt.Sprintf("Failed to delete provider. %s", err), http.StatusInternalServerError)
@@ -174,20 +173,23 @@ func (c *Controller) Delete(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusNoContent)
 }
 
-func validateUUID(uuidStr string) (*mongo.UUID, error) {
+func validateUUID(uuidStr string) (*uuid.UUID, error) {
 	u, err := uuid.Parse(uuidStr)
 	if err != nil {
 		return nil, err
 	}
 
-	return &mongo.UUID{UUID: u}, nil
+	return &u, nil
 }
 
 func (c *Controller) validateProvider(prov Provider) error {
 	if prov.Type == nil {
 		return errors.New("Provider type is null")
 	}
-	validator := c.validators[*prov.Type]
+	validator, ok := c.validators[*prov.Type]
+	if !ok {
+		return fmt.Errorf("Provider type is not supported: %s", *prov.Type)
+	}
 
 	return validator(prov)
 }

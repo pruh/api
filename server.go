@@ -11,8 +11,6 @@ import (
 	apihttp "github.com/pruh/api/http"
 	"github.com/pruh/api/http/middleware"
 	"github.com/pruh/api/messages"
-	"github.com/pruh/api/mongo"
-	"github.com/pruh/api/notifications"
 	"github.com/pruh/api/providers"
 	"github.com/urfave/negroni"
 )
@@ -59,29 +57,8 @@ func main() {
 	}
 	apiV1Router.HandleFunc("/telegram/messages/send", tc.SendMessage).Methods(http.MethodPost)
 
-	mongoClient := mongo.NewClient(config)
-
-	// notifications controller
-	repo := &notifications.Repository{
-		Mongo: mongoClient,
-	}
-	notif := &notifications.Controller{
-		Repository: repo,
-	}
-	apiV1Router.HandleFunc(notifications.GetPath, notif.GetAll).Methods(http.MethodGet)
-	apiV1Router.HandleFunc(notifications.SingleGetPath, notif.Get).Methods(http.MethodGet)
-	apiV1Router.HandleFunc(notifications.CreatePath, notif.Create).Methods(http.MethodPost)
-	apiV1Router.HandleFunc(notifications.DeletePath, notif.Delete).Methods(http.MethodDelete)
-
-	cleaner := notifications.Cleaner{
-		Repository: repo,
-	}
-	cleaner.StartPeriodicCleaner()
-
 	// providers controller
-	provRepo := &providers.Repository{
-		Mongo: mongoClient,
-	}
+	provRepo := providers.NewRepository()
 	provController := providers.NewController(provRepo)
 	apiV1Router.HandleFunc(providers.GetPath, provController.GetAll).Methods(http.MethodGet)
 	apiV1Router.HandleFunc(providers.SingleGetPath, provController.Get).Methods(http.MethodGet)

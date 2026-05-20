@@ -14,8 +14,6 @@ func TestConfiguraionLoading(t *testing.T) {
 		botToken      *string
 		defaultChatID *string
 		credsMap      *map[string]string
-		mongoUsername *string
-		mongoPassword *string
 		expectError   bool
 	}{
 		{
@@ -89,14 +87,6 @@ func TestConfiguraionLoading(t *testing.T) {
 			credsMap:      &map[string]string{},
 			expectError:   false,
 		},
-		{
-			description:   "mongo credentials parsing",
-			port:          ptr("1234"),
-			botToken:      ptr("botToken"),
-			mongoUsername: ptr("mongoUsername"),
-			mongoPassword: ptr("mongoPassword"),
-			expectError:   false,
-		},
 	}
 
 	assert := assert.New(t)
@@ -105,7 +95,7 @@ func TestConfiguraionLoading(t *testing.T) {
 		t.Logf("testing %+v", testData.description)
 
 		conf, err := NewConfig(testData.port, testData.botToken, testData.defaultChatID,
-			testData.credsMap, testData.mongoUsername, testData.mongoPassword)
+			testData.credsMap)
 
 		if !testData.expectError && err != nil {
 			assert.Fail("Config load should not return error: " + err.Error())
@@ -124,8 +114,6 @@ func TestConfiguraionLoading(t *testing.T) {
 		assert.Equal(testData.port, conf.Port, "Port is not correct")
 		assert.Equal(testData.botToken, conf.TelegramBoToken, "Bot token is not correct")
 		assert.Equal(testData.credsMap, conf.APIV1Credentials, "Credentials is not correct")
-		assert.Equal(testData.mongoUsername, conf.MongoUsername, "Mongo username is not correct")
-		assert.Equal(testData.mongoPassword, conf.MongoPassword, "Mongo password ID is not correct")
 	}
 }
 
