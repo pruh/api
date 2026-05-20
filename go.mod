@@ -6,7 +6,7 @@ require (
 	github.com/golang/glog v1.2.5
 	github.com/gorilla/mux v1.8.1
 	github.com/stretchr/testify v1.11.1
-	github.com/urfave/negroni v1.0.0
+	github.com/urfave/negroni/v3 v3.1.1
 )
 
 require (
