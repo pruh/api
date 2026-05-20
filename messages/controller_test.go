@@ -39,18 +39,25 @@ func TestTelegramControllerSendMessage(t *testing.T) {
 			responseCode: http.StatusOK,
 		},
 		{
+			description:             "malformed json",
+			requestBody:             `{"message":"opossum","chat_id":1234`,
+			telegramShouldBeCalled:  false,
+			expectedOutboundMessage: nil,
+			responseCode:            http.StatusBadRequest,
+		},
+		{
 			description:             "no message",
 			requestBody:             `{"text":"opossum","chat_id":1234}`,
 			telegramShouldBeCalled:  false,
 			expectedOutboundMessage: nil,
-			responseCode:            http.StatusInternalServerError,
+			responseCode:            http.StatusBadRequest,
 		},
 		{
 			description:             "empty message",
 			requestBody:             `{"message":"","chat_id":1234}`,
 			telegramShouldBeCalled:  false,
 			expectedOutboundMessage: nil,
-			responseCode:            http.StatusInternalServerError,
+			responseCode:            http.StatusBadRequest,
 		},
 		{
 			// everything is fine, but HTTP client will return error
@@ -70,7 +77,7 @@ func TestTelegramControllerSendMessage(t *testing.T) {
 			requestBody:             `{"message":"opossum"}`,
 			telegramShouldBeCalled:  false,
 			expectedOutboundMessage: nil,
-			responseCode:            http.StatusInternalServerError,
+			responseCode:            http.StatusBadRequest,
 		},
 		{
 			description:            "only default chat ID",

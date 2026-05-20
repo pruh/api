@@ -87,7 +87,6 @@ func getRemoteIP(r *http.Request) (net.IP, error) {
 
 func getHeadersIP(r *http.Request) (net.IP, error) {
 	var ip net.IP
-	r.Header.Get("")
 	if xff := strings.Trim(r.Header.Get("X-Forwarded-For"), ","); len(xff) > 0 {
 		addrs := strings.Split(xff, ",")
 		lastFwd := strings.TrimSpace(addrs[len(addrs)-1])
