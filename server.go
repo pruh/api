@@ -17,7 +17,7 @@ import (
 	apihttp "github.com/pruh/api/v3/http"
 	"github.com/pruh/api/v3/http/middleware"
 	"github.com/pruh/api/v3/messages"
-	"github.com/urfave/negroni"
+	"github.com/urfave/negroni/v3"
 )
 
 type server interface {
