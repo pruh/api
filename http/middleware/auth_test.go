@@ -7,11 +7,11 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"github.com/pruh/api/config"
+	"github.com/pruh/api/v3/config"
 	"github.com/stretchr/testify/assert"
 
-	. "github.com/pruh/api/config/tests"
-	. "github.com/pruh/api/http/middleware"
+	. "github.com/pruh/api/v3/config/tests"
+	. "github.com/pruh/api/v3/http/middleware"
 )
 
 func TestBasicAuth(t *testing.T) {

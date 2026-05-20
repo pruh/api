@@ -3,8 +3,8 @@ package config_test
 import (
 	"testing"
 
-	"github.com/pruh/api/config"
-	. "github.com/pruh/api/config/tests"
+	"github.com/pruh/api/v3/config"
+	. "github.com/pruh/api/v3/config/tests"
 	"github.com/stretchr/testify/assert"
 )
 

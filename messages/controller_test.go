@@ -13,9 +13,9 @@ import (
 
 	"github.com/stretchr/testify/assert"
 
-	. "github.com/pruh/api/config/tests"
-	"github.com/pruh/api/messages"
-	. "github.com/pruh/api/messages"
+	. "github.com/pruh/api/v3/config/tests"
+	"github.com/pruh/api/v3/messages"
+	. "github.com/pruh/api/v3/messages"
 )
 
 func TestTelegramControllerSendMessage(t *testing.T) {

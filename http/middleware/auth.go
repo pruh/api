@@ -8,7 +8,7 @@ import (
 
 	"github.com/golang/glog"
 
-	"github.com/pruh/api/config"
+	"github.com/pruh/api/v3/config"
 )
 
 // AuthMiddleware validates basic auth credentials.
