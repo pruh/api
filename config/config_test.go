@@ -16,9 +16,6 @@ func TestConfiguraionLoading(t *testing.T) {
 		credsMap      *map[string]string
 		mongoUsername *string
 		mongoPassword *string
-		omadaUrl      *string
-		omadaUsername *string
-		omadaPassword *string
 		expectError   bool
 	}{
 		{
@@ -100,22 +97,6 @@ func TestConfiguraionLoading(t *testing.T) {
 			mongoPassword: ptr("mongoPassword"),
 			expectError:   false,
 		},
-		{
-			description: "omada url",
-			port:        ptr("1234"),
-			botToken:    ptr("botToken"),
-			omadaUrl:    ptr("abc"),
-			expectError: false,
-		},
-		{
-			description:   "omada url with credentials",
-			port:          ptr("1234"),
-			botToken:      ptr("botToken"),
-			omadaUrl:      ptr("abc"),
-			omadaUsername: ptr("omada username"),
-			omadaPassword: ptr("omada password"),
-			expectError:   false,
-		},
 	}
 
 	assert := assert.New(t)
@@ -124,8 +105,7 @@ func TestConfiguraionLoading(t *testing.T) {
 		t.Logf("testing %+v", testData.description)
 
 		conf, err := NewConfig(testData.port, testData.botToken, testData.defaultChatID,
-			testData.credsMap, testData.mongoUsername,
-			testData.mongoPassword, testData.omadaUrl, testData.omadaUsername, testData.omadaPassword)
+			testData.credsMap, testData.mongoUsername, testData.mongoPassword)
 
 		if !testData.expectError && err != nil {
 			assert.Fail("Config load should not return error: " + err.Error())
@@ -146,7 +126,6 @@ func TestConfiguraionLoading(t *testing.T) {
 		assert.Equal(testData.credsMap, conf.APIV1Credentials, "Credentials is not correct")
 		assert.Equal(testData.mongoUsername, conf.MongoUsername, "Mongo username is not correct")
 		assert.Equal(testData.mongoPassword, conf.MongoPassword, "Mongo password ID is not correct")
-		assert.Equal(testData.omadaUrl, conf.OmadaUrl, "Omada Controller ID is not correct")
 	}
 }
 

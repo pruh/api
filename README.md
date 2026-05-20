@@ -24,10 +24,6 @@ Simple key-value file which will be used by docker to set container environment 
 * `MONGO_INITDB_ROOT_USERNAME` optional mongo username. Will be set only on first start.
 * `MONGO_INITDB_ROOT_PASSWORD` optional mongo password. Will be set only on first start.
 
-* `OMADA_URL` optional URL to Omada portal.
-* `OMADA_USERNAME` optional Omada portal username.
-* `OMADA_PASSWORD` optional Omada portal password.
-
 ## List of API methods
 
 ### Messages:
@@ -127,41 +123,3 @@ The following HTTP methods are supported:
   ```
 
 * `/api/v1/providers/{UUID}` HTTP DELETE method to delete a previously saved provider by UUID.
-
-### Networks
-
-Networks are interacting with Omada portal to provide Radio On / Off and Speed Limiting capabilities for Wifi Networks. Rate limiting options are in kilobytes per second and values less than 1 will turn limiting off. The purpose of the networks API is to control home sites, therefore the expectation is that there is only one site and one WLAN. If there are multiple of them, the first one is used.
-
-* GET `api/v1/wifis/{ssid}` - query radio status and rate limit for `ssid`
-
-  Returns SSID name, radio flag and rate limits, e.g.
-  ```json
-  {
-    "ssid": "SSID",
-    "radioOn": true,
-    "uploadLimit": 1024,
-    "DownloadLimit": 0
-  }
-  ```
-
-* PATCH `api/v1/wifis/{ssid}` - switch radio status for `ssid` param
-
-  Accepts JSON with any combination of the following request params:
-  ```json
-  {
-    "radioOn": false,
-    "uploadLimit": 1024,
-    "DownloadLimit": 0
-  }
-  ```
-
-  Returns SSID name, updated radio state flag, updated rate limits and if wifi state is updated, e.g.
-  ```json
-  {
-    "ssid": "SSID",
-    "radioOn": false,
-    "uploadLimit": 1024,
-    "DownloadLimit": 0,
-    "updated": true
-  }
-  ```

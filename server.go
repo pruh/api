@@ -12,7 +12,6 @@ import (
 	"github.com/pruh/api/http/middleware"
 	"github.com/pruh/api/messages"
 	"github.com/pruh/api/mongo"
-	"github.com/pruh/api/networks"
 	"github.com/pruh/api/notifications"
 	"github.com/pruh/api/providers"
 	"github.com/urfave/negroni"
@@ -88,13 +87,6 @@ func main() {
 	apiV1Router.HandleFunc(providers.SingleGetPath, provController.Get).Methods(http.MethodGet)
 	apiV1Router.HandleFunc(providers.CreatePath, provController.Create).Methods(http.MethodPost)
 	apiV1Router.HandleFunc(providers.DeletePath, provController.Delete).Methods(http.MethodDelete)
-
-	// networks controller
-	if config.OmadaUrl != nil {
-		networksController := networks.NewController(config)
-		apiV1Router.HandleFunc(networks.Wifis, networksController.GetWifi).Methods(http.MethodGet)
-		apiV1Router.HandleFunc(networks.Wifis, networksController.UpdateWifi).Methods(http.MethodPatch)
-	}
 
 	glog.Infof("listening on :%s", *config.Port)
 	glog.Fatal(http.ListenAndServe(":"+*config.Port, router))
