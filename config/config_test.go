@@ -3,6 +3,7 @@ package config_test
 import (
 	"testing"
 
+	"github.com/pruh/api/config"
 	. "github.com/pruh/api/config/tests"
 	"github.com/stretchr/testify/assert"
 )
@@ -119,4 +120,63 @@ func TestConfiguraionLoading(t *testing.T) {
 
 func ptr(str string) *string {
 	return &str
+}
+
+func TestNewFromEnv(t *testing.T) {
+	t.Run("missing required variables", func(t *testing.T) {
+		t.Setenv("PORT", "")
+		t.Setenv("TELEGRAM_BOT_TOKEN", "")
+		t.Setenv("TELEGRAM_DEFAULT_CHAT_ID", "")
+		t.Setenv("API_V1_CREDS", "")
+
+		cfg, err := config.NewFromEnv()
+		if err == nil {
+			t.Fatalf("expected error, got config %+v", cfg)
+		}
+	})
+
+	t.Run("invalid default chat id", func(t *testing.T) {
+		t.Setenv("PORT", "8080")
+		t.Setenv("TELEGRAM_BOT_TOKEN", "token")
+		t.Setenv("TELEGRAM_DEFAULT_CHAT_ID", "not-a-number")
+		t.Setenv("API_V1_CREDS", "")
+
+		cfg, err := config.NewFromEnv()
+		if err == nil {
+			t.Fatalf("expected error, got config %+v", cfg)
+		}
+	})
+
+	t.Run("invalid credentials json", func(t *testing.T) {
+		t.Setenv("PORT", "8080")
+		t.Setenv("TELEGRAM_BOT_TOKEN", "token")
+		t.Setenv("TELEGRAM_DEFAULT_CHAT_ID", "")
+		t.Setenv("API_V1_CREDS", "not-json")
+
+		cfg, err := config.NewFromEnv()
+		if err == nil {
+			t.Fatalf("expected error, got config %+v", cfg)
+		}
+	})
+
+	t.Run("valid optional values", func(t *testing.T) {
+		t.Setenv("PORT", "8080")
+		t.Setenv("TELEGRAM_BOT_TOKEN", "token")
+		t.Setenv("TELEGRAM_DEFAULT_CHAT_ID", "1234")
+		t.Setenv("API_V1_CREDS", `{"alice":"secret"}`)
+
+		cfg, err := config.NewFromEnv()
+		if err != nil {
+			t.Fatalf("did not expect error: %v", err)
+		}
+		if cfg.DefaultChatID == nil || *cfg.DefaultChatID != 1234 {
+			t.Fatalf("expected default chat id 1234, got %+v", cfg.DefaultChatID)
+		}
+		if cfg.APIV1Credentials == nil {
+			t.Fatal("expected credentials to be set")
+		}
+		if got := (*cfg.APIV1Credentials)["alice"]; got != "secret" {
+			t.Fatalf("expected alice credential to be secret, got %q", got)
+		}
+	})
 }

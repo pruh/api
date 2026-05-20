@@ -174,6 +174,52 @@ func TestBasicAuth(t *testing.T) {
 			requestBody:  nil,
 			responseCode: http.StatusUnauthorized,
 		},
+		{
+			description: "invalid remote address without port",
+			user:        "",
+			password:    "",
+			config: NewConfigSafe(ptr("8080"), ptr("1"), nil, &map[string]string{
+				"papa": "castoro",
+			}),
+			remoteIP:     "192.168.1.2",
+			requestBody:  nil,
+			responseCode: http.StatusUnauthorized,
+		},
+		{
+			description: "invalid remote ip value",
+			user:        "",
+			password:    "",
+			config: NewConfigSafe(ptr("8080"), ptr("1"), nil, &map[string]string{
+				"papa": "castoro",
+			}),
+			remoteIP:     "not-an-ip:8080",
+			requestBody:  nil,
+			responseCode: http.StatusUnauthorized,
+		},
+		{
+			description: "invalid x-forwarded-for value",
+			user:        "",
+			password:    "",
+			config: NewConfigSafe(ptr("8080"), ptr("1"), nil, &map[string]string{
+				"papa": "castoro",
+			}),
+			remoteIP:     "192.168.0.2:8080",
+			xFwdHeader:   "not-an-ip",
+			requestBody:  nil,
+			responseCode: http.StatusUnauthorized,
+		},
+		{
+			description: "invalid x-real-ip value",
+			user:        "",
+			password:    "",
+			config: NewConfigSafe(ptr("8080"), ptr("1"), nil, &map[string]string{
+				"papa": "castoro",
+			}),
+			remoteIP:     "192.168.0.2:8080",
+			xRealIP:      "not-an-ip",
+			requestBody:  nil,
+			responseCode: http.StatusUnauthorized,
+		},
 	}
 
 	assert := assert.New(t)

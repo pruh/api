@@ -49,6 +49,36 @@ func (s *errServer) Shutdown(ctx context.Context) error {
 	return nil
 }
 
+type stopServer struct {
+	stop      chan struct{}
+	listenErr error
+}
+
+func (s *stopServer) ListenAndServe() error {
+	<-s.stop
+	return s.listenErr
+}
+
+func (s *stopServer) Shutdown(ctx context.Context) error {
+	close(s.stop)
+	return nil
+}
+
+type shutdownErrServer struct {
+	stop        chan struct{}
+	shutdownErr error
+}
+
+func (s *shutdownErrServer) ListenAndServe() error {
+	<-s.stop
+	return http.ErrServerClosed
+}
+
+func (s *shutdownErrServer) Shutdown(ctx context.Context) error {
+	close(s.stop)
+	return s.shutdownErr
+}
+
 func TestNewRouterHealthz(t *testing.T) {
 	cfg := mustConfig(t, nil)
 	router := newRouter(cfg, &trackingHTTPClient{})
@@ -119,6 +149,47 @@ func TestServeUntilDoneReturnsListenError(t *testing.T) {
 	srv := &errServer{err: expected}
 
 	err := serveUntilDone(context.Background(), srv, time.Second)
+	if !errors.Is(err, expected) {
+		t.Fatalf("expected error %v, got %v", expected, err)
+	}
+}
+
+func TestServeUntilDoneReturnsNilOnServerClosed(t *testing.T) {
+	srv := &errServer{err: http.ErrServerClosed}
+
+	err := serveUntilDone(context.Background(), srv, time.Second)
+	if err != nil {
+		t.Fatalf("expected nil error, got %v", err)
+	}
+}
+
+func TestServeUntilDoneReturnsShutdownError(t *testing.T) {
+	ctx, cancel := context.WithCancel(context.Background())
+	cancel()
+
+	expected := errors.New("shutdown failure")
+	srv := &shutdownErrServer{
+		stop:        make(chan struct{}),
+		shutdownErr: expected,
+	}
+
+	err := serveUntilDone(ctx, srv, time.Second)
+	if !errors.Is(err, expected) {
+		t.Fatalf("expected error %v, got %v", expected, err)
+	}
+}
+
+func TestServeUntilDoneReturnsPostShutdownListenError(t *testing.T) {
+	ctx, cancel := context.WithCancel(context.Background())
+	cancel()
+
+	expected := errors.New("listen failed after shutdown")
+	srv := &stopServer{
+		stop:      make(chan struct{}),
+		listenErr: expected,
+	}
+
+	err := serveUntilDone(ctx, srv, time.Second)
 	if !errors.Is(err, expected) {
 		t.Fatalf("expected error %v, got %v", expected, err)
 	}
