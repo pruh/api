@@ -11,7 +11,6 @@ import (
 	apihttp "github.com/pruh/api/http"
 	"github.com/pruh/api/http/middleware"
 	"github.com/pruh/api/messages"
-	"github.com/pruh/api/providers"
 	"github.com/urfave/negroni"
 )
 
@@ -56,14 +55,6 @@ func main() {
 		HTTPClient: apihttp.NewHTTPClient(),
 	}
 	apiV1Router.HandleFunc("/telegram/messages/send", tc.SendMessage).Methods(http.MethodPost)
-
-	// providers controller
-	provRepo := providers.NewRepository()
-	provController := providers.NewController(provRepo)
-	apiV1Router.HandleFunc(providers.GetPath, provController.GetAll).Methods(http.MethodGet)
-	apiV1Router.HandleFunc(providers.SingleGetPath, provController.Get).Methods(http.MethodGet)
-	apiV1Router.HandleFunc(providers.CreatePath, provController.Create).Methods(http.MethodPost)
-	apiV1Router.HandleFunc(providers.DeletePath, provController.Delete).Methods(http.MethodDelete)
 
 	glog.Infof("listening on :%s", *config.Port)
 	glog.Fatal(http.ListenAndServe(":"+*config.Port, router))
