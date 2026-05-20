@@ -30,12 +30,12 @@ func (c *Controller) SendMessage(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if m.ChatID == nil {
-		glog.Errorf("ChatID not set. %s", err)
+		glog.Error("ChatID not set.")
 		http.Error(w, "ChatID not set", http.StatusBadRequest)
 		return
 	}
 	if m.Message == "" {
-		glog.Errorf("Message should not be empty. %s", err)
+		glog.Error("Message should not be empty.")
 		http.Error(w, "Message should not be empty", http.StatusBadRequest)
 		return
 	}
