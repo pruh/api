@@ -1,9 +1,15 @@
 package main
 
 import (
+	"context"
+	"errors"
 	"flag"
 	"net/http"
 	"net/http/httputil"
+	"os"
+	"os/signal"
+	"syscall"
+	"time"
 
 	"github.com/golang/glog"
 	"github.com/gorilla/mux"
@@ -48,6 +54,11 @@ func main() {
 		negroni.Wrap(apiV1Router),
 	)
 	router.PathPrefix(apiV1Path).Handler(n)
+	router.HandleFunc("/healthz", func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "text/plain; charset=utf-8")
+		w.WriteHeader(http.StatusOK)
+		_, _ = w.Write([]byte("ok\n"))
+	}).Methods(http.MethodGet)
 
 	// messages controller
 	tc := &messages.Controller{
@@ -56,6 +67,29 @@ func main() {
 	}
 	apiV1Router.HandleFunc("/telegram/messages/send", tc.SendMessage).Methods(http.MethodPost)
 
-	glog.Infof("listening on :%s", *config.Port)
-	glog.Fatal(http.ListenAndServe(":"+*config.Port, router))
+	srv := &http.Server{
+		Addr:    ":" + *config.Port,
+		Handler: router,
+	}
+
+	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
+	defer stop()
+
+	go func() {
+		glog.Infof("listening on :%s", *config.Port)
+		err := srv.ListenAndServe()
+		if err != nil && !errors.Is(err, http.ErrServerClosed) {
+			glog.Fatalf("server error: %v", err)
+		}
+	}()
+
+	<-ctx.Done()
+	glog.Info("shutdown signal received")
+	stop()
+
+	shutdownCtx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+	if err := srv.Shutdown(shutdownCtx); err != nil {
+		glog.Errorf("graceful shutdown failed: %v", err)
+	}
 }
