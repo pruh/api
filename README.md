@@ -1,7 +1,7 @@
 # api
 ![Build](https://github.com/pruh/api/actions/workflows/test_and_start.yml/badge.svg)
 [![CodeCov](https://codecov.io/gh/pruh/api/branch/master/graph/badge.svg)](https://codecov.io/gh/pruh/api)
-[![Go Reference](https://pkg.go.dev/badge/github.com/pruh/api/v3.svg)](https://pkg.go.dev/github.com/pruh/api/v3)
+[![GoDoc](https://godoc.org/github.com/pruh/api?status.svg)](http://godoc.org/github.com/pruh/api)
 
 REST API server written in Go. Supports basic HTTP auth.
 
