@@ -22,8 +22,9 @@ jobs:
       - name: normalize version
         id: version
         run: |
-          echo release_version=$(echo ${{ github.ref }} |
-            sed 's/refs\/tags\/release-//') >> $GITHUB_OUTPUT
+          raw_tag="${{ github.event.release.tag_name }}"
+          release_version="${raw_tag#release-}"
+          echo "release_version=${release_version}" >> "$GITHUB_OUTPUT"
 
       - name: Login to DockerHub
         uses: docker/login-action@v2.1.0
