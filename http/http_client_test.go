@@ -6,7 +6,7 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	. "github.com/pruh/api/http"
+	. "github.com/pruh/api/v3/http"
 	"github.com/stretchr/testify/assert"
 )
 

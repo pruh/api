@@ -9,7 +9,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/pruh/api/config"
+	"github.com/pruh/api/v3/config"
 )
 
 type trackingHTTPClient struct {

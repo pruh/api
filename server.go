@@ -13,10 +13,10 @@ import (
 
 	"github.com/golang/glog"
 	"github.com/gorilla/mux"
-	"github.com/pruh/api/config"
-	apihttp "github.com/pruh/api/http"
-	"github.com/pruh/api/http/middleware"
-	"github.com/pruh/api/messages"
+	"github.com/pruh/api/v3/config"
+	apihttp "github.com/pruh/api/v3/http"
+	"github.com/pruh/api/v3/http/middleware"
+	"github.com/pruh/api/v3/messages"
 	"github.com/urfave/negroni"
 )
 

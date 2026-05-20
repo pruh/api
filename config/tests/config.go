@@ -4,7 +4,7 @@ import (
 	"bytes"
 	"fmt"
 
-	"github.com/pruh/api/config"
+	"github.com/pruh/api/v3/config"
 )
 
 // NewConfig creates new config or returns error.

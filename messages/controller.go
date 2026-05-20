@@ -8,9 +8,9 @@ import (
 	"net/http"
 
 	"github.com/golang/glog"
-	"github.com/pruh/api/config"
+	"github.com/pruh/api/v3/config"
 
-	apihttp "github.com/pruh/api/http"
+	apihttp "github.com/pruh/api/v3/http"
 )
 
 // Controller stores config and HTTP client for requests.
