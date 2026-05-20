@@ -20,6 +20,11 @@ import (
 	"github.com/urfave/negroni"
 )
 
+type server interface {
+	ListenAndServe() error
+	Shutdown(ctx context.Context) error
+}
+
 func main() {
 	flag.Parse()
 	err := flag.Lookup("logtostderr").Value.Set("true")
@@ -32,6 +37,22 @@ func main() {
 		panic(err)
 	}
 
+	router := newRouter(config, apihttp.NewHTTPClient())
+	srv := &http.Server{
+		Addr:    ":" + *config.Port,
+		Handler: router,
+	}
+
+	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
+	defer stop()
+
+	glog.Infof("listening on :%s", *config.Port)
+	if err := serveUntilDone(ctx, srv, 10*time.Second); err != nil {
+		glog.Fatalf("server error: %v", err)
+	}
+}
+
+func newRouter(config *config.Configuration, httpClient apihttp.Client) *mux.Router {
 	apiV1Path := "/api/v1"
 
 	router := mux.NewRouter().StrictSlash(false)
@@ -63,33 +84,39 @@ func main() {
 	// messages controller
 	tc := &messages.Controller{
 		Config:     config,
-		HTTPClient: apihttp.NewHTTPClient(),
+		HTTPClient: httpClient,
 	}
 	apiV1Router.HandleFunc("/telegram/messages/send", tc.SendMessage).Methods(http.MethodPost)
 
-	srv := &http.Server{
-		Addr:    ":" + *config.Port,
-		Handler: router,
-	}
+	return router
+}
 
-	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
-	defer stop()
-
+func serveUntilDone(ctx context.Context, srv server, shutdownTimeout time.Duration) error {
+	errCh := make(chan error, 1)
 	go func() {
-		glog.Infof("listening on :%s", *config.Port)
-		err := srv.ListenAndServe()
-		if err != nil && !errors.Is(err, http.ErrServerClosed) {
-			glog.Fatalf("server error: %v", err)
-		}
+		errCh <- srv.ListenAndServe()
 	}()
 
-	<-ctx.Done()
-	glog.Info("shutdown signal received")
-	stop()
+	select {
+	case err := <-errCh:
+		if err != nil && !errors.Is(err, http.ErrServerClosed) {
+			return err
+		}
+		return nil
+	case <-ctx.Done():
+	}
 
-	shutdownCtx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	glog.Info("shutdown signal received")
+
+	shutdownCtx, cancel := context.WithTimeout(context.Background(), shutdownTimeout)
 	defer cancel()
 	if err := srv.Shutdown(shutdownCtx); err != nil {
-		glog.Errorf("graceful shutdown failed: %v", err)
+		return err
 	}
+
+	err := <-errCh
+	if err != nil && !errors.Is(err, http.ErrServerClosed) {
+		return err
+	}
+	return nil
 }
