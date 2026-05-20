@@ -3,7 +3,7 @@
 [![CodeCov](https://codecov.io/gh/pruh/api/branch/master/graph/badge.svg)](https://codecov.io/gh/pruh/api)
 [![GoDoc](https://godoc.org/github.com/pruh/api?status.svg)](http://godoc.org/github.com/pruh/api)
 
-REST API server written in Go. Supports basic HTTP auth and uses Mongo as a storage.
+REST API server written in Go. Supports basic HTTP auth.
 
 ## Usage
 
@@ -21,8 +21,6 @@ Simple key-value file which will be used by docker to set container environment 
 * `TELEGRAM_DEFAULT_CHAT_ID` default telegram chat ID, which will receive messages from the bot. This parameter is optinal.
 
 * `API_V1_CREDS` username/password pairs in JSON format of users who are allowed to access API: `{"username1":"password1", "username2":"password2"}`. This parameter is optional.
-* `MONGO_INITDB_ROOT_USERNAME` optional mongo username. Will be set only on first start.
-* `MONGO_INITDB_ROOT_PASSWORD` optional mongo password. Will be set only on first start.
 
 ## List of API methods
 
@@ -42,52 +40,10 @@ API to send messages.
 
   where `chat_id` is telegram chat id and `silent` is a flag indicating if message should be sent silently
 
-### Notifications:
-
-API to store and retrive notifications. Notifications that expire will be periodically removed.
-
-The following HTTP methods are supported:
-
-* `/api/v1/notifications/?only_current=true` HTTP GET method to return all notifications.
-  
-  `/api/v1/notifications/{UUID}` HTTP GET method to return single notification by UUID.
-
-  Methods return notifications in the following format:
-  ```json
-  {
-      "_id": "c146d6f1-8992-4010-85da-80459bb55d10",
-      "title": "title",
-      "message": "message",
-      "start_time": "2020-01-01T00:00:00Z",
-      "end_time": "2020-01-01T00:00:00Z",
-      "source": "notification source"
-  }
-  ```
-
-  optional `only_current` query param will filter returned result to include only current (`start_time` <= now <= `end_time`) notifications
-
-* `/api/v1/notifications/` HTTP POST method to save notification.
-  Method accepts JSON in the following format:
-
-  ```json
-  {
-      "title": "title",
-      "message": "message",
-      "start_time": "2020-01-01T00:00:00Z",
-      "end_time": "2020-01-01T00:00:00Z",
-      "source": "notification source"
-  }
-  ```
-
-* `/api/v1/notifications/{UUID}` HTTP DELETE method to delete previously saved notification by UUID.
-
-`message` and `source` are optional
-
-`start_time` and `end_time` should be date time in [ISO-8601](https://en.wikipedia.org/wiki/ISO_8601) format
-
 ### Providers:
 
 API to store and retrive providers.
+Providers are stored in-memory and are reset when the API process restarts.
 
 The following HTTP methods are supported:
 

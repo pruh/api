@@ -130,7 +130,7 @@ func TestTelegramControllerSendMessage(t *testing.T) {
 		t.Logf("tesing %s", testData.description)
 
 		controller := Controller{
-			Config: NewConfigSafe(strPtr("8080"), strPtr("1"), testData.defaultChatID, nil, nil, nil),
+			Config: NewConfigSafe(strPtr("8080"), strPtr("1"), testData.defaultChatID, nil),
 			HTTPClient: &MockHTTPClient{
 				do: func(req *http.Request) (*http.Response, error) {
 					if !testData.telegramShouldBeCalled {

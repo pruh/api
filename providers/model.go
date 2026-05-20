@@ -1,12 +1,12 @@
 package providers
 
-import "github.com/pruh/api/mongo"
+import "github.com/google/uuid"
 
 // Provider model that represents providers
 type Provider struct {
-	ID        mongo.UUID `json:"_id" bson:"_id"`
-	Type      *string    `json:"type" bson:"type"`
-	NJTransit *NJTransit `json:"njtransit,omitempty" bson:"njtransit,omitempty"`
+	ID        uuid.UUID  `json:"_id"`
+	Type      *string    `json:"type"`
+	NJTransit *NJTransit `json:"njtransit,omitempty"`
 }
 
 const (
@@ -16,6 +16,6 @@ const (
 
 // NJTransit model that represents NJ Transit provider
 type NJTransit struct {
-	OrigStationCode *string `json:"orig_station_code" bson:"orig_station_code"`
-	DestStationCode *string `json:"dest_station_code" bson:"dest_station_code"`
+	OrigStationCode *string `json:"orig_station_code"`
+	DestStationCode *string `json:"dest_station_code"`
 }
