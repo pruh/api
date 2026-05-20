@@ -25,18 +25,18 @@ func (c *Controller) SendMessage(w http.ResponseWriter, r *http.Request) {
 	err := json.NewDecoder(r.Body).Decode(&m)
 	if err != nil {
 		glog.Errorf("Cannot decode body. %s", err)
-		http.Error(w, fmt.Sprintf("Cannot decode body: %s", err.Error()), http.StatusInternalServerError)
+		http.Error(w, fmt.Sprintf("Cannot decode body: %s", err.Error()), http.StatusBadRequest)
 		return
 	}
 
 	if m.ChatID == nil {
 		glog.Errorf("ChatID not set. %s", err)
-		http.Error(w, "ChatID not set", http.StatusInternalServerError)
+		http.Error(w, "ChatID not set", http.StatusBadRequest)
 		return
 	}
 	if m.Message == "" {
 		glog.Errorf("Message should not be empty. %s", err)
-		http.Error(w, "Message should not be empty", http.StatusInternalServerError)
+		http.Error(w, "Message should not be empty", http.StatusBadRequest)
 		return
 	}
 
