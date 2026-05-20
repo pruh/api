@@ -39,6 +39,8 @@ jobs:
 
     - name: golangci-lint
       uses: golangci/golangci-lint-action@v3
+      with:
+        args: --modules-download-mode=mod
 
     - name: Run tests
       run: go test -race -coverprofile=coverage.out -covermode=atomic ./...
